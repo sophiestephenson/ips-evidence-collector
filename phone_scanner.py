@@ -115,7 +115,7 @@ class AppScan(object):
             print(">>> Exception:::", ex, file=sys.stderr)
             return pd.DataFrame([]), dict()
 
-    def find_spyapps(self, serialno, from_dump=True):
+    def find_spyapps(self, serialno, from_dump=False):
         """Finds the apps in the phone and add flags to them based on @blocklist.py
         Return the sorted dataframe
         This is the **main** function that is called from the views in web/view/scan.py
@@ -375,6 +375,7 @@ class AndroidScan(AppScan):
 
         # print("hf_recent['label']=", hf_recent['label'].tolist())
         #print(~hf_recent['timestamp'].str.contains('unknown'))
+        d.at[0, 'permissions'] = "null"
         d.at[0, 'permissions'] = hf_recent['label'].tolist()
         non_hf_recent.drop('appId', axis=1, inplace=True)
         d.at[0, 'non_hf_permissions_html'] = non_hf_recent.to_html()
@@ -401,11 +402,11 @@ class AndroidScan(AppScan):
         else:
             reason = "found '{}' tool on the phone. Verify whether this is a su binary.".format(s.strip())
             return (True, reason)
-        
+
         installed_apps = self.installed_apps
         if not installed_apps:
             installed_apps = self.get_apps(serial)
-        
+
         # FIXME: load these from a private database instead.  from OWASP,
         # https://sushi2k.gitbooks.io/the-owasp-mobile-security-testing-guide/content/0x05j-Testing-Resiliency-Against-Reverse-Engineering.html
         root_pkgs = ['com.noshufou.android.su','com.thirdparty.superuser',\
@@ -416,7 +417,7 @@ class AndroidScan(AppScan):
             reason = "found the following app(s) on the phone: '{}'."\
                     .format(str(root_pkgs_check))
             return (True, reason)
-    
+
 
 class IosScan(AppScan):
     """
@@ -554,7 +555,7 @@ class IosScan(AppScan):
                 rooted['True'].append("Filesystem *might* be rooted. Conduct additional checks.")
         except FileNotFoundError as e:
             print("Couldn't find Jailbroken FS check log.")
-            # TODO: trigger error message? like 
+            # TODO: trigger error message? like
             # TODO: show a try again, maybe it's not plugged in properly. still not working? this could be due to many many many reasons.
             #return (True, ['FS check failed, jailbreak not necessarily occurring.'])
 
@@ -564,7 +565,7 @@ class IosScan(AppScan):
             if "0\n" in JAILBROKEN_SSH_LOG:
                 rooted['True'].append("SSH is enabled.")
         except FileNotFoundError as e:
-            # TODO: trigger error message? like 
+            # TODO: trigger error message? like
             # TODO: show a try again, maybe it's not plugged in properly. still not working? this could be due to many many many reasons.
             print("Couldn't find Jailbroken SSH check log.")
 
@@ -581,18 +582,18 @@ class IosScan(AppScan):
 
         apps_titles = self.parse_dump.installed_apps_titles()['title'].tolist()
         # TODO: convert to set check
-        for app in ["Cydia", "blackra1n", "Undecimus", 
-                "FakeCarrier", "Icy", "IntelliScreen", 
-                "MxTube", "RockApp", "SBSettings", 
-                "WinterBoard", "3uTools", "Absinthe", 
-                "backr00m", "blackra1n", "Corona", 
-                "doubleH3lix", "Electra", "EtasonJB", 
-                "evasi0n", "evasi0n7", "G0blin", "Geeksn0w", 
-                "greenpois0n", "h3lix", "Home Depot", "ipwndfu", 
-                "JailbreakMe", "LiberiOS", "LiberTV", "limera1n", 
-                "Meridian", "p0sixspwn", "Pangu", "Pangu8", "Pangu9", 
-                "Phœnix", "PPJailbreak", "purplera1n", "PwnageTool", 
-                "redsn0w", "RockyRacoon","Rocky Racoon", "Saïgon", "Seas0nPass", 
+        for app in ["Cydia", "blackra1n", "Undecimus",
+                "FakeCarrier", "Icy", "IntelliScreen",
+                "MxTube", "RockApp", "SBSettings",
+                "WinterBoard", "3uTools", "Absinthe",
+                "backr00m", "blackra1n", "Corona",
+                "doubleH3lix", "Electra", "EtasonJB",
+                "evasi0n", "evasi0n7", "G0blin", "Geeksn0w",
+                "greenpois0n", "h3lix", "Home Depot", "ipwndfu",
+                "JailbreakMe", "LiberiOS", "LiberTV", "limera1n",
+                "Meridian", "p0sixspwn", "Pangu", "Pangu8", "Pangu9",
+                "Phœnix", "PPJailbreak", "purplera1n", "PwnageTool",
+                "redsn0w", "RockyRacoon","Rocky Racoon", "Saïgon", "Seas0nPass",
                 "sn0wbreeze", "Spirit", "TaiG", "unthredera1n", "yalu"]:
             if app in apps_titles:
                 rooted['True'].append("{} was found on the device.".format(app))
@@ -600,7 +601,7 @@ class IosScan(AppScan):
         # if apps check passes
         if not rooted:
             rooted['False'].append("Did not find popular jailbreak apps installed.")
-            ''' check for jailbroken status after attempts logged by ios_dump.sh ''' 
+            ''' check for jailbroken status after attempts logged by ios_dump.sh '''
         if 'True' in rooted:
             return (True, rooted['True'])
         else:
@@ -650,7 +651,7 @@ def iosScreenshot(serialNumber, context, nocache = False):
     rsdPort = ""
     i = 0
     for lineByte in output:
-        line = lineByte.decode('utf-8') 
+        line = lineByte.decode('utf-8')
         print(line)
         if i == 6:
             break
