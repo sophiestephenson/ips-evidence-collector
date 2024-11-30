@@ -22,7 +22,8 @@ downloads/
 eggs/
 .eggs/
 lib/
-lib64/
+lib64
+bin
 parts/
 sdist/
 var/
@@ -30,6 +31,8 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+pyvenv.cfg
+include
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -138,7 +141,7 @@ error.txt
 toremove/
 
 reports/*
-screenshots/*
+webstatic/images/screenshots/*
 apps/
 data/
 static_data/app-info.db.gz
@@ -154,6 +157,6 @@ __MACOSX
 
 *~test
 *.apk
-dumps/android_scan.logs
+dumps/*
 
 *.pkl
