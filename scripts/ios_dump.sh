@@ -17,7 +17,7 @@ mkdir -p phone_dumps/"$1"_ios
 cd phone_dumps/"$1"_ios
 # gets all of the details about each app (basically what ios_deploy does but with extra fields)
 if [[ "$platform" == 'linux' ]]; then
-  ideviceinstall -u "$serial" list --all --xml > $2
+  ideviceinstaller -u "$serial" list --all --xml > $2
 else
   ideviceinstaller -u "$serial" -l -o xml -o list_all > $2
 fi
