@@ -135,13 +135,11 @@ def take_screenshot(ser, fname=None):
 
 def wait(t):
     time.sleep(t)
-
-def do_privacy_check(ser, command, context):
-    def add_image(img, nocache=False):
+def add_image(img, nocache=False):
         rand = random.randint(0, 10000)
         return "<img height='400px' src='" + \
             url_for('static', filename=img) + "?{}'/>".format(rand if nocache else '')
-
+def do_privacy_check(ser, command, context):
     command = command.lower()
     if command == "account": # 1. Account ownership  & 3. Sync (if present)
         open_activity(ser, "com.google.android.gms/com.google.android.gms.app.settings.GoogleSettingsLink")
