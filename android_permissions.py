@@ -226,7 +226,7 @@ def all_permissions(dumpf, appid):
     app_permissions_tbl = permissions[permissions['permission'].isin(
         app_perms)].reset_index(drop=True)
     app_permissions_tbl['permission_abbrv'] = app_permissions_tbl\
-        .permission.str.rsplit('.', 1).str[-1]
+        .permission.str.rsplit('.', n=1).get(-1)
 
     # TODO: really 'unknown'?
     hf_recent_permissions = pd.merge(
