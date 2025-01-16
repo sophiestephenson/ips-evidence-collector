@@ -15,13 +15,13 @@ DUMPPKG = 'dumppkg'
 
 
 def _parse_time(time_str):
-    """
-    Parse a time string e.g. (2h13m) into a timedelta object.
-    Modified from virhilo's answer at https://stackoverflow.com/a/4628148/851699
-    :param time_str: A string identifying a duration.  (eg. 2h13m)
-    :return datetime.timedelta: A datetime.timedelta object
-        r'^\+((?P<days>[\.\d]+?)d)?((?P<hours>[\.\d]+?)h)?((?P<minutes>[\.\d]+?)m)?((?P<seconds>[\.\d]+?)s)?((?P<milliseconds>[\.\d]+?)ms)?')
-    """
+    # """
+    # Parse a time string e.g. (2h13m) into a timedelta object.
+    # Modified from virhilo's answer at https://stackoverflow.com/a/4628148/851699
+    # :param time_str: A string identifying a duration.  (eg. 2h13m)
+    # :return datetime.timedelta: A datetime.timedelta object
+    #     r'^\+((?P<days>[\.\d]+?)d)?((?P<hours>[\.\d]+?)h)?((?P<minutes>[\.\d]+?)m)?((?P<seconds>[\.\d]+?)s)?((?P<milliseconds>[\.\d]+?)ms)?')
+    # """
     timedelta_re = re.compile(
         r'^.((?P<days>[\.\d]+?)d)?((?P<hours>[\.\d]+?)h)?((?P<minutes>[\.\d]+?)m)?((?P<seconds>[\.\d]+?)s)?((?P<milliseconds>[\.\d]+?)ms)?')
     parts = timedelta_re.match(time_str)
@@ -87,7 +87,7 @@ def package_info(dumpf, appid):
     # requested permissions:
     # install permissions:
     # runtime permissions:
-    cmd = "sed -n -e '/Package \[{appid}\]/,/Package \[/p' '{dumpf}'"\
+    cmd = "sed -n -e '/Package \\[{appid}\\]/,/Package \\[/p' '{dumpf}'"\
         .format(appid=appid, dumpf=dumpf.replace('.json', '.txt'))
     print(cmd)
     # TODO: Need to udpate it once the catch_err function is fixed.
@@ -135,6 +135,8 @@ def package_info(dumpf, appid):
     install_perms = [k.split(':')[0] for k, v in
                      pkg.get('install permissions:', {}).items()]
     requested_perms = pkg.get('requested permissions:', [])
+
+    # TODO: Also read runtime permissions
 
     #usage_stats = filter(None, usage_stats.split('\n')[1].split(' '))
     #usage_stats = dict(item.split('=') for item in usage_stats)
@@ -218,22 +220,44 @@ def all_permissions(dumpf, appid):
     recent_permissions = recent_permissions_used(appid)
 
     permissions = pd.read_csv(config.ANDROID_PERMISSIONS_CSV)
-    permissions['label'] = permissions.apply(
-        lambda x: (x['permission'].rsplit('.', 1)[-1] if x['label'] == 'null'
+    print('-'* 80)
+    print("App Permissions")
+    print(app_perms)
+    print('-'* 80)
+    print("PKG Info")
+    print(pkg_info)
+    print('-'* 80)
+    print("Recent")
+    print(recent_permissions)
+    print('-'* 80)
+
+    permissions['label'] = permissions.apply( # get all the labels of known permissions
+        lambda x: (x['permission'] if x['label'] == 'null'
                    else x['label']),
         axis=1
     )
-    app_permissions_tbl = permissions[permissions['permission'].isin(
-        app_perms)].reset_index(drop=True)
+
+    found_perms = pd.DataFrame(app_perms, columns=['permission'])
+
+    app_permissions_tbl = pd.merge(found_perms, permissions, on='permission', how='left')
+    app_permissions_tbl['label'] = app_permissions_tbl['label']\
+        .fillna(app_permissions_tbl['permission'])
+
     app_permissions_tbl['permission_abbrv'] = app_permissions_tbl\
         .permission.str.rsplit('.', n=1).get(-1)
 
-    # TODO: really 'unknown'?
+    # # TODO: really 'unknown'?
     hf_recent_permissions = pd.merge(
         recent_permissions, app_permissions_tbl,
         left_on='op', right_on='permission_abbrv',
-        how='right').fillna('Unknown permission')
+        how='right').fillna("Unknown permission")
 
+    # print(hf_recent_permissions.loc[:['permission', 'label']])
+    pd.set_option('display.max_rows', None)
+    print(hf_recent_permissions['label'])
+    print(hf_recent_permissions['permission'])
+    print(hf_recent_permissions.columns.tolist())
+    #
     no_hf_recent_permissions = recent_permissions[
         ~recent_permissions['op'].isin(app_permissions_tbl['permission_abbrv'])
     ]
