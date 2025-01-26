@@ -173,12 +173,10 @@
                                 <tr><th valign="top">Install time</th><td>(fake time) January 1, 1970 00:00:00</td></tr>
 
                                 {% if spyware[loop.index0].permissions|length > 0 %}
-                                {% set inner_loop = 1 %}
                                 {% set num_permissions = spyware[loop.index0].permissions|length %}
                                 <tr><th valign="top">Permissions used</th><td>
                                     {% for perm in spyware[loop.index0].permissions %}
-                                    {% set inner_loop = inner_loop + 1 %}
-                                    {{perm.permission_name}} {% if inner_loop < num_permissions %}, {% endif %}
+                                    {{perm.permission_name}}{% if loop.index < num_permissions %}, {% endif %}
                                     {% endfor %}
                                 </td></tr>
                                 {% endif %}
