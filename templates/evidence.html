@@ -171,8 +171,16 @@
                                 <tr><th valign="top">Description</th><td>{{spyware[loop.index0].description}}</td></tr>
                                 {% endif %}
                                 <tr><th valign="top">Install time</th><td>(fake time) January 1, 1970 00:00:00</td></tr>
+
                                 {% if spyware[loop.index0].permissions|length > 0 %}
-                                <tr><th valign="top">Permissions used</th><td>{{spyware[loop.index0].permissions}}</td></tr>
+                                {% set inner_loop = 1 %}
+                                {% set num_permissions = spyware[loop.index0].permissions|length %}
+                                <tr><th valign="top">Permissions used</th><td>
+                                    {% for perm in spyware[loop.index0].permissions %}
+                                    {% set inner_loop = inner_loop + 1 %}
+                                    {{perm.permission_name}} {% if inner_loop < num_permissions %}, {% endif %}
+                                    {% endfor %}
+                                </td></tr>
                                 {% endif %}
                             </table>
                         </div>
@@ -261,6 +269,7 @@
                                 <tr><th valign="top">Description</th><td>{{dualuse[outer_loop.index0].description}}</td></tr>
                                 {% endif %}
                                 <tr><th valign="top">Install time</th><td>January 1, 1970 00:00:00</td></tr>
+
                                 {% if dualuse[outer_loop.index0].permissions|length > 0 %}
                                 <tr><th valign="top">Permissions used</th><td>
                                     {% for perm in dualuse[outer_loop.index0].permissions %}
@@ -294,7 +303,6 @@
                             </table>
                             <button id="dualuse_{{dualuse[outer_loop.index0].app_name.replace(' ', '')}}" type="button" onclick="getScreenshot(this.id)" value="screenshot">Screenshot</button>
                         </div>
-
                         {% for perm in nested.permissions %}
                         <h5>Permission check: {{dualuse[outer_loop.index0].permissions[loop.index0].permission_name}}</h5>
                         <div class="subform">
