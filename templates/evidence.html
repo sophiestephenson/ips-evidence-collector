@@ -159,9 +159,9 @@
                             <table>
                                 <tr><th valign="top">App name</th><td>
                                 {% if spyware[loop.index0].url %}
-                                    <a href={{spyware[loop.index0].url}}>{{spyware[loop.index0].app_name}}</a>
+                                <a href={{spyware[loop.index0].url}}>{{spyware[loop.index0].app_name}}</a>
                                     {% else %}
-                                    {{spyware[loop.index0].app_name}}
+                                    {{spyware[loop.index0].app_name}} ({{spyware[loop.index0].app_version}})
                                 {% endif %}
                                 </td></tr>
                                 {% if spyware[loop.index0].application_icon %}
@@ -170,7 +170,8 @@
                                 {% if spyware[loop.index0].description %}
                                 <tr><th valign="top">Description</th><td>{{spyware[loop.index0].description}}</td></tr>
                                 {% endif %}
-                                <tr><th valign="top">Install time</th><td>(fake time) January 1, 1970 00:00:00</td></tr>
+                                <tr><th valign="top">Install time</th><td>{{spyware[loop.index0].install_time}}</td></tr>
+                                <tr><th valign="top">Last update</th><td>{{spyware[loop.index0].update_time}}</td></tr>
 
                                 {% if spyware[loop.index0].permissions|length > 0 %}
                                 {% set num_permissions = spyware[loop.index0].permissions|length %}
@@ -257,7 +258,7 @@
                                 {% if dualuse[outer_loop.index0].url %}
                                     <a href={{dualuse[outer_loop.index0].url}}>{{dualuse[outer_loop.index0].app_name}}</a>
                                     {% else %}
-                                    {{dualuse[outer_loop.index0].app_name}}
+                                    {{dualuse[outer_loop.index0].app_name}} ({{dualuse[outer_loop.index0].app_version}})
                                 {% endif %}
                                 </td></tr>
                                 {% if dualuse[outer_loop.index0].application_icon %}
@@ -266,7 +267,9 @@
                                 {% if dualuse[outer_loop.index0].description %}
                                 <tr><th valign="top">Description</th><td>{{dualuse[outer_loop.index0].description}}</td></tr>
                                 {% endif %}
-                                <tr><th valign="top">Install time</th><td>January 1, 1970 00:00:00</td></tr>
+
+                                <tr><th valign="top">Install time</th><td>{{dualuse[outer_loop.index0].install_time}}</td></tr>
+                                <tr><th valign="top">Last update</th><td>{{dualuse[outer_loop.index0].update_time}}</td></tr>
 
                                 {% if dualuse[outer_loop.index0].permissions|length > 0 %}
                                 <tr><th valign="top">Permissions used</th><td>

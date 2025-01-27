@@ -54,7 +54,7 @@ def recent_permissions_used(appid):
 
     record = {'appId': appid}
     now = datetime.datetime.now()
-    print(recently_used)
+    # print(recently_used)
     for permission in recently_used.split('\n')[:-1]:
         permission_attrs = permission.split(';')
         t = permission_attrs[0].split(':')
@@ -220,17 +220,6 @@ def all_permissions(dumpf, appid):
     recent_permissions = recent_permissions_used(appid)
 
     permissions = pd.read_csv(config.ANDROID_PERMISSIONS_CSV)
-    print('-'* 80)
-    print("App Permissions")
-    print(app_perms)
-    print('-'* 80)
-    print("PKG Info")
-    print(pkg_info)
-    print('-'* 80)
-    print("Recent")
-    print(recent_permissions)
-    print('-'* 80)
-
     permissions['label'] = permissions.apply( # get all the labels of known permissions
         lambda x: (x['permission'] if x['label'] == 'null'
                    else x['label']),
@@ -254,9 +243,9 @@ def all_permissions(dumpf, appid):
 
     # print(hf_recent_permissions.loc[:['permission', 'label']])
     pd.set_option('display.max_rows', None)
-    print(hf_recent_permissions['label'])
-    print(hf_recent_permissions['permission'])
-    print(hf_recent_permissions.columns.tolist())
+    # print(hf_recent_permissions['label'])
+    # print(hf_recent_permissions['permission'])
+    # print(hf_recent_permissions.columns.tolist())
     #
     no_hf_recent_permissions = recent_permissions[
         ~recent_permissions['op'].isin(app_permissions_tbl['permission_abbrv'])

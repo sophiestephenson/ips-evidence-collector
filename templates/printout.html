@@ -82,7 +82,7 @@
                     <tbody>
                         <tr>
                             <th>App ID</th>
-                            <td>{{app.appId}}</td>
+                            <td>{{app.appId}} ({{app.app_version}})</td>
                         </tr>
                         <tr>
                             <th>App URL</th>
@@ -97,12 +97,17 @@
                             <td>{{app.description}}</td>
                         </tr>
                         <tr>
-                            <th>App genres</th>
-                            <td>{{app.genres}}</td>
+                            <th>Genres</th>
+                            <td>{% if app.genres%}{% for g in app.genres %}{{g}}{{", " if not loop.last else
+                              "" }}{% endfor %}{% else %}None{% endif %}</td>
                         </tr>
                         <tr>
                             <th>Install time</th>
                             <td>{{app.install_time}}</td>
+                        </tr>
+                        <tr>
+                            <th>Update time</th>
+                            <td>{{app.update_time}}</td>
                         </tr>
                         <tr>
                             <th>Permissions requested</th>
@@ -217,7 +222,7 @@
                     <tbody>
                         <tr>
                             <th>App ID</th>
-                            <td>{{app.appId}}</td>
+                            <td>{{app.appId}} ({app.app_version})</td>
                         </tr>
                         <tr>
                             <th>Developer URL</th>
@@ -233,11 +238,16 @@
                         </tr>
                         <tr>
                             <th>Genres</th>
-                            <td>{{app.genres}}</td>
+                            <td>{% if app.genres%}{% for g in app.genres %}{{g}}{{", " if not loop.last else
+                              "" }}{% endfor %}{% else %}None{% endif %}</td>
                         </tr>
                         <tr>
                             <th>Install time</th>
                             <td>{{app.install_time}}</td>
+                        </tr>
+                        <tr>
+                            <th>Update time</th>
+                            <td>{{app.update_time}}</td>
                         </tr>
                         <tr>
                             <th>Permissions requested</th>

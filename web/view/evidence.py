@@ -61,12 +61,16 @@ def evidence(step):
         spyware = session['apps']['spyware']
         dualuse = session['apps']['dualuse']
 
+
+    print("-" * 80)
+    print(session)
+    print ("-" * 80)
     accounts=[]
     # have to do this step numbering better...
     if 'step{}'.format(Pages.ACCOUNTS_USED.value) in session.keys():
         accounts=[{"account_name": x} for x in session['step{}'.format(Pages.ACCOUNTS_USED.value)]['accounts_used']]
 
-    pprint(session)
+    # pprint(session)
 
     forms = {
         Pages.START.value: StartForm(),
@@ -80,7 +84,7 @@ def evidence(step):
     form = forms.get(step, 1)
 
     if request.method == 'POST':
-        pprint(form.data)
+        # pprint(form.data)
         if form.is_submitted() and form.validate():
             clean_data = remove_unwanted_data(form.data)
 
@@ -104,6 +108,7 @@ def evidence(step):
             # collect apps if we need to
             if step == Pages.SCAN.value:
                 # Ensure any previous screenshots have been removed before scan
+                print("Scanning Device")
                 print("Removing files:")
                 os.system("ls webstatic/images/screenshots/")
                 os.system("rm webstatic/images/screenshots/*")

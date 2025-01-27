@@ -11,6 +11,7 @@ Collect evidence of IPS. Basic version collects this data from the phone:
 """
 import json
 import os
+from datetime import datetime
 from collections import defaultdict
 from enum import Enum
 from pprint import pprint
@@ -519,11 +520,11 @@ def remove_unwanted_data(data):
 
 def reformat_verbose_apps(verbose_apps):
     """Minimize data we're storing in the session about these apps"""
-    pprint(verbose_apps)
     spyware = []
     dualuse = []
 
-    for verbose_app in verbose_apps:
+
+    for verbose_app, info in verbose_apps:
         minimal_app = dict()
 
         minimal_app['description'] = verbose_app['description']
@@ -534,12 +535,15 @@ def reformat_verbose_apps(verbose_apps):
         if verbose_app['genres'] != "":
             minimal_app['genres'] = verbose_app['genres'].split(", ")
         minimal_app['store'] = verbose_app['store']
+        minimal_app['install_time'] = datetime.strptime(info['Installation Date'], "%Y-%m-%d %H:%M:%S").strftime("%B %d, %Y %H:%M") # Pretty print datetime
+        minimal_app['update_time'] = datetime.strptime(info['Last Updated'], "%Y-%m-%d %H:%M:%S").strftime("%B %d, %Y %H:%M") # Pretty print datetime
+        minimal_app['app_version'] = info['App Version']
 
         # the way ISDi does permissions is messed up rn, have to fix on the backend
         minimal_app['permissions'] = [{"permission_name": x.capitalize()} for x in verbose_app['permissions']]
 
         # add app to correct list
-        minimal_app['app_name'] = verbose_app['title']
+        minimal_app['app_name'] = verbose_app['title'] if verbose_app['title'] != '' else verbose_app['appId'] # TODO: Temporary fix
         if "spyware" in verbose_app["flags"]:
             spyware.append(minimal_app)
         if "dual-use" in verbose_app["flags"]:
@@ -560,9 +564,9 @@ def account_is_concerning(account):
 def get_multiple_app_details(device, ser, apps):
     filled_in_apps = []
     for app in apps:
-        d = get_app_details(device, ser, app["id"])
+        d, info = get_app_details(device, ser, app["id"])
         d["flags"] = app["flags"]
-        filled_in_apps.append(d)
+        filled_in_apps.append((d, info))
     return filled_in_apps
 
 
@@ -573,7 +577,7 @@ def get_app_details(device, ser, appid):
     d = d.to_dict(orient='index').get(0, {})
     d['appId'] = appid
 
-    return d
+    return d, info
 
 def get_suspicious_apps(device, device_owner):
 
@@ -700,7 +704,7 @@ def get_suspicious_apps(device, device_owner):
 
 
     # new stuff from Sophie
-    pprint(apps)
+    # pprint(apps)
 
     suspicious_apps = []
 
