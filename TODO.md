@@ -1,6 +1,11 @@
 # TODO
 
+- [ ] Come up with a name:)
+
 ## Data Collection
+- [ ] Be able to take a screenshot and include it in the final evidence document
+   - Some functionality in ISDi already, dig around for it
+- [ ] Capture & display app install time
 - [ ] Capture & display app descriptions
 - [ ] Handle inconsistencies coming from ISDI (e.g., the list of permissions)
 - [ ] Activity logging for anything the consultant does? Could be printed out along with the evidence document to show authenticity
