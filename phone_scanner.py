@@ -438,7 +438,7 @@ class IosScan(AppScan):
             if catch_err(run_command(cmd)) == -1:
                 return (False, "Couldn't detect device. See {}/ios_mount_linux.sh."\
                         .format(config.SCRIPT_DIR))
-        cmd = '{}idevicepair pair'.format(self.cli)
+        cmd = '{}pymobiledevice3 pair'.format(self.cli)
         pairmsg = run_command(cmd).stdout.read().decode('utf-8')
         if "No device found, is it plugged in?" in pairmsg:
             return (False, pairmsg)
@@ -536,76 +536,6 @@ class IosScan(AppScan):
         s = catch_err(run_command(cmd, appid=appid),
                            cmd=cmd, msg="Could not uninstall")
         return s != -1
-
-    def isrooted(self, serial):
-        # dict with 'True' and 'False' mapping to a list of reasons for root/no root
-        rooted = defaultdict(list)
-        # TODO This should be removed once the check is fixed
-        rooted['False'].append("Jailbreak and root checks are currently "
-                               "disabled")
-        return (False, rooted['False'])
-        try:
-            with open(self.dump_path(serial, 'Jailbroken-FS'),'r') as fh:
-                JAILBROKEN_LOG = fh.readlines()
-            if "Your device needs to be jailbroken and have the AFC2 service installed.\n" in JAILBROKEN_LOG:
-                rooted['False'].append("Filesystem is not rooted. *Highly unlikely* to be jailbroken.")
-            elif 'No such file or directory' in JAILBROKEN_LOG:
-                rooted['False'].append("Unable to check device.")
-            else:
-                rooted['True'].append("Filesystem *might* be rooted. Conduct additional checks.")
-        except FileNotFoundError as e:
-            print("Couldn't find Jailbroken FS check log.")
-            # TODO: trigger error message? like
-            # TODO: show a try again, maybe it's not plugged in properly. still not working? this could be due to many many many reasons.
-            #return (True, ['FS check failed, jailbreak not necessarily occurring.'])
-
-        try:
-            with open(self.dump_path(serial, 'Jailbroken-SSH'),'r') as fh:
-                JAILBROKEN_SSH_LOG = fh.readlines()
-            if "0\n" in JAILBROKEN_SSH_LOG:
-                rooted['True'].append("SSH is enabled.")
-        except FileNotFoundError as e:
-            # TODO: trigger error message? like
-            # TODO: show a try again, maybe it's not plugged in properly. still not working? this could be due to many many many reasons.
-            print("Couldn't find Jailbroken SSH check log.")
-
-        # if app["Path"].split("/")[-1] in ["Cydia.app"]
-        ''' Summary of jailbroken detection: checks for commonly installed jailbreak apps,
-        tries to mount root filesystem (AFC2, by default on iOS 7 and lower,
-        tries to SSH into the phone (FIXME). iproxy 2222 22 `idevice_id -l` says
-        "waiting for connection" perpertually if not work. says "accepted connection" on next line if it does.
-        https://twitter.com/bellis1000/status/807527492810665984?lang=en
-        # add to jailbroken log
-        # FIXME: load from private data blocklist. More to be added.
-        '''
-        # FIXME: NEED to apply first to df. self.installed_apps not sufficient. dotapps.append(app["Path"].split("/")[-1])
-
-        apps_titles = self.parse_dump.installed_apps_titles()['title'].tolist()
-        # TODO: convert to set check
-        for app in ["Cydia", "blackra1n", "Undecimus",
-                "FakeCarrier", "Icy", "IntelliScreen",
-                "MxTube", "RockApp", "SBSettings",
-                "WinterBoard", "3uTools", "Absinthe",
-                "backr00m", "blackra1n", "Corona",
-                "doubleH3lix", "Electra", "EtasonJB",
-                "evasi0n", "evasi0n7", "G0blin", "Geeksn0w",
-                "greenpois0n", "h3lix", "Home Depot", "ipwndfu",
-                "JailbreakMe", "LiberiOS", "LiberTV", "limera1n",
-                "Meridian", "p0sixspwn", "Pangu", "Pangu8", "Pangu9",
-                "Phœnix", "PPJailbreak", "purplera1n", "PwnageTool",
-                "redsn0w", "RockyRacoon","Rocky Racoon", "Saïgon", "Seas0nPass",
-                "sn0wbreeze", "Spirit", "TaiG", "unthredera1n", "yalu"]:
-            if app in apps_titles:
-                rooted['True'].append("{} was found on the device.".format(app))
-
-        # if apps check passes
-        if not rooted:
-            rooted['False'].append("Did not find popular jailbreak apps installed.")
-            ''' check for jailbroken status after attempts logged by ios_dump.sh '''
-        if 'True' in rooted:
-            return (True, rooted['True'])
-        else:
-            return (False, rooted['False'])
 
 
 class TestScan(AppScan):

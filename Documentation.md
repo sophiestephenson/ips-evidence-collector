@@ -97,7 +97,88 @@
          -- if (arguement 1) is "info" it will run retrieve on third arguement
          if anything else just echos it out and exits
       - Notes
-         -- hmac serial is only used in creation of file, just use normal serial number or re write variables to be their arguments instead of relying on $1 $2 and #3, then only use variable names sparingly?
+         -- hmac serial is only used in creation of file, just use normal serial number or rewrite variables to be their arguments instead of relying on $1 $2 and #3, then only use variable names sparingly?
+
+# phone_scanner.py
+   - Classes 
+      - AppScan(object)
+         1. init(self, dev_type, cli)
+            -- Checks to see if the "dev_type" is allowed (windows, and ios) which is all setup in config
+            -- sets self.device_type = dev_type
+            -- sets self.cli = cli 
+         2. setup(self)
+            -- not implemmented 
+         3. devices(self)
+            -- not implemented
+         4. get_apps(self, serialno: str, from_device: bool) -> list
+            -- pass
+         5. get_offstore_apps(self, serialno):
+            -- return []
+         6. dump_path(self, serial, fkind='json')
+         7. app_details(self, serialno, appid)
+         8. find_spyapps(self, serialno, from_dump=False)
+         9. flag_apps(self, serialno)
+         10. uninstall
+         11. save
+         12. device_info
+         13. isrooted
+      - Android(AppScan)
+         1. init(self)
+         2. setup(self)
+         3. _get_apps_from_device(self, serialno, flag) -> list
+         4. _get_apps_from_dump(self, serialno)
+         5. get_apps(self, serialno, from_device=True) -> list
+         6. get_system_apps(self, serialno, from_device=True)
+         7. get_offstore_apps(self, serialno, from_device=False)
+         8. devices(self)
+         9. device_info(self, serial)
+         10. uninstall(self, serial, appid)
+         11. app_details(self, serialno, appid)
+         12. isrooted(self, serial)
+               -- has grayed out
+      - IosScan(AppScan)
+         1. init(self)
+            -- calls AppScan.init('ios',cli=config.LIBIMOBILEDEVICE_PATH)
+            -- sets self.installed_apps = None
+            -- sets self.serialno = None
+            -- sets self.parse_dump = None
+            -- NOTE: in config, LIBIMOBILEDEVICE_PATH is set to ' '
+         2. setup(self, attempt_remount=False)
+            -- 
+         3. get_app_titles(self, serialno)
+         4. get_apps(self, serialno: str, from_device: bool) -> list
+         5. get_system_apps(self, serialno) -> list
+         6. devices(self)
+         7. device_info(self, serial)
+         8. _load_dump(self, serial) -> parse_dump.IosDump
+         9. _dump_phone(self, serial: str) -> bool
+         10. uninstall(self, serial, appid)
+         11. isrooted(self, serial)
+      - Test Scan 
+         1. init(self)
+         2. get_apps(self, serialno)
+         3. devices(self)
+         4. get_system_apps(self, serialno)
+         5. get_offstore_apps(self, serialno)
+         6. uninstall(self, serial, appid)
+   - Methods
+      1. iosScreenshot
+         -- sets teh currtime, and gets homeDir, verifying the path to "webstatic/images/screenshots" exists, else it makes it
+         -- sets filename to images/screenshots/context_currtime.png
+         -- runs "pymobiledevice3 lockdown start-tunnel"
+         -- parses output of this to find the RSD Address and PORT
+         -- takes screenshot using "pymobiledevice3 developer dvt screenshot " + tempFname + " --rsd " + rsdAddress + " " + rsdPort" 
+         -- calls addImage using file name as return value 
+   - Main
+   - Notes
+      -- try to modify addImage return so that tempFname doesn't need to exist.
+      --Move this method as soon as possible 
+      -- a lot of commented out code, more grayed out code, especially on IOS rooted which doesn't function
+
+# phone_scanner.command
+   -- I don't know if this is every actually run 
+   -- Delete?
+
 # requirements.txt
    - could remove
       autopep8
