@@ -535,8 +535,8 @@ def reformat_verbose_apps(verbose_apps):
         if verbose_app['genres'] != "":
             minimal_app['genres'] = verbose_app['genres'].split(", ")
         minimal_app['store'] = verbose_app['store']
-        minimal_app['install_time'] = datetime.strptime(info['Installation Date'], "%Y-%m-%d %H:%M:%S").strftime("%B %d, %Y %H:%M") # Pretty print datetime
-        minimal_app['update_time'] = datetime.strptime(info['Last Updated'], "%Y-%m-%d %H:%M:%S").strftime("%B %d, %Y %H:%M") # Pretty print datetime
+        minimal_app['install_time'] = datetime.strptime(info['Installation Date'], "%Y-%m-%d %H:%M:%S").strftime("%B %d, %Y %H:%M") if 'Installation Date' in info.keys() else ''# Pretty print datetime
+        minimal_app['update_time'] = datetime.strptime(info['Last Updated'], "%Y-%m-%d %H:%M:%S").strftime("%B %d, %Y %H:%M") if 'Last Updated' in info.keys() else ''## Pretty print datetime
         minimal_app['app_version'] = info['App Version']
 
         # the way ISDi does permissions is messed up rn, have to fix on the backend
