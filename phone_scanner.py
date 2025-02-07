@@ -438,8 +438,9 @@ class IosScan(AppScan):
             if catch_err(run_command(cmd)) == -1:
                 return (False, "Couldn't detect device. See {}/ios_mount_linux.sh."\
                         .format(config.SCRIPT_DIR))
-        cmd = '{}pymobiledevice3 pair'.format(self.cli)
+        cmd = 'pymobiledevice3 pair'
         pairmsg = run_command(cmd).stdout.read().decode('utf-8')
+        print(pairmsg)
         if "No device found, is it plugged in?" in pairmsg:
             return (False, pairmsg)
         elif "Please enter the passcode on the device and retry." in pairmsg:
@@ -529,15 +530,7 @@ class IosScan(AppScan):
             print(">> The iOS dumping failed for some reason. Check above for more information")
             return False
 
-    def uninstall(self, serial, appid):
-        #cmd = '{cli} -i {serial} --uninstall_only --bundle_id {appid!r}'
-        #cmd = 'ideviceinstaller --udid {} --uninstall {appid!r}'.format(serial, appid)
-        cmd = f'{self.cli}ideviceinstaller --uninstall {appid!r}'
-        s = catch_err(run_command(cmd, appid=appid),
-                           cmd=cmd, msg="Could not uninstall")
-        return s != -1
-
-
+  
 class TestScan(AppScan):
     def __init__(self):
         super(TestScan, self).__init__('android', cli='cli')
