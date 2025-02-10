@@ -12,8 +12,12 @@ with open('ios_device_identifiers.json', 'r') as fh:
     MODEL_MAKE_MAP = json.load(fh)
 with open(path+'ios_jailbroken.log', 'r') as fh:
     JAILBROKEN_LOG = fh.readlines()
-APPS_PLIST = readPlist(path+'ios_apps.plist')
-DEVICE_INFO = readPlist(path+'ios_info.xml')
+def readJson(filepath):
+    """ Mimics readPlist() but for JSON """
+    with open(filepath, 'r') as f:
+        return json.load(f)
+APPS_PLIST = readJson(path+'ios_apps.json')
+DEVICE_INFO = readJson(path+'ios_info.xml')
 
 def _retrieve(dict_, nest):
     '''

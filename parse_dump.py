@@ -460,9 +460,14 @@ class IosDump(PhoneDump):
         try:
             # FIXME: somehow, get the ios_apps.plist into a dataframe.
             print("fname is: {}".format(self.fname))
-            with open(self.fname, 'rb') as app_data:
-                apps_plist = load(app_data)
-            d = pd.DataFrame(apps_plist)
+            apps_list = []
+            with open(self.fname, 'r') as app_data:
+                apps_json = json.load(app_data)
+                for k in apps_json:
+                    apps_list.append(apps_json[k])
+               
+            d = pd.DataFrame(apps_list)
+            print(d)
             d['appId'] = d['CFBundleIdentifier']
             d.set_index('appId', inplace=True)
             return d

@@ -12,14 +12,14 @@ fi
 
 echo "$platform" "$adb"
 
-serial=$(idevice_id -l 2>&1 | tail -n 1)
+serial=$(pymobiledevice3 usbmux list | awk -F'"' '/Identifier/ {print $4}')
 mkdir -p phone_dumps/"$1"_ios
 cd phone_dumps/"$1"_ios
 # gets all of the details about each app (basically what ios_deploy does but with extra fields)
 if [[ "$platform" == 'linux' ]]; then
-  ideviceinstaller -u "$serial" list --all --xml > $2
+  pymobiledevice3 apps list > $2
 else
-  ideviceinstaller -u "$serial" -l -o xml -o list_all > $2
+  pymobiledevice3 apps list > $2
 fi
 
 # get around bug in Python 3 that doesn't recognize utf-8 encodings.
