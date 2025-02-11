@@ -165,7 +165,7 @@ class SecurityQForm(FlaskForm):
     screenshot = MultipleFileField('Add screenshot(s)')
 
 class AccountInfoForm(FlaskForm):
-    account_name = HiddenField("Account Name")
+    account_name = TextAreaField("Account Name")
     suspicious_logins = FormField(SuspiciousLoginsForm)
     password_check = FormField(PasswordForm)
     recovery_settings = FormField(RecoveryForm)
@@ -175,9 +175,8 @@ class AccountInfoForm(FlaskForm):
 
 ## INDIVIDUAL PAGES
 class StartForm(FlaskForm):
-    title = "Welcome to SHERLOC"
-    name = StringField('Client name', validators=[InputRequired()])
-    consultant_name = StringField('Consultant name', validators=[InputRequired()])
+    title = "Device To Be Scanned"
+    device_nickname = StringField('Device nickname', validators=[InputRequired()])
     device_type = RadioField('Device type', choices=DEVICE_TYPE_CHOICES, validators=[InputRequired()], default=DEFAULT)
     submit = SubmitField("Continue")
 
@@ -211,9 +210,15 @@ class AccountsUsedForm(FlaskForm):
     submit = SubmitField("Continue")
 
 class AccountCompromiseForm(FlaskForm):
-    title = "Step 3b: Account Compromise Check"
-    accounts = FieldList(FormField(AccountInfoForm))
-    submit = SubmitField("Continue")
+    title = "Account Compromise Check"
+    account_name = StringField('Account name', validators=[InputRequired()])
+    suspicious_logins = FormField(SuspiciousLoginsForm)
+    password_check = FormField(PasswordForm)
+    recovery_settings = FormField(RecoveryForm)
+    two_factor_settings = FormField(TwoFactorForm)
+    security_questions = FormField(SecurityQForm)
+    notes = FormField(NotesForm)
+    submit = SubmitField("Add")
 
 
 
@@ -569,9 +574,9 @@ def get_multiple_app_details(device, ser, apps):
 def get_app_details(device, ser, appid):
     sc = get_device(device)
     d, info = sc.app_details(ser, appid)
-    d = d.fillna('')
-    d = d.to_dict(orient='index').get(0, {})
-    d['appId'] = appid
+    #d = d.fillna('')
+    #d = d.to_dict(orient='index').get(0, {})
+    #d['appId'] = appid
 
     return d
 
@@ -698,18 +703,22 @@ def get_suspicious_apps(device, device_owner):
         error=config.error()
     ))
 
-
     # new stuff from Sophie
     pprint(apps)
 
     suspicious_apps = []
+    other_apps = []
 
     for k in apps.keys():
         app = apps[k]
+        app["id"] =k
         if 'dual-use' in app["flags"] or 'spyware' in app["flags"]:
-            app["id"] = k
             suspicious_apps.append(app)
+        else:
+            other_apps.append(app)
 
-    detailed_apps = get_multiple_app_details(device, ser, suspicious_apps)
+    detailed_suspicious_apps = get_multiple_app_details(device, ser, suspicious_apps)
 
-    return detailed_apps
+    pprint(other_apps)
+
+    return detailed_suspicious_apps, other_apps
