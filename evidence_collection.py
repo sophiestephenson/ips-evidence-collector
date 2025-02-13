@@ -75,6 +75,8 @@ FAKE_APP_DATA = {"spyware": [{"app_name": "MSpy",
                                 ]}]
                     }
 
+TMP_CONSULT_DATA_DIR = "tmp-consult-data"
+
 SCREENSHOT_FOLDER = os.path.join("tmp", "isdi-screenshots/")
 CONTEXT_PKL_FNAME = "context.pkl"
 
@@ -722,3 +724,40 @@ def get_suspicious_apps(device, device_owner):
     pprint(other_apps)
 
     return detailed_suspicious_apps, other_apps
+
+class ConsultDataTypes(Enum):
+    TAQ = 1
+    SCANS = 2
+    ACCOUNTS = 3
+
+def get_data_filename(datatype: ConsultDataTypes):
+
+    if datatype == ConsultDataTypes.TAQ.value:
+        return "taq.json"
+    elif datatype == ConsultDataTypes.SCANS.value:
+        return "scans.json"
+    else:
+        return "accounts.json"
+
+
+# Save data to the right tmp file as JSON
+# Overwrites it always, assume any previous data has been incorporated
+def save_data_as_json(data, datatype: ConsultDataTypes):
+
+    json_object = json.dumps(data)
+
+    fname = os.path.join(TMP_CONSULT_DATA_DIR, get_data_filename(datatype))
+
+    with open(fname, 'w') as outfile:
+        outfile.write(json_object)
+
+    return
+
+def load_json_data(datatype: ConsultDataTypes):
+
+    fname = os.path.join(TMP_CONSULT_DATA_DIR, get_data_filename(datatype))
+
+    with open(fname, 'r') as openfile:
+        json_object = json.load(openfile)
+
+    return json_object
