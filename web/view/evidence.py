@@ -3,6 +3,7 @@ import pickle
 import traceback
 from datetime import datetime
 from enum import Enum
+from operator import itemgetter
 from pprint import pprint
 
 from flask import (
@@ -23,6 +24,7 @@ from evidence_collection import (
     FAKE_APP_DATA,
     AccountCompromiseForm,
     AccountsUsedForm,
+    AppSelectPageForm,
     ConsultDataTypes,
     DualUseForm,
     Pages,
@@ -170,17 +172,16 @@ def evidence_scan(id,step):
         form = StartForm()
 
     if step == ScanSteps.APPLIST.value:
-        form = StartForm() #TODO: Create an AppSelectForm(applist)
+        form = AppSelectPageForm(apps=current_scan['all_apps'])
 
     if step == ScanSteps.APPCHECKS.value:
         form = StartForm() # TODO: Create combined AppCheckForm(spyware,dualuse)
 
     ### IF IT'S A GET:
     if request.method == 'GET':
-        if step != ScanSteps.DEVICEINFO.value:
-            pprint("CURRENT SCAN INFO")
-            pprint(type(current_scan))
-            pprint(current_scan.keys())
+        #if step == ScanSteps.APPLIST.value:
+            #form.process(data=current_scan) # TODO fix??
+        if step == ScanSteps.APPCHECKS.value:
             form.process(data=current_scan)
 
         context = dict(
@@ -217,8 +218,12 @@ def evidence_scan(id,step):
 
                 try:
                     # Get app list
-                    scan_data, suspicious_apps, other_apps = get_scan_data(clean_data["device_type"],
-                                                       clean_data["device_nickname"])
+                    scan_data, suspicious_apps, other_apps = get_scan_data(clean_data["device_type"], clean_data["device_nickname"])
+
+                    for i in range(len(suspicious_apps)):
+                        suspicious_apps[i]["selected"] = True
+                    for i in range(len(other_apps)): 
+                        other_apps[i]["selected"] = False
 
                     # add scan data
                     current_scan['serial'] = scan_data['serial']
@@ -229,8 +234,7 @@ def evidence_scan(id,step):
                     current_scan['rooted_reasons'] = scan_data['rooted_reasons']
 
                     # create app list 
-                    current_scan['all_apps'] = other_apps + suspicious_apps
-
+                    current_scan['all_apps'] = suspicious_apps + other_apps
                     
                     # Create pre-filled check app list
                     spyware, dualuse = reformat_verbose_apps(suspicious_apps)
@@ -264,19 +268,15 @@ def evidence_scan(id,step):
 
             ### STEP 2: Create the list of apps we want to investigate in phase 2
             if step == ScanSteps.APPLIST.value:
-                # TODO: Process clean_data to create this list
 
-                checked_apps = [
-                    {"app_name": "TODO", "type": "spyware", "investigation": {
-                        "2-factor": "okay",
-                    }},
-                    {"app_name": "ADD", "type": "dualuse", "investigation": {
-                        "2-factor": "okay",
-                    }},
-                    {"app_name": "APPS", "type": "manual", "investigation": {
-                        "2-factor": "okay",
-                    }},
-                ]
+                # for all selected apps, add the app details to "check apps"
+                checked_apps = []
+                for app in clean_data['apps']:
+                    if app['selected']:
+                        for detail_app in current_scan['all_apps']:
+                            if 'appId' in list(detail_app.keys()) and detail_app['appId'] == app['appId']:
+                                checked_apps.append(detail_app)
+                        
                 current_scan['check_apps'] = checked_apps
                 all_scan_data[id] = current_scan
                 save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)

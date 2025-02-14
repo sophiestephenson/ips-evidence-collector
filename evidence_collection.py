@@ -176,6 +176,11 @@ class AccountInfoForm(FlaskForm):
     security_questions = FormField(SecurityQForm)
     notes = FormField(NotesForm)
 
+class AppSelectForm(FlaskForm):
+    title = HiddenField("App Name")
+    appId = HiddenField("App ID")
+    selected = BooleanField("Check this app?")
+
 ## INDIVIDUAL PAGES
 class StartForm(FlaskForm):
     title = "Device To Be Scanned"
@@ -229,6 +234,11 @@ class SetupForm(FlaskForm):
     client = StringField('Client Name', validators=[InputRequired()])
     date = StringField('Consultation Date and Time', validators=[InputRequired()])
     submit = SubmitField("Start Consultation")
+
+class AppSelectPageForm(FlaskForm):
+    title = "Select Apps to Investigate"
+    apps = FieldList(FormField(AppSelectForm))
+    submit = SubmitField("Select")
 
 
 
@@ -727,10 +737,11 @@ def get_scan_data(device, device_owner):
             other_apps.append(app)
 
     detailed_suspicious_apps = get_multiple_app_details(device, ser, suspicious_apps)
+    detailed_other_apps = get_multiple_app_details(device, ser, other_apps)
 
     pprint(other_apps)
 
-    return scan_d, detailed_suspicious_apps, other_apps
+    return scan_d, detailed_suspicious_apps, detailed_other_apps
 
 class ConsultDataTypes(Enum):
     TAQ = 1

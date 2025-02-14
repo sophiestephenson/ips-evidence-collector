@@ -79,23 +79,17 @@
 
             {% elif step == 2 %}
 
-            <b>{{scan_data.all_apps}}</b>
-
-
-            <table id="scan-form">
+            <h4>App List</h4>
+            <table>
                 <tbody>
-                    <tr><th><label>{{ form.device_nickname.label }}</label></th><td> {{ form.device_nickname }}</td> </tr>
-                    <tr><th><label>{{form.device_type.label}}</label></th><td>
-                        <div class="btn-group" data-toggle="buttons" id={{form.device_type.id}}>
-                        {% for option in form.device_type %}
-                        <label class="btn btn-secondary" for="{{option.id}}">
-                            {{option.label.text}}
-                            <input type="radio" name={{option.name}} id={{option.id}} autocomplete="off" value={{option.label.text.lower()}}>
-                            <span class="glyphicon glyphicon-ok"></span>
-                        </label>
-                        {% endfor %}
-                        </div>
-                    </td></tr>
+                    {% for nested in form.apps %}
+                    {{ nested.hidden_tag() }}
+                    <tr>
+                        <th><p>{{scan_data.all_apps[loop.index0].title}}</p></th>
+                        <td><p>{{nested.selected.label}}</p></td>
+                        <td><p>{{nested.selected}}</p></td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
             <br>
@@ -104,7 +98,7 @@
             {% else %}
 
 
-            <b>{{scan_data}}</b>
+            <b>{{scan_data.check_apps}}</b>
 
 
          
