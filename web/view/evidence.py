@@ -27,6 +27,7 @@ from evidence_collection import (
     DualUseForm,
     Pages,
     ScanForm,
+    SetupForm,
     SpywareForm,
     StartForm,
     create_account_summary,
@@ -48,10 +49,46 @@ bootstrap = Bootstrap(app)
 USE_PICKLE_FOR_SUMMARY = False
 USE_FAKE_DATA = True
 
+@app.route("/evidence/setup", methods={'GET', 'POST'})
+def evidence_setup():
+
+    form = SetupForm()
+
+    if request.method == 'GET':
+
+        # Load any data we already have
+        setup_data = load_json_data(ConsultDataTypes.SETUP.value)
+        if 'date' not in list(setup_data.keys()):
+            setup_data['date'] = datetime.now()
+        form.process(data=setup_data)
+
+        context = dict(
+            task = "evidence-setup",
+            title=config.TITLE,
+            form = form
+        )
+
+        return render_template('main.html', **context)
+    
+    if request.method == 'POST':
+        pprint(form.data)
+        if form.is_submitted() and form.validate():
+
+            # clean up the submitted data
+            clean_data = remove_unwanted_data(form.data)
+
+            # save clean data
+            save_data_as_json(clean_data, ConsultDataTypes.SETUP.value)
+
+            return redirect(url_for('evidence_home'))
+
+
+
 @app.route("/evidence/home", methods={'GET'})
 def evidence_home():
 
     consult_data = {
+        "setup": load_json_data(ConsultDataTypes.SETUP.value),
         "taq": load_json_data(ConsultDataTypes.TAQ.value),
         "scans": load_json_data(ConsultDataTypes.SCANS.value),
         "accounts": load_json_data(ConsultDataTypes.ACCOUNTS.value)

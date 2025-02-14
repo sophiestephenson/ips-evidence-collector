@@ -167,7 +167,8 @@ class SecurityQForm(FlaskForm):
     screenshot = MultipleFileField('Add screenshot(s)')
 
 class AccountInfoForm(FlaskForm):
-    account_name = TextAreaField("Account Name")
+    account_nickname = TextAreaField("Account Nickname")
+    account_platform = TextAreaField("Platform")
     suspicious_logins = FormField(SuspiciousLoginsForm)
     password_check = FormField(PasswordForm)
     recovery_settings = FormField(RecoveryForm)
@@ -213,14 +214,21 @@ class AccountsUsedForm(FlaskForm):
 
 class AccountCompromiseForm(FlaskForm):
     title = "Account Compromise Check"
-    account_name = StringField('Account name', validators=[InputRequired()])
+    platform = StringField('Platform', validators=[InputRequired()])
+    account_nickname = StringField('Account Nickname')
     suspicious_logins = FormField(SuspiciousLoginsForm)
     password_check = FormField(PasswordForm)
     recovery_settings = FormField(RecoveryForm)
     two_factor_settings = FormField(TwoFactorForm)
     security_questions = FormField(SecurityQForm)
     notes = FormField(NotesForm)
-    submit = SubmitField("Add")
+    submit = SubmitField("Save")
+
+class SetupForm(FlaskForm):
+    title = "Consultation Information"
+    client = StringField('Client Name', validators=[InputRequired()])
+    date = StringField('Consultation Date and Time', validators=[InputRequired()])
+    submit = SubmitField("Start Consultation")
 
 
 
@@ -728,10 +736,13 @@ class ConsultDataTypes(Enum):
     TAQ = 1
     SCANS = 2
     ACCOUNTS = 3
+    SETUP = 4
 
 def get_data_filename(datatype: ConsultDataTypes):
 
-    if datatype == ConsultDataTypes.TAQ.value:
+    if datatype == ConsultDataTypes.SETUP.value:
+        return "setup.json"
+    elif datatype == ConsultDataTypes.TAQ.value:
         return "taq.json"
     elif datatype == ConsultDataTypes.SCANS.value:
         return "scans.json"
@@ -756,7 +767,7 @@ def load_json_data(datatype: ConsultDataTypes):
 
     fname = os.path.join(TMP_CONSULT_DATA_DIR, get_data_filename(datatype))
     if not os.path.exists(fname):
-        if datatype == ConsultDataTypes.TAQ:
+        if datatype in [ConsultDataTypes.TAQ, ConsultDataTypes.SETUP] :
             return dict()
         else: 
             return []

@@ -55,13 +55,10 @@
                 {{ wtf.form_errors(form) }}
 
             <h2>{{ form.title }}</h2>
-            <br>
-                <details open>
-                    <summary>
-                    <span class="icon">▼</span>
-                    <tr><th>{{form.account_name.label}}</th><td>{{form.account_name}}</td></tr>
-                    <img src="/webstatic/images/notstarted.png">
-                    </summary>
+            <br>                    
+                    <tr><th><h4>{{form.platform.label}}</h4></th><td>{{form.platform}}</td></tr>
+                    <tr><th><h4>{{form.account_nickname.label}}</h4></th><td>{{form.account_nickname}}</td></tr>
+                    <br/><br/>
                     {{ form.hidden_tag() }}
                     <div class="content">
                         <h5>{{ form.suspicious_logins.label }}</h5>
@@ -222,7 +219,6 @@
                         <h5>{{form.notes.label}}</h5>
                         <div class="subform notes">{{ form.notes }}</div>
                     </div>
-                </details>
             <br>
             <div><span class="primarybutton">{{form.submit}}</span></div>
             </form>

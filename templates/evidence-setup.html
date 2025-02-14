@@ -50,27 +50,25 @@
             </div>
             {% endfor %}
             <br>
-            <div>
-                <a href="{{ url_for('evidence_taq') }}" class="btn btn-default">TAQ Page</a>
-                {% set new_id = sessiondata.scans|length %}
-                <a href="{{ url_for('evidence_scan_default') }}" class="btn btn-default">Scan a device</a>
-                <a href="{{ url_for('evidence_account_default') }}" class="btn btn-default">Add an account</a>
+            <h2>{{form.title}}</h2>
+            <hr>
+            <form action method="post" class="form" role="form">
+                {{ form.hidden_tag() }}
+                {{ wtf.form_errors(form) }}
 
-                <br><br>
-                <b>Scan Info:</b>
-                <p>{{sessiondata.setup.client}}</p>
-                <p>{{sessiondata.setup.date}}</p>
-                <br/>
-                <b>Number of scans: {{sessiondata.scans|length}}</b>
-                <p>{{sessiondata.scans}}</p>
-                <br/>
-                <b>Number of accounts: {{sessiondata.accounts|length}}</b>
-                <p>{{sessiondata.accounts}}</p>
-                <br/>
-                <b>TAQ Data</b>
-                <p>{{sessiondata.taq}}</p>
-            </div>
+                <table id="scan-form">
+                    <tbody>
+                        <tr><th><label>{{ form.client.label }}</label></th><td> {{ form.client }}</td> </tr>
+                        <tr><th><label>{{ form.date.label }}</label></th><td> {{ form.date }}</td> </tr>
+                    </tbody>
+                </table>
+                <br>
+                <br>
+                <br>
+                <div><span class="primarybutton">{{form.submit}}</span></div>
+                </form>
         </div>
     </div>
 </div>
 {% endblock %}
+
