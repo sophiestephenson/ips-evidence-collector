@@ -52,24 +52,56 @@
             <br>
             <div>
                 <a href="{{ url_for('evidence_taq') }}" class="btn btn-default">TAQ Page</a>
-                {% set new_id = sessiondata.scans|length %}
+                {% set new_id = consultdata.scans|length %}
                 <a href="{{ url_for('evidence_scan_default') }}" class="btn btn-default">Scan a device</a>
                 <a href="{{ url_for('evidence_account_default') }}" class="btn btn-default">Add an account</a>
 
                 <br><br>
-                <b>Scan Info:</b>
-                <p>{{sessiondata.setup.client}}</p>
-                <p>{{sessiondata.setup.date}}</p>
-                <br/>
-                <b>Number of scans: {{sessiondata.scans|length}}</b>
-                <p>{{sessiondata.scans}}</p>
-                <br/>
-                <b>Number of accounts: {{sessiondata.accounts|length}}</b>
-                <p>{{sessiondata.accounts}}</p>
+                <b>Consultation Info:</b>
+                <p>{{consultdata.setup.client}}</p>
+                <p>{{consultdata.setup.date}}</p>
                 <br/>
                 <b>TAQ Data</b>
-                <p>{{sessiondata.taq}}</p>
+                <details><p>{{consultdata.taq}}</p></details>
+                <br/>
+                <b>Scans: {{consultdata.scans|length}}</b>
+                <details>
+                    <table>
+                        {% for scan in consultdata.scans %}
+                        <tr>
+                            <th>
+                                <p>{{scan.device_nickname}}</p>
+                            </th>
+                            <th>
+                                <p>{{scan.device_type}}</p>
+                            </th>
+                            <th>
+                                <p>{{scan.check_apps|length}} apps checked</p>
+                            </th>
+                        </tr> 
+                        {% endfor %}
+                    </table>
+                </details>
+                <br/>
+                <b>Accounts: {{consultdata.accounts|length}}</b>
+                <details>
+                    <table>
+                        {% for account in consultdata.accounts %}
+                        <tr>
+                            <th>
+                                <p>{{account.account_nickname}}</p>
+                            </th>
+                            <td>
+                                <a href="{{ url_for('evidence_account', id=loop.index0) }}" class="btn btn-default">Edit Account</a>
+                            </td>
+                        </tr> 
+                        {% endfor %}
+                    </table>
+                </details>
             </div>
+            <br/>
+            <br/>
+            <div><span class="primarybutton"><a href="{{ url_for('evidence_summary') }}" class="btn btn-default">Generate Summary</a></span></div>
         </div>
     </div>
 </div>

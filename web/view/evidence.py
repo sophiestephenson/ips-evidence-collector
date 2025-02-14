@@ -97,7 +97,7 @@ def evidence_home():
     context = dict(
         task = "evidence-home",
         title=config.TITLE,
-        sessiondata = consult_data,
+        consultdata=consult_data,
     )
 
     return render_template('main.html', **context)
@@ -344,6 +344,8 @@ def evidence_account(id):
 
             # clean up the submitted data
             clean_account_data = remove_unwanted_data(form.data)
+            if clean_account_data['account_nickname'].strip() == '':
+                clean_account_data['account_nickname'] = clean_account_data['platform']
 
             if len(all_account_data) <= id:
                 all_account_data.append(clean_account_data)
@@ -484,14 +486,12 @@ def evidence(step):
 
 @app.route('/evidence/summary', methods=['GET'])
 def evidence_summary():
-    # to speed up dev...
-    if USE_PICKLE_FOR_SUMMARY and os.path.isfile(CONTEXT_PKL_FNAME):
-        context = pickle.load(open(CONTEXT_PKL_FNAME, 'rb'))
-    else:
-        context = unpack_evidence_context(session, task="evidencesummary")
-        pickle.dump(context, open(CONTEXT_PKL_FNAME, 'wb'))
-
+    
+    context = unpack_evidence_context(session, task="evidencesummary")
     context["concerns"] = create_overall_summary(context, second_person=True)
+
+    # TODO: load data into context
+
 
     return render_template('main.html', **context)
 
