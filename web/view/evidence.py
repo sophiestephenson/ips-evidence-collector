@@ -269,23 +269,33 @@ def evidence_scan(id,step):
 
 
 
-@app.route("/evidence/account", methods={'GET', 'POST'})
-def evidence_account():
+@app.route("/evidence/account", methods={'GET'})
+def evidence_account_default():
 
-    ### ASSUME FOR NOW A FRESH ACCOUNT
-    ## Later if u want to edit just add the app ID to the URL
+    # place to save the num scans later if it becomes a pain to load it
+    accounts = load_json_data(ConsultDataTypes.ACCOUNTS.value)
+    new_id = len(accounts)
 
+    return redirect(url_for('evidence_account', id=new_id))
+
+@app.route("/evidence/account/<int:id>", methods={'GET', 'POST'})
+def evidence_account(id):
+
+    current_account = dict()
     all_account_data = load_json_data(ConsultDataTypes.ACCOUNTS.value)
-    ## TODO: Load from json and process form with the id we want
-
+    if len(all_account_data) > id:
+        current_account = all_account_data[id]
+    
     form = AccountCompromiseForm()
 
     if request.method == 'GET':
+        form.process(data=current_account)
+
         context = dict(
             task = "evidence-account",
             form = form,
             title=config.TITLE,
-            sessiondata = dict(), # for now, don't load anything
+            sessiondata = current_account, # for now, don't load anything
         )
 
         return render_template('main.html', **context)
@@ -297,11 +307,17 @@ def evidence_account():
 
             # clean up the submitted data
             clean_account_data = remove_unwanted_data(form.data)
-            all_account_data.append(clean_account_data)
+
+            if len(all_account_data) <= id:
+                all_account_data.append(clean_account_data)
+            else:
+                all_account_data[id] = clean_account_data
 
             save_data_as_json(all_account_data, ConsultDataTypes.ACCOUNTS.value)
 
             return redirect(url_for('evidence_home'))
+        
+        return redirect(url_for('evidence_account', id=id))
         
 
 

@@ -54,7 +54,7 @@
                 <a href="{{ url_for('evidence_taq') }}" class="btn btn-default">TAQ Page</a>
                 {% set new_id = sessiondata.scans|length %}
                 <a href="{{ url_for('evidence_scan_default') }}" class="btn btn-default">Scan a device</a>
-                <a href="{{ url_for('evidence_account') }}" class="btn btn-default">Add an account</a>
+                <a href="{{ url_for('evidence_account_default') }}" class="btn btn-default">Add an account</a>
 
                 <br><br>
                 <b>Number of scans: {{sessiondata.scans|length}}</b>
