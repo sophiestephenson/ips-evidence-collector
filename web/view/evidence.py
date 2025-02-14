@@ -33,8 +33,8 @@ from evidence_collection import (
     create_app_summary,
     create_overall_summary,
     create_printout,
+    get_scan_data,
     get_screenshots,
-    get_suspicious_apps,
     load_json_data,
     reformat_verbose_apps,
     remove_unwanted_data,
@@ -51,11 +51,16 @@ USE_FAKE_DATA = True
 @app.route("/evidence/home", methods={'GET'})
 def evidence_home():
 
+    consult_data = {
+        "taq": load_json_data(ConsultDataTypes.TAQ.value),
+        "scans": load_json_data(ConsultDataTypes.SCANS.value),
+        "accounts": load_json_data(ConsultDataTypes.ACCOUNTS.value)
+    }
+
     context = dict(
         task = "evidence-home",
-        #device_primary_user=config.DEVICE_PRIMARY_USER,
         title=config.TITLE,
-        sessiondata = session,
+        sessiondata = consult_data,
     )
 
     return render_template('main.html', **context)
@@ -64,11 +69,27 @@ def evidence_home():
 @app.route("/evidence/taq", methods={'GET', 'POST'})
 def evidence_taq():
 
-    ## Just testing for now!!!
-
     form = StartForm()
+    # TODO: use a real TAQ form
 
-    # Submit the form if it's a POST
+    # Load the form including any existing data
+    if request.method == 'GET':
+
+        # Load any data we already have
+        taq_data = load_json_data(ConsultDataTypes.TAQ.value)
+        form.process(data=taq_data)
+
+        context = dict(
+            task = "evidence-taq",
+            form = form,
+            title=config.TITLE,
+            sessiondata = taq_data
+        )
+
+        return render_template('main.html', **context)
+
+
+    # Submit the form
     if request.method == 'POST':
         pprint(form.data)
         if form.is_submitted() and form.validate():
@@ -76,33 +97,19 @@ def evidence_taq():
             # clean up the submitted data
             clean_data = remove_unwanted_data(form.data)
 
-            # add clean data to the session data
-            session['taq'] = clean_data
+            # save clean data
             save_data_as_json(clean_data, ConsultDataTypes.TAQ.value)
 
             return redirect(url_for('evidence_home'))
 
-    if 'taq' in session:
-        #form.process(data=session['taq'])
-        form.process(data=load_json_data(ConsultDataTypes.TAQ.value))
-
-    context = dict(
-        task = "evidence-taq",
-        #device_primary_user=config.DEVICE_PRIMARY_USER,
-        form = form,
-        title=config.TITLE,
-        sessiondata = session,
-    )
-
-    return render_template('main.html', **context)
 
 
 @app.route("/evidence/scan", methods={'GET'})
 def evidence_scan_default():
 
-    new_id = 0
-    if 'scans' in session:
-        new_id = len(session['scans'])
+    # place to save the num scans later if it becomes a pain to load it
+    scans = load_json_data(ConsultDataTypes.SCANS.value)
+    new_id = len(scans)
 
     return redirect(url_for('evidence_scan', id=new_id, step=1))
 
@@ -114,16 +121,41 @@ def evidence_scan(id,step):
         APPLIST = 2
         APPCHECKS = 3
 
-    form = StartForm()
-    applist = []
+    # load current scan data if there is any; otherwise create a fresh dict
+    current_scan = dict()
+    all_scan_data = load_json_data(ConsultDataTypes.SCANS.value)
+    if len(all_scan_data) > id:
+        current_scan = all_scan_data[id]
+
+    ## TODO: Save, and load by, device ID
+
+    if step == ScanSteps.DEVICEINFO.value:
+        form = StartForm()
 
     if step == ScanSteps.APPLIST.value:
-        form = StartForm() #Create an AppSelectForm(applist)
-        applist = request.args.get('applist')
+        form = StartForm() #TODO: Create an AppSelectForm(applist)
 
     if step == ScanSteps.APPCHECKS.value:
-        # Pass in the list of apps to check
-        form = StartForm() # Create combined AppCheckForm(spyware,dualuse)
+        form = StartForm() # TODO: Create combined AppCheckForm(spyware,dualuse)
+
+    ### IF IT'S A GET:
+    if request.method == 'GET':
+        if step != ScanSteps.DEVICEINFO.value:
+            pprint("CURRENT SCAN INFO")
+            pprint(type(current_scan))
+            pprint(current_scan.keys())
+            form.process(data=current_scan)
+
+        context = dict(
+            task = "evidence-scan",
+            form = form,
+            title=config.TITLE,
+            scan_data = current_scan,
+            step = step,
+            id = id,
+        )
+
+        return render_template('main.html', **context)
 
 
     # Submit the form if it's a POST
@@ -137,11 +169,9 @@ def evidence_scan(id,step):
             ### STEP 1: Save device info, perform scan, and add list of apps
             if step == ScanSteps.DEVICEINFO.value:
 
-                scan = dict()
-                
-                scan['device_type'] = clean_data["device_type"]
-                scan['device_nickname'] = clean_data["device_nickname"]
-
+                # create a new scan
+                current_scan['device_type'] = clean_data["device_type"]
+                current_scan['device_nickname'] = clean_data["device_nickname"]
 
                  # Ensure any previous screenshots have been removed before scan
                 print("Removing files:")
@@ -150,36 +180,44 @@ def evidence_scan(id,step):
 
                 try:
                     # Get app list
-                    suspicious_apps, other_apps = get_suspicious_apps(clean_data["device_type"],
+                    scan_data, suspicious_apps, other_apps = get_scan_data(clean_data["device_type"],
                                                        clean_data["device_nickname"])
-                    scan['all_apps'] = other_apps + suspicious_apps
+
+                    # add scan data
+                    current_scan['serial'] = scan_data['serial']
+                    current_scan['model'] = scan_data['device_model']
+                    current_scan['version'] = scan_data['device_version']
+                    current_scan['manufacturer'] = scan_data['device_manufacturer']
+                    current_scan['is_rooted'] = scan_data['is_rooted']
+                    current_scan['rooted_reasons'] = scan_data['rooted_reasons']
+
+                    # create app list 
+                    current_scan['all_apps'] = other_apps + suspicious_apps
+
                     
                     # Create pre-filled check app list
                     spyware, dualuse = reformat_verbose_apps(suspicious_apps)
-                    scan['check_apps'] = []
+                    current_scan['check_apps'] = []
                     for app in spyware:
                         app["type"] = "spyware"
-                        scan['check_apps'].append(app)
+                        current_scan['check_apps'].append(app)
                     for app in dualuse:
                         app["type"] = "dualuse"
-                        scan['check_apps'].append(app)
+                        current_scan['check_apps'].append(app)
 
-                    save_data_as_json(scan, ConsultDataTypes.SCANS.value)
+                    # add this scan to the scan data
+                    if len(all_scan_data) == id:
+                        all_scan_data.append(current_scan)
+                    else:
+                        # I don't think it'll get here but might as well
+                        all_scan_data[id] = current_scan
 
-                    # remove the app list from scan because it's too big
-                    scan['all_apps'] = ["omitted"]
-
-                    # Save scan info
-                    if 'scans' not in session:
-                        session['scans'] = []
-                    if len(session['scans']) == id:
-                        session['scans'].append(scan) # this will go in the ID # slot
-                    assert len(session['scans']) == id + 1
+                    save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
 
 
                 except Exception as e:
                     print(traceback.format_exc())
-                    flash(str(e), "error")
+                    flash(e, "error")
                     return redirect(url_for('evidence_scan', id=id, step=step))
 
                 return redirect(url_for('evidence_scan', id=id, step=step+1))
@@ -202,8 +240,9 @@ def evidence_scan(id,step):
                         "2-factor": "okay",
                     }},
                 ]
-                session['scans'][id]['check_apps'] = checked_apps
-                save_data_as_json(session['scans'][id]['check_apps'], ConsultDataTypes.SCANS.value)
+                current_scan['check_apps'] = checked_apps
+                all_scan_data[id] = current_scan
+                save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
             
                 return redirect(url_for('evidence_scan', id=id, step=step+1))
 
@@ -222,29 +261,11 @@ def evidence_scan(id,step):
                         "2-factor": "okay"
                     }},
                 ]
-                session['scans'][id]['check_apps'] == checked_apps
-                save_data_as_json(session['scans'][id]['check_apps'], ConsultDataTypes.SCANS.value)
+                current_scan['check_apps'] = checked_apps
+                all_scan_data[id] = current_scan
+                save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
 
                 return redirect(url_for('evidence_home'))
-
-    ### IF IT'S A GET:
-
-    if 'scans' in session and len(session['scans']) > id:
-        form.process(data=session['scans'][id])
-        # TODO: Load scan data
-
-    context = dict(
-        task = "evidence-scan",
-        #device_primary_user=config.DEVICE_PRIMARY_USER,
-        form = form,
-        title=config.TITLE,
-        sessiondata = session,
-        step = step,
-        id = id,
-        applist = applist
-    )
-
-    return render_template('main.html', **context)
 
 
 
@@ -254,7 +275,20 @@ def evidence_account():
     ### ASSUME FOR NOW A FRESH ACCOUNT
     ## Later if u want to edit just add the app ID to the URL
 
+    all_account_data = load_json_data(ConsultDataTypes.ACCOUNTS.value)
+    ## TODO: Load from json and process form with the id we want
+
     form = AccountCompromiseForm()
+
+    if request.method == 'GET':
+        context = dict(
+            task = "evidence-account",
+            form = form,
+            title=config.TITLE,
+            sessiondata = dict(), # for now, don't load anything
+        )
+
+        return render_template('main.html', **context)
 
     # Submit the form if it's a POST
     if request.method == 'POST':
@@ -262,31 +296,13 @@ def evidence_account():
         if form.is_submitted() and form.validate():
 
             # clean up the submitted data
-            clean_data = remove_unwanted_data(form.data)
+            clean_account_data = remove_unwanted_data(form.data)
+            all_account_data.append(clean_account_data)
 
-            # add clean data to the session data
-            if 'accounts' not in session.keys():
-                session['accounts'] = []
-                
-            session['accounts'].append(clean_data)
-            save_data_as_json(session['accounts'], ConsultDataTypes.ACCOUNTS.value)
+            save_data_as_json(all_account_data, ConsultDataTypes.ACCOUNTS.value)
 
             return redirect(url_for('evidence_home'))
-
-    if 'accounts' in session:
-        form.process(data=session['accounts'][0])
-        ### CHANGE THIS LATER!! JUST DO THE FIRST ONE FOR NOW
-        ## TODO: Load from json
         
-    context = dict(
-        task = "evidence-account",
-        #device_primary_user=config.DEVICE_PRIMARY_USER,
-        form = form,
-        title=config.TITLE,
-        sessiondata = session,
-    )
-
-    return render_template('main.html', **context)
 
 
 
@@ -367,7 +383,7 @@ def evidence(step):
                 os.system("rm webstatic/images/screenshots/*")
 
                 try:
-                    verbose_apps = get_suspicious_apps(session['step{}'.format(Pages.START.value)]['device_type'],
+                    verbose_apps = get_scan_data(session['step{}'.format(Pages.START.value)]['device_type'],
                                                        session['step{}'.format(Pages.START.value)]['name'])
                     spyware, dualuse = reformat_verbose_apps(verbose_apps)
                     session['apps'] = {"spyware": spyware, "dualuse": dualuse}

@@ -582,7 +582,7 @@ def get_app_details(device, ser, appid):
 
     return d
 
-def get_suspicious_apps(device, device_owner):
+def get_scan_data(device, device_owner):
 
     # The following code is adapted from web/view/scan.py
 
@@ -674,7 +674,6 @@ def get_suspicious_apps(device, device_owner):
     scan_d['is_rooted'] = rooted
     scan_d['rooted_reasons'] = json.dumps(rooted_reason)
 
-    # TODO: here, adjust client session.
     scanid = create_scan(scan_d)
 
     if device == 'ios':
@@ -723,7 +722,7 @@ def get_suspicious_apps(device, device_owner):
 
     pprint(other_apps)
 
-    return detailed_suspicious_apps, other_apps
+    return scan_d, detailed_suspicious_apps, other_apps
 
 class ConsultDataTypes(Enum):
     TAQ = 1
@@ -756,6 +755,11 @@ def save_data_as_json(data, datatype: ConsultDataTypes):
 def load_json_data(datatype: ConsultDataTypes):
 
     fname = os.path.join(TMP_CONSULT_DATA_DIR, get_data_filename(datatype))
+    if not os.path.exists(fname):
+        if datatype == ConsultDataTypes.TAQ:
+            return dict()
+        else: 
+            return []
 
     with open(fname, 'r') as openfile:
         json_object = json.load(openfile)
