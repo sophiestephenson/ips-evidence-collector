@@ -24,6 +24,7 @@ from evidence_collection import (
     FAKE_APP_DATA,
     AccountCompromiseForm,
     AccountsUsedForm,
+    AppInvestigationForm,
     AppSelectPageForm,
     ConsultDataTypes,
     DualUseForm,
@@ -155,6 +156,8 @@ def evidence_scan_default():
 @app.route("/evidence/scan/<int:id>/<int:step>", methods={'GET', 'POST'})
 def evidence_scan(id,step):
 
+    ## TODO: Save, and load by, device ID
+
     class ScanSteps(Enum):
         DEVICEINFO = 1
         APPLIST = 2
@@ -166,8 +169,6 @@ def evidence_scan(id,step):
     if len(all_scan_data) > id:
         current_scan = all_scan_data[id]
 
-    ## TODO: Save, and load by, device ID
-
     if step == ScanSteps.DEVICEINFO.value:
         form = StartForm()
 
@@ -175,14 +176,17 @@ def evidence_scan(id,step):
         form = AppSelectPageForm(apps=current_scan['all_apps'])
 
     if step == ScanSteps.APPCHECKS.value:
-        form = StartForm() # TODO: Create combined AppCheckForm(spyware,dualuse)
+        check_apps = current_scan['check_apps']
+        form = AppInvestigationForm(spyware=check_apps['spyware'],
+                                    dualuse=check_apps['dualuse'],
+                                    other=check_apps['other'])
 
     ### IF IT'S A GET:
     if request.method == 'GET':
         #if step == ScanSteps.APPLIST.value:
             #form.process(data=current_scan) # TODO fix??
         if step == ScanSteps.APPCHECKS.value:
-            form.process(data=current_scan)
+            form.process(data=current_scan['check_apps'])
 
         context = dict(
             task = "evidence-scan",
@@ -192,6 +196,8 @@ def evidence_scan(id,step):
             step = step,
             id = id,
         )
+
+        pprint(form.data)
 
         return render_template('main.html', **context)
 
@@ -269,15 +275,20 @@ def evidence_scan(id,step):
             ### STEP 2: Create the list of apps we want to investigate in phase 2
             if step == ScanSteps.APPLIST.value:
 
-                # for all selected apps, add the app details to "check apps"
-                checked_apps = []
-                for app in clean_data['apps']:
-                    if app['selected']:
-                        for detail_app in current_scan['all_apps']:
-                            if 'appId' in list(detail_app.keys()) and detail_app['appId'] == app['appId']:
-                                checked_apps.append(detail_app)
-                        
-                current_scan['check_apps'] = checked_apps
+                selected_apps = [app for app in clean_data['apps'] if app['selected']]
+
+                spyware = []
+                dualuse = []
+                other = []
+                for app in selected_apps:
+                    if 'spyware' in app['flags']:
+                        spyware.append(app)
+                    elif 'dual-use' in app['flags']:
+                        dualuse.append(app)
+                    else:
+                        other.append(app)
+
+                current_scan['check_apps'] = {"spyware": spyware, "dualuse": dualuse, "other": other}
                 all_scan_data[id] = current_scan
                 save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
             
@@ -285,20 +296,8 @@ def evidence_scan(id,step):
 
             ### STEP 3: Add investigation data for all of these apps, update session data
             if step == ScanSteps.APPCHECKS.value:
-
-                # TODO: Process clean_data to create this updated list
-                checked_apps = [
-                    {"app_name": "TODO", "type": "spyware", "investigation": {
-                        "2-factor": "okay"
-                    }},
-                    {"app_name": "ADD", "type": "dualuse", "investigation": {
-                        "2-factor": "okay"
-                    }},
-                    {"app_name": "APPS", "type": "manual", "investigation": {
-                        "2-factor": "okay"
-                    }},
-                ]
-                current_scan['check_apps'] = checked_apps
+                
+                current_scan['check_apps'] = clean_data
                 all_scan_data[id] = current_scan
                 save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
 

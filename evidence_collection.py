@@ -120,14 +120,35 @@ class InstallForm(FlaskForm):
     screenshot = MultipleFileField('Add screenshot(s)')
 
 class SpywareAppForm(FlaskForm):
-    app_name = HiddenField("App Name")
+    title = HiddenField("App Name")
     install_form = FormField(InstallForm)
+    title = HiddenField("App Name")
+    appId = HiddenField("App ID")
+    flags = HiddenField("Flags")
+    application_icon = HiddenField("App Icon")
+    app_website = HiddenField("App Website")
+    description = HiddenField("Description")
+    #descriptionHTML = HiddenField("HTML Description")
+    developerwebsite = HiddenField("Developer Website")
+    permissions = HiddenField("Permissions")
+    subclass = HiddenField("Subclass")
+    summary = HiddenField("Summary")
     notes = FormField(NotesForm)
 
 class DualUseAppForm(FlaskForm):
-    app_name = HiddenField("App Name")
+    title = HiddenField("App Name")
     install_form = FormField(InstallForm)
     permissions = FieldList(FormField(PermissionForm))
+    title = HiddenField("App Name")
+    appId = HiddenField("App ID")
+    flags = HiddenField("Flags")
+    application_icon = HiddenField("App Icon")
+    app_website = HiddenField("App Website")
+    description = HiddenField("Description")
+    #descriptionHTML = HiddenField("HTML Description")
+    developerwebsite = HiddenField("Developer Website")
+    subclass = HiddenField("Subclass")
+    summary = HiddenField("Summary")
     notes = FormField(NotesForm)
 
 ## HELPER FORMS FOR ACCOUNTS
@@ -179,6 +200,15 @@ class AccountInfoForm(FlaskForm):
 class AppSelectForm(FlaskForm):
     title = HiddenField("App Name")
     appId = HiddenField("App ID")
+    flags = HiddenField("Flags")
+    application_icon = HiddenField("App Icon")
+    app_website = HiddenField("App Website")
+    description = HiddenField("Description")
+    #descriptionHTML = HiddenField("HTML Description")
+    developerwebsite = HiddenField("Developer Website")
+    permissions = HiddenField("Permissions")
+    subclass = HiddenField("Subclass")
+    summary = HiddenField("Summary")
     selected = BooleanField("Check this app?")
 
 ## INDIVIDUAL PAGES
@@ -201,6 +231,13 @@ class DualUseForm(FlaskForm):
     title = "Step 2: Dual Use App Check"
     dual_use_apps = FieldList(FormField(DualUseAppForm))
     submit = SubmitField("Continue")
+
+class AppInvestigationForm(FlaskForm):
+    title = "App Investigations"
+    spyware = FieldList(FormField(SpywareAppForm))
+    dualuse = FieldList(FormField(DualUseAppForm))
+    other = FieldList(FormField(SpywareAppForm))
+    submit = SubmitField("Complete scan")
 
 class AccountsUsedForm(FlaskForm):
     title = "Step 3a: Accounts Used"
