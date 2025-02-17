@@ -26,6 +26,7 @@ from wtforms import (
     HiddenField,
     MultipleFileField,
     RadioField,
+    SelectMultipleField,
     StringField,
     SubmitField,
     TextAreaField,
@@ -80,11 +81,14 @@ TMP_CONSULT_DATA_DIR = "tmp-consult-data"
 SCREENSHOT_FOLDER = os.path.join("tmp", "isdi-screenshots/")
 CONTEXT_PKL_FNAME = "context.pkl"
 
-DEFAULT = "y"
+YES_NO_DEFAULT = "yes"
 SECOND_FACTORS = ["Phone", "Email", "App"]
 ACCOUNTS = ["Google", "iCloud", "Microsoft", "Lyft", "Uber", "Doordash", "Grubhub", "Facebook", "Twitter", "Snapchat", "Instagram"]
 
 YES_NO_CHOICES = [( 'yes', 'Yes'), ('no', 'No'), ('unsure', 'Unsure')]
+PERSON_CHOICES = [( 'me', 'Me'), ('poc', 'Person of concern'), ('other', 'Someone else'), ('unsure', 'Unsure')]
+
+LEGAL_CHOICES = [('ro', 'Restraining order'), ('div', 'Divorce or other family court'), ('cl', 'Criminal case'), ('other', 'Other')]
 DEVICE_TYPE_CHOICES = [('android', 'Android'), ('ios', 'iOS')]
 #two_factor_choices = [empty_choice] + [(x.lower(), x) for x in second_factors]
 TWO_FACTOR_CHOICES = [(x.lower(), x) for x in SECOND_FACTORS] + [('none', 'None')]
@@ -106,16 +110,16 @@ class NotesForm(FlaskForm):
 ## HELPER FORMS FOR APPS
 class PermissionForm(FlaskForm):
     permission_name = HiddenField("Permission")
-    access = RadioField('Can your [ex-]partner access this information using this app?', choices=YES_NO_CHOICES, validators=[InputRequired()], default=DEFAULT)
+    access = RadioField('Can your [ex-]partner access this information using this app?', choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
     describe = TextAreaField("How do you know?")
     screenshot = MultipleFileField('Add screenshot(s)')
 
 # HELPER FORM FOR SCREENSHOTS
 
 class InstallForm(FlaskForm):
-    knew_installed = RadioField('Did you know this app was installed?', choices=YES_NO_CHOICES, validators=[InputRequired()], default=DEFAULT)
-    installed = RadioField('Did you install this app?', choices=YES_NO_CHOICES, validators=[InputRequired()], default=DEFAULT)
-    coerced = RadioField('Did your [ex-]partner coerce you into installing this app?', choices=YES_NO_CHOICES, validators=[InputRequired()], default=DEFAULT)
+    knew_installed = RadioField('Did you know this app was installed?', choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
+    installed = RadioField('Did you install this app?', choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
+    coerced = RadioField('Did your [ex-]partner coerce you into installing this app?', choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
     #who = TextAreaField("If you were coerced, who coerced you?")
     screenshot = MultipleFileField('Add screenshot(s)')
 
@@ -153,38 +157,38 @@ class DualUseAppForm(FlaskForm):
 
 ## HELPER FORMS FOR ACCOUNTS
 class SuspiciousLoginsForm(FlaskForm):
-    recognize = RadioField("Do you recognize all devices logged into this account?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=DEFAULT)
+    recognize = RadioField("Do you recognize all devices logged into this account?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
     describe_logins = TextAreaField("Which devices do you not recognize?")
     login_screenshot = MultipleFileField('Add screenshot(s)')
-    activity_log = RadioField("In the login history, do you see any suspicious logins?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=DEFAULT)
+    activity_log = RadioField("In the login history, do you see any suspicious logins?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
     describe_activity = TextAreaField("Which logins are suspicious, and why?")
     activity_screenshot = MultipleFileField('Add screenshot(s)')
 
 class PasswordForm(FlaskForm):
-    know = RadioField("Does your [ex-]partner know the password for this account?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=DEFAULT)
-    guess = RadioField("Do you believe your [ex-]partner could guess the password?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=DEFAULT)
+    know = RadioField("Does your [ex-]partner know the password for this account?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
+    guess = RadioField("Do you believe your [ex-]partner could guess the password?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
 
 class RecoveryForm(FlaskForm):
-    phone_present = RadioField("Is there a recovery phone number set for this account?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=DEFAULT)
+    phone_present = RadioField("Is there a recovery phone number set for this account?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
     phone = TextAreaField("What is the recovery phone number?")
-    phone_access = RadioField("Do you believe your [ex-]partner has access to the recovery phone number?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=DEFAULT)
+    phone_access = RadioField("Do you believe your [ex-]partner has access to the recovery phone number?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
     phone_screenshot = MultipleFileField('Add screenshot(s)')
-    email_present = RadioField("Is there a recovery email address set for this account?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=DEFAULT)
+    email_present = RadioField("Is there a recovery email address set for this account?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
     email = TextAreaField("What is the recovery email address?")
-    email_access = RadioField("Do you believe your [ex-]partner has access to this recovery email address?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=DEFAULT)
+    email_access = RadioField("Do you believe your [ex-]partner has access to this recovery email address?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
     email_screenshot = MultipleFileField('Add screenshot(s)')
 
 class TwoFactorForm(FlaskForm):
-    enabled = RadioField("Is two-factor authentication enabled for this account?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=DEFAULT)
-    second_factor_type = RadioField("What type of two-factor authentication is it?", choices=TWO_FACTOR_CHOICES, validators=[InputRequired()], default=DEFAULT)
+    enabled = RadioField("Is two-factor authentication enabled for this account?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
+    second_factor_type = RadioField("What type of two-factor authentication is it?", choices=TWO_FACTOR_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
     describe = TextAreaField("Which phone/email/app is set as the second factor?")
-    second_factor_access = RadioField("Do you believe your [ex-]partner has access to this second factor?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=DEFAULT)
+    second_factor_access = RadioField("Do you believe your [ex-]partner has access to this second factor?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
     screenshot = MultipleFileField('Add screenshot(s)')
 
 class SecurityQForm(FlaskForm):
-    present = RadioField("Does the account use security questions?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=DEFAULT)
+    present = RadioField("Does the account use security questions?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
     questions = TextAreaField("Which questions are set?")
-    know = RadioField("Do you believe your [ex-]partner knows the answer to any of these questions?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=DEFAULT)
+    know = RadioField("Do you believe your [ex-]partner knows the answer to any of these questions?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
     screenshot = MultipleFileField('Add screenshot(s)')
 
 class AccountInfoForm(FlaskForm):
@@ -215,7 +219,7 @@ class AppSelectForm(FlaskForm):
 class StartForm(FlaskForm):
     title = "Device To Be Scanned"
     device_nickname = StringField('Device nickname', validators=[InputRequired()])
-    device_type = RadioField('Device type', choices=DEVICE_TYPE_CHOICES, validators=[InputRequired()], default=DEFAULT)
+    device_type = RadioField('Device type', choices=DEVICE_TYPE_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
     submit = SubmitField("Continue")
 
 class ScanForm(FlaskForm):
@@ -277,6 +281,50 @@ class AppSelectPageForm(FlaskForm):
     apps = FieldList(FormField(AppSelectForm))
     submit = SubmitField("Select")
 
+### TAQ Forms
+class TAQDeviceComp(FlaskForm):
+    title = "Device Compromise Indicators"
+    live_together = RadioField("Do you live with the person of concern?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+    physical_access = RadioField("Has the person of concern had physical access to your devices at any point in time?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+
+class TAQAccounts(FlaskForm):
+    title = "Account and Password Management"
+    pwd_mgmt = StringField("How do you manage passwords?")
+    pwd_comp = RadioField("Do you believe the person of concern knows, or could guess, any of your passwords?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+    pwd_comp_which = StringField("Which ones?")
+
+class TAQSharing(FlaskForm):
+    title = "Account Sharing"
+    share_phone_plan = RadioField("Do you share a phone plan with the person of concern?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+    phone_plan_admin = SelectMultipleField("If you share a phone plan, who is the family 'head' or plan administrator?", choices=PERSON_CHOICES)
+    share_accounts = RadioField("Do you share any accounts with the person of concern?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+
+class TAQSmartHome(FlaskForm):
+    title = "Smart Home Devices"
+    smart_home = RadioField("Do you have any smart home devices?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+    smart_home_setup = SelectMultipleField("Who installed and set up your smart home devices?", choices=PERSON_CHOICES)
+    smart_home_access = RadioField("Did the person of concern ever have physical access to the devices?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+    smart_home_account = RadioField("Do you share any smart home accounts with the person of concern?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+
+class TAQKids(FlaskForm):
+    title = "Children's Devices"
+    custody = RadioField("Do you share custody of children with the person of concern?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+    child_phys_access = RadioField("Has the person of concern had physical access to any of the child(ren)'s devices?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+    child_phone_plan = RadioField("Does the person of concern pay for the child(ren)'s phone plan?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+
+class TAQLegal(FlaskForm):
+    title = "Legal Proceedings"
+    legal = SelectMultipleField("Do you have any ongoing legal cases?", choices=LEGAL_CHOICES)
+
+class TAQForm(FlaskForm):
+    title = "Technology Assessment Questionnaire (TAQ)"
+    devices = FormField(TAQDeviceComp)
+    accounts = FormField(TAQAccounts)
+    sharing = FormField(TAQSharing)
+    smarthome = FormField(TAQSmartHome)
+    kids = FormField(TAQKids)
+    legal = FormField(TAQLegal)
+    submit = SubmitField("Save TAQ")
 
 
 def unpack_evidence_context(session, task="evidence"):

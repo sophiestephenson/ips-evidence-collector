@@ -33,6 +33,7 @@ from evidence_collection import (
     SetupForm,
     SpywareForm,
     StartForm,
+    TAQForm,
     create_account_summary,
     create_app_summary,
     create_overall_summary,
@@ -84,6 +85,9 @@ def evidence_setup():
             save_data_as_json(clean_data, ConsultDataTypes.SETUP.value)
 
             return redirect(url_for('evidence_home'))
+        
+
+    return redirect(url_for('evidence_setup'))
 
 
 
@@ -109,8 +113,7 @@ def evidence_home():
 @app.route("/evidence/taq", methods={'GET', 'POST'})
 def evidence_taq():
 
-    form = StartForm()
-    # TODO: use a real TAQ form
+    form = TAQForm()
 
     # Load the form including any existing data
     if request.method == 'GET':
@@ -141,6 +144,13 @@ def evidence_taq():
             save_data_as_json(clean_data, ConsultDataTypes.TAQ.value)
 
             return redirect(url_for('evidence_home'))
+        
+        elif not form.validate():
+            print(traceback.format_exc())
+            flash(form.errors, "error")
+            return redirect(url_for('evidence_taq'))
+        
+    return redirect(url_for('evidence_taq'))
 
 
 

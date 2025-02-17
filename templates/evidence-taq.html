@@ -50,28 +50,132 @@
             </div>
             {% endfor %}
             <br>
-            <h2>TAQuestionnaire</h2>
+
+
+            <h2>{{form.title}}</h2>
             <hr>
             <form action method="post" class="form" role="form">
                 {{ form.hidden_tag() }}
                 {{ wtf.form_errors(form) }}
 
-                <table id="scan-form">
-                    <tbody>
-                        <tr><th><label>{{ form.device_nickname.label }}</label></th><td> {{ form.device_nickname }}</td> </tr>
-                        <tr><th><label>{{form.device_type.label}}</label></th><td>
-                            <div class="btn-group" data-toggle="buttons" id={{form.device_type.id}}>
-                            {% for option in form.device_type %}
-                            <label class="btn btn-secondary" for="{{option.id}}">
-                                {{option.label.text}}
-                                <input type="radio" name={{option.name}} id={{option.id}} autocomplete="off" value={{option.label.text.lower()}}>
-                                <span class="glyphicon glyphicon-ok"></span>
-                            </label>
-                            {% endfor %}
-                            </div>
-                        </td></tr>
-                    </tbody>
-                </table>
+                <details>
+                    <summary>
+                    <span class="icon">▼</span>
+                    <b>{{ form.devices.title }}</b>
+                    </summary>
+                    {{ form.devices.hidden_tag() }}
+                    <div class="content">
+                        <div class="subform">
+                            <table>
+                                <tbody>
+
+                                </tbody>
+                            </table>
+                        </div>
+                        </div>
+                </details>
+
+                <details>
+                    <summary>
+                    <span class="icon">▼</span>
+                    <b>{{ form.accounts.title }}</b>
+                    </summary>
+                    {{ form.accounts.hidden_tag() }}
+                    <div class="content">
+                        <div class="subform">
+                            <table>
+                                <tbody>
+                                    <tr><th><label>{{ form.accounts.pwd_mgmt.label }}</label></th><td> {{ form.accounts.pwd_mgmt }}</td></tr>
+                                    <tr><th>{{form.accounts.pwd_comp.label}}</th><td>
+                                        <div class="btn-group" data-toggle="buttons" id={{form.accounts.id}}>
+                                        {% for option in form.accounts.pwd_comp %}
+                                        <label class="btn btn-light" for="{{option.id}}">
+                                            {{option.label.text}}
+                                            <input type="radio" name={{option.name}} id={{option.id}} autocomplete="off" value={{option.label.text.lower()}}>
+                                            <span class="glyphicon glyphicon-ok"></span>
+                                        </label>
+                                        {% endfor %}
+                                    </div></td></tr>
+                                    <tr><th><label>{{ form.accounts.pwd_comp_which.label }}</label></th><td> {{ form.accounts.pwd_comp_which }}</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                     </div>
+                </details>
+
+                
+                <details>
+                    <summary>
+                    <span class="icon">▼</span>
+                    <b>{{ form.sharing.title }}</b>
+                    </summary>
+                    {{ form.sharing.hidden_tag() }}
+                    <div class="content">
+                        <div class="subform">
+                            <table>
+                                <tbody>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </details>
+
+
+                <details>
+                    <summary>
+                    <span class="icon">▼</span>
+                    <b>{{ form.smarthome.title }}</b>
+                    </summary>
+                    {{ form.smarthome.hidden_tag() }}
+                    <div class="content">
+                        <div class="subform">
+                            <table>
+                                <tbody>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </details>
+
+
+                <details>
+                    <summary>
+                    <span class="icon">▼</span>
+                    <b>{{ form.kids.title }}</b>
+                    </summary>
+                    {{ form.kids.hidden_tag() }}
+                    <div class="content">
+                        <div class="subform">
+                            <table>
+                                <tbody>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </details>
+
+
+                <details>
+                    <summary>
+                    <span class="icon">▼</span>
+                    <b>{{ form.legal.title }}</b>
+                    </summary>
+                    {{ form.legal.hidden_tag() }}
+                    <div class="content">
+                        <div class="subform">
+                            <table>
+                                <tbody>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </details>
+
+
                 <br>
                 <br>
                 <br>
