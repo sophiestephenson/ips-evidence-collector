@@ -30,7 +30,7 @@ sed -i -e 's/<\/data>/<\/string>/g' $2
 # plutil -convert json $2
 
 # gets OS version, serial, etc. -x for xml. Raw is easy to parse, too.
-ideviceinfo -u "$serial" -x > $3
+pymobiledevice3 lockdown info > $3
 
 sed -i -e 's/<data>/<string>/g' $3
 sed -i -e 's/<\/data>/<\/string>/g' $3

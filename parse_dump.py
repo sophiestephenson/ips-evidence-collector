@@ -441,8 +441,8 @@ class IosDump(PhoneDump):
 
     def load_device_info(self):
         try:
-            with open(self.finfo, 'rb') as data:
-                device_info = load(data)
+            with open(self.finfo, 'r') as data:
+                device_info = json.load(data)
             return device_info
 
         except Exception as ex:
@@ -459,15 +459,12 @@ class IosDump(PhoneDump):
         # d = pd.read_json(self.fname)[self.COLS].set_index(self.INDEX)
         try:
             # FIXME: somehow, get the ios_apps.plist into a dataframe.
-            print("fname is: {}".format(self.fname))
             apps_list = []
             with open(self.fname, 'r') as app_data:
                 apps_json = json.load(app_data)
                 for k in apps_json:
                     apps_list.append(apps_json[k])
-               
             d = pd.DataFrame(apps_list)
-            print(d)
             d['appId'] = d['CFBundleIdentifier']
             d.set_index('appId', inplace=True)
             return d
