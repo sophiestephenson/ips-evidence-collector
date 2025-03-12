@@ -17,6 +17,7 @@ from pprint import pprint
 
 import jinja2
 import pdfkit
+from filelock import FileLock
 from flask import session
 from flask_wtf import FlaskForm
 from wtforms import (
@@ -853,22 +854,27 @@ def save_data_as_json(data, datatype: ConsultDataTypes):
     json_object = json.dumps(data)
 
     fname = os.path.join(TMP_CONSULT_DATA_DIR, get_data_filename(datatype))
-
-    with open(fname, 'w') as outfile:
-        outfile.write(json_object)
+    
+    lock = FileLock(fname + ".lock")
+    with lock:
+        with open(fname, 'w') as outfile:
+            outfile.write(json_object)
 
     return
 
 def load_json_data(datatype: ConsultDataTypes):
 
     fname = os.path.join(TMP_CONSULT_DATA_DIR, get_data_filename(datatype))
-    if not os.path.exists(fname):
-        if datatype in [ConsultDataTypes.TAQ, ConsultDataTypes.SETUP] :
-            return dict()
-        else: 
-            return []
 
-    with open(fname, 'r') as openfile:
-        json_object = json.load(openfile)
+    lock = FileLock(fname + ".lock")
+    with lock:
+        if not os.path.exists(fname):
+            if datatype in [ConsultDataTypes.TAQ, ConsultDataTypes.SETUP] :
+                return dict()
+            else: 
+                return []
+
+        with open(fname, 'r') as openfile:
+            json_object = json.load(openfile)
 
     return json_object
