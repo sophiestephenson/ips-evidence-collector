@@ -39,13 +39,14 @@
 </div>
 
 <div class="printout-summary">
+    <h1>context</h1>
     <h1>Summary of findings</h1>
     <hr />
     <div class="overallsummary">
-        {% with num_apps = concerns.spyware|length + concerns.dualuse|length %}
+        {% with num_apps = concerns.check_apps.spyware|length + concerns.dualuse|length %}
             <h3>{{num_apps}} Concerning App{% if num_apps != 1 %}s{%endif%} Installed on the Device</h3>
             <ol>
-                {% for concern in concerns.spyware + concerns.dualuse %}
+                {% for concern in concerns.check_apps.spyware + concerns.dualuse %}
                 <li><b>{{concern.name}}</b>: {{concern.summary}}</li>
                 {% endfor %}
             </ol>
@@ -60,15 +61,15 @@
 </div>
 
 <div class="new-page">
-<h1>Spyware Apps: {{spyware|length}} found</h1>
+<h1>check_apps.spyware Apps: {{check_apps.spyware|length}} found</h1>
 <hr>
 <br>
 <div class="definition">
-    <p><b>Definition</b>: Spyware apps are apps purposefully designed for surveillance. When installed on someone's phone, they can allow
+    <p><b>Definition</b>: check_apps.spyware apps are apps purposefully designed for surveillance. When installed on someone's phone, they can allow
         the installer to view the phone owner's location, messages, calls, and/or a myriad of other data. </p>
 </div>
-{% if spyware|length > 0 %}
-{% for app in spyware %}
+{% if check_apps.spyware|length > 0 %}
+{% for app in check_apps.spyware %}
 <h2 {% if loop.index > 1 %}class="app-padding-top"{%endif%}>{{loop.index}}. {{app.app_name}}</h2>
 <table class="printout_columns">
     <tbody>
@@ -119,7 +120,7 @@
 
         {% set screenshots = [] %}
         {% for filename in app.screenshots %}
-        {% if app.app_name.replace(' ', '') in filename and "spyware_" in filename %}
+        {% if app.app_name.replace(' ', '') in filename and "check_apps.spyware_" in filename %}
           {% set _ = screenshots.append(filename) %}
         {% endif %}
         {% endfor %}
@@ -188,7 +189,7 @@
 {% endfor %}
 {% else %}
 <div style="page-break-after:always">
-    <p>No spyware apps were found on this device.</p>
+    <p>No check_apps.spyware apps were found on this device.</p>
 </div>
 {% endif %}
 </div>

@@ -19,15 +19,16 @@ from flask import (
 from flask_bootstrap import Bootstrap
 
 import config
-from evidence_collection import (
+from evidence_collection import (  # create_account_summary,; create_app_summary,
     CONTEXT_PKL_FNAME,
     FAKE_APP_DATA,
     AccountCompromiseForm,
     AccountInvestigation,
-    AccountsUsedForm,
+    AppInfo,
     AppInvestigationForm,
     AppSelectPageForm,
     CheckApps,
+    ConsultationData,
     ConsultDataTypes,
     ConsultSetupData,
     DualUseForm,
@@ -39,8 +40,6 @@ from evidence_collection import (
     StartForm,
     TAQData,
     TAQForm,
-    create_account_summary,
-    create_app_summary,
     create_overall_summary,
     create_printout,
     get_scan_by_ser,
@@ -71,7 +70,7 @@ def evidence_setup():
         setup_data = ConsultSetupData(**load_json_data(ConsultDataTypes.SETUP.value))
 
         if setup_data.date.strip() == "":
-            setup_data.date = datetime.now()
+            setup_data.date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
 
         form.process(data=setup_data.to_dict())
 
@@ -203,32 +202,26 @@ def evidence_scan_start():
 
             try:
                 # Get app list
-                scan_data, suspicious_apps, other_apps = get_scan_data(clean_data["device_type"], clean_data["device_nickname"])
+                scan_data, suspicious_apps_dict, other_apps_dict = get_scan_data(clean_data["device_type"], clean_data["device_nickname"])
 
+                suspicious_apps = [AppInfo(**app) for app in suspicious_apps_dict]
+                other_apps = [AppInfo(**app) for app in other_apps_dict]
+
+                # fill in the /investigate/ marker for suspicious apps
                 for i in range(len(suspicious_apps)):
-                    suspicious_apps[i]["selected"] = True
-                for i in range(len(other_apps)): 
-                    other_apps[i]["selected"] = False
+                    suspicious_apps[i].investigate = True
+
                 all_apps = suspicious_apps + other_apps
-                
-                # Create pre-filled check app list
-                spyware, dualuse = reformat_verbose_apps(suspicious_apps)
-                check_apps = []
-                for app in spyware:
-                    app["type"] = "spyware"
-                    check_apps.append(app)
-                for app in dualuse:
-                    app["type"] = "dualuse"
-                    check_apps.append(app)
                 
                 # Create current scan object with this info
                 current_scan = ScanData(scan_id=len(all_scan_data), 
                                         **clean_data, 
-                                        **scan_data, # this may input way too much
-                                        all_apps=all_apps, 
-                                        check_apps=check_apps)
+                                        **scan_data,
+                                        all_apps=[app.to_dict() for app in all_apps],
+                                        selected_apps=[app.to_dict() for app in suspicious_apps])
                 
                 pprint(current_scan.__dict__)
+                pprint([app.to_dict() for app in all_apps])
                 
                 current_scan.id = len(all_scan_data)
                 all_scan_data.append(current_scan)
@@ -237,13 +230,13 @@ def evidence_scan_start():
             except Exception as e:
                 print(traceback.format_exc())
                 flash(e, "error")
-                return redirect(url_for('evidence_scan_default', step=2))
+                return redirect(url_for('evidence_scan_start', step=2))
 
             
             save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
-            return redirect(url_for('evidence_scan', ser=current_scan.serial, step=2))
+            return redirect(url_for('evidence_scan_select', ser=current_scan.serial))
 
-    return redirect(url_for('evidence_scan_default'))
+    return redirect(url_for('evidence_scan_start'))
 
 
 
@@ -259,18 +252,19 @@ def evidence_scan_select(ser):
     assert current_scan.serial == ser
 
     # fill form
-    form = AppSelectPageForm(apps=current_scan.all_apps)
+    form = AppSelectPageForm(apps=[app.to_dict() for app in current_scan.all_apps])
+
+    pprint(current_scan.all_apps[0].to_dict())
 
      ### IF IT'S A GET:
     if request.method == 'GET':
-        form.process(data=current_scan.to_dict()) # TODO fix??
-        pprint(form.data)
+        #form.process(data=current_scan.to_dict())
 
         context = dict(
             task = "evidence-scan",
             form = form,
             title=config.TITLE,
-            scan_data = current_scan.to_dict(),
+            all_apps = [app.to_dict() for app in current_scan.all_apps],
             step = 2
         )
 
@@ -285,20 +279,12 @@ def evidence_scan_select(ser):
             clean_data = remove_unwanted_data(form.data)
 
             # get selected apps from the form data
-            selected_apps = [app for app in clean_data['apps'] if app['selected']]
-                 
-            # split selected apps into three groups
-            spyware, dualuse, other = [], [], []
-            for app in selected_apps:
-                if 'spyware' in app['flags']:
-                    spyware.append(app)
-                elif 'dual-use' in app['flags']:
-                    dualuse.append(app)
-                else:
-                    other.append(app)
+            selected_apps = [app for app in clean_data['apps'] if app['investigate']]
+            pprint(selected_apps)
+            pprint("SELECTED APPS")
 
             # update the current scan data and save it as the most recent scan
-            current_scan.check_apps = CheckApps(spyware=spyware, dualuse=dualuse, other=other)
+            current_scan.selected_apps = [AppInfo(**app) for app in selected_apps]
             all_scan_data = update_scan_by_ser(current_scan, all_scan_data)
 
             # save this updated data
@@ -306,7 +292,7 @@ def evidence_scan_select(ser):
         
             return redirect(url_for('evidence_scan_investigate', ser=ser))
         
-        
+
 
 @app.route("/evidence/scan/investigate/<string:ser>", methods={'GET', 'POST'})
 def evidence_scan_investigate(ser):
@@ -319,16 +305,14 @@ def evidence_scan_investigate(ser):
     current_scan = get_scan_by_ser(ser, all_scan_data)
     assert current_scan.serial == ser
 
+    pprint([app.to_dict() for app in current_scan.selected_apps])
+    pprint("INPUTTED INTO THE INVESTIGATION FORM")
+
     # get apps to investigate from the scan data
-    check_apps = current_scan.check_apps
-    form = AppInvestigationForm(spyware=check_apps.to_dict()['spyware'],
-                                dualuse=check_apps.to_dict()['dualuse'],
-                                other=check_apps.to_dict()['other'])
+    form = AppInvestigationForm(selected_apps=[app.to_dict() for app in current_scan.selected_apps])
 
     ### IF IT'S A GET:
     if request.method == 'GET':
-        form.process(data=current_scan.check_apps.to_dict())
-        pprint(form.data)
 
         context = dict(
             task = "evidence-scan",
@@ -350,7 +334,7 @@ def evidence_scan_investigate(ser):
             clean_data = remove_unwanted_data(form.data)
 
             # update the current scan data and save it
-            current_scan.check_apps = CheckApps(**clean_data)
+            current_scan.selected_apps = [AppInfo(**app) for app in clean_data]
             all_scan_data = update_scan_by_ser(current_scan, all_scan_data)
 
             #  save this updated data
@@ -552,32 +536,28 @@ def evidence_summary():
 
 @app.route("/evidence/printout", methods=["GET"])
 def evidence_printout():
-    if USE_PICKLE_FOR_SUMMARY and os.path.isfile(CONTEXT_PKL_FNAME):
-        context = pickle.load(open(CONTEXT_PKL_FNAME, 'rb'))
-    else:
-        context = unpack_evidence_context(session, task="evidencesummary")
-        pickle.dump(context, open(CONTEXT_PKL_FNAME, 'wb'))
 
-    # add datetime
-    now = datetime.now()
-    dt_string = now.strftime("%Y/%m/%d %H:%M:%S")
-    context["current_time"] = dt_string
+    consult_data = ConsultationData(
+        setup=load_json_data(ConsultDataTypes.SETUP.value),
+        taq=load_json_data(ConsultDataTypes.TAQ.value),
+        accounts=load_json_data(ConsultDataTypes.ACCOUNTS.value),
+        scans=load_json_data(ConsultDataTypes.SCANS.value),
+        screenshot_dir = config.SCREENSHOT_LOCATION
+    )
 
-    # add screenshot directory
-    context["screenshot_dir"] = config.SCREENSHOT_LOCATION
+    pprint(consult_data.__dict__)
 
-    # add fake screenshots
-    # context["spyware"][0]['screenshots'] = ['step3-1.png']
-    # context["dualuse"][1]['screenshots'] = ['step4-1.png']
-    # context["accounts"][0]['screenshots'] = ['step6-1.png', 'step6-2.png']
+    # TODO: Handle multiple scans
+    # TODO: Generate text of the document
 
-    for app in context["spyware"]:
+    '''
+    for app in consult_data.scans[1].check_apps.spyware:
          summary, concerning = create_app_summary(app, spyware=True)
          app['summary'] = summary
          app['concerning'] = concerning
          app['screenshots'] = get_screenshots('spyware', app['app_name'], context["screenshot_dir"])
 
-    for app in context["dualuse"]:
+    for app in consult_data.scans[1].check_apps.dualuse:
          summary, concerning = create_app_summary(app, spyware=False)
          app['summary'] = summary
          app['concerning'] = concerning
@@ -593,7 +573,9 @@ def evidence_printout():
     context["concerns"] = create_overall_summary(context)
 
     pprint(context)
+    '''
 
-    filename = create_printout(context)
+    # create the printout document
+    filename = create_printout(consult_data.to_dict())
     workingdir = os.path.abspath(os.getcwd())
     return send_from_directory(workingdir, filename)

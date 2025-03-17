@@ -127,7 +127,7 @@ class InstallForm(FlaskForm):
 class SpywareAppForm(FlaskForm):
     title = HiddenField("App Name")
     install_form = FormField(InstallForm)
-    title = HiddenField("App Name")
+    app_name = HiddenField("App Name")
     appId = HiddenField("App ID")
     flags = HiddenField("Flags")
     application_icon = HiddenField("App Icon")
@@ -144,7 +144,7 @@ class DualUseAppForm(FlaskForm):
     title = HiddenField("App Name")
     install_form = FormField(InstallForm)
     permissions = FieldList(FormField(PermissionForm))
-    title = HiddenField("App Name")
+    app_name = HiddenField("App Name")
     appId = HiddenField("App ID")
     flags = HiddenField("Flags")
     application_icon = HiddenField("App Icon")
@@ -206,6 +206,7 @@ class AppSelectForm(FlaskForm):
     title = HiddenField("App Name")
     appId = HiddenField("App ID")
     flags = HiddenField("Flags")
+    app_name = HiddenField("App Name")
     application_icon = HiddenField("App Icon")
     app_website = HiddenField("App Website")
     description = HiddenField("Description")
@@ -214,13 +215,13 @@ class AppSelectForm(FlaskForm):
     permissions = HiddenField("Permissions")
     subclass = HiddenField("Subclass")
     summary = HiddenField("Summary")
-    selected = BooleanField("Check this app?")
+    investigate = BooleanField("Check this app?")
 
 ## INDIVIDUAL PAGES
 class StartForm(FlaskForm):
     title = "Device To Be Scanned"
     device_nickname = StringField('Device nickname', validators=[InputRequired()])
-    device_type = RadioField('Device type', choices=DEVICE_TYPE_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
+    device_type = RadioField('Device type', choices=DEVICE_TYPE_CHOICES, validators=[InputRequired()])
     submit = SubmitField("Continue")
 
 class ScanForm(FlaskForm):
@@ -237,27 +238,26 @@ class DualUseForm(FlaskForm):
     dual_use_apps = FieldList(FormField(DualUseAppForm))
     submit = SubmitField("Continue")
 
+class SingleAppCheckForm(FlaskForm):
+    title = HiddenField("App Name")
+    install_form = FormField(InstallForm)
+    permissions = FieldList(FormField(PermissionForm))
+    appId = HiddenField("App ID")
+    flags = HiddenField("Flags")
+    application_icon = HiddenField("App Icon")
+    app_website = HiddenField("App Website")
+    description = HiddenField("Description")
+    #descriptionHTML = HiddenField("HTML Description")
+    developerwebsite = HiddenField("Developer Website")
+    subclass = HiddenField("Subclass")
+    summary = HiddenField("Summary")
+    investigate = HiddenField("Investigate?")
+    notes = FormField(NotesForm)
+
 class AppInvestigationForm(FlaskForm):
     title = "App Investigations"
-    spyware = FieldList(FormField(SpywareAppForm))
-    dualuse = FieldList(FormField(DualUseAppForm))
-    other = FieldList(FormField(SpywareAppForm))
-    submit = SubmitField("Complete scan")
-
-class AccountsUsedForm(FlaskForm):
-    title = "Step 3a: Accounts Used"
-    Google = BooleanField("Google")
-    iCloud = BooleanField("iCloud")
-    Microsoft = BooleanField("Microsoft")
-    Lyft = BooleanField("Lyft")
-    Uber = BooleanField("Uber")
-    Doordash = BooleanField("Doordash")
-    Grubhub = BooleanField("Grubhub")
-    Facebook = BooleanField("Facebook")
-    Twitter = BooleanField("Twitter")
-    Snapchat = BooleanField("Snapchat")
-    Instagram = BooleanField("Instagram")
-    submit = SubmitField("Continue")
+    selected_apps = FieldList(FormField(SingleAppCheckForm))
+    submit = SubmitField("Save Investigation")
 
 class AccountCompromiseForm(FlaskForm):
     title = "Account Compromise Check"
@@ -383,8 +383,10 @@ def unpack_evidence_context(session, task="evidence"):
 
 def create_printout(context):
 
+    pprint(context)
+
     filename = os.path.join('reports', 'test_report.pdf')
-    template = os.path.join('templates', 'printout.html')
+    template = os.path.join('templates', 'printout-test.html')
     css_path = os.path.join('webstatic', 'style.css')
 
     template_loader = jinja2.FileSystemLoader("./")
@@ -407,7 +409,8 @@ def create_overall_summary(context, second_person=False):
         dualuse = [],
         accounts = []
     )
-
+    
+    '''
     for app in context['spyware']:
         summary, concerning = create_app_summary(app, spyware=True, second_person=second_person)
         if concerning:
@@ -439,153 +442,9 @@ def create_overall_summary(context, second_person=False):
                 concern_type = "account",
                 summary = summary
             ))
-
+    '''
+            
     return concerns
-
-def create_app_summary(app, spyware, second_person=False):
-
-    agent = "you"
-    pronoun = "you"
-    possessive = "your"
-    if not second_person:
-        agent = "the client"
-        pronoun = "they"
-        possessive = "their"
-
-    sentences = []
-    concern = False
-    if spyware:
-        concern = True
-        sentences.append("{} is an app designed for surveillance.".format(app['app_name']))
-
-    # for all apps, look at install information
-    form = app['install_form']
-    if form['knew_installed'] != 'yes':
-        concern = True
-        sentences.append("{} did not know that this app was installed on the phone.".format(agent.capitalize()))
-        if spyware:
-            sentences.append("This indicates that another person installed the app with the intention of surveilling {}.".format(agent))
-
-    elif form['installed'] != 'yes':
-        #
-        # TODO: check if it is a system app
-        #
-        system_app = True
-        if system_app:
-            sentences.append("{} did not install this app. However, this is a system app which was likely installed on the phone when it was purchased.".format(agent.capitalize()))
-        else:
-            concern = True
-            if form['installed'] == 'no':
-                sentences.append("{} knew this app was installed on the phone, but did not install it.".format(agent.capitalize()))
-            if form['installed'] == 'unsure':
-                sentences.append("{} knew this app was installed on the phone, but {} are unsure whether {} installed it.".format(agent.capitalize(), pronoun, pronoun))
-            sentences.append("This indicates that another person installed this app, which would require physical access to the phone.")
-
-
-    elif form['coerced'] != 'no':
-        concern = True
-        sentences.append("{} [ex-]partner coerced {} to install this app, indicating that person is using the app to surveil {}.".format(possessive.capitalize(), agent, agent))
-    else:
-        sentences.append("{} installed this app voluntarily.".format(agent.capitalize()))
-
-    # for spyware apps, look at permission stuff
-    if not spyware:
-        any_issues = False
-        for perm in app['permissions']:
-            if perm['access'] != 'no':
-                any_issues = True
-                concern = True
-                sentences.append("{} [ex-]partner can use this app to access the phone's {}.".format(possessive.capitalize(), perm['permission_name'].lower()))
-
-        if not any_issues:
-            sentences.append("There is no evidence that this app is being used maliciously against {}.".format(agent))
-
-    return " ".join(sentences), concern
-
-def create_account_summary(account, second_person=False):
-
-    agent = "you"
-    pronoun = "you"
-    possessive = "your"
-    if not second_person:
-        agent = "the client"
-        pronoun = "they"
-        possessive = "their"
-
-    # generally, more high level because there is a lot going on.
-    access_sentences = []
-    access_concern = False
-
-    # Suspicious logins
-    form = account["suspicious_logins"]
-    suspicious_logins = False
-    if form['recognize'] != "yes":
-        access_concern = True
-        suspicious_logins = True
-        if form['describe_logins'] != "":
-            access_sentences.append("There is evidence that someone other than {} is currently logged into this account using {}.".format(agent, form['describe_logins']))
-        else:
-            access_sentences.append("There is evidence that someone other than {} is currently logged into this account.".format(agent))
-    elif form['activity_log'] != "no":
-        access_concern = True
-        suspicious_logins = True
-        access_sentences.append("There is evidence that someone other than {} has recently logged into this account.".format(agent))
-    else:
-        access_sentences.append("There is no evidence that someone other than {} has logged into this account recently.".format(agent))
-
-    # Passwords
-    pwd = False
-    form = account["password_check"]
-    if form['know'] != 'no' or form['guess'] != 'no':
-        pwd = True
-
-    # Recovery details
-    recovery = False
-    form = account["recovery_settings"]
-    if (form['email_present'] == 'yes' and form['email_access'] != 'no') or (form['phone_present'] == 'yes' and form['phone_access'] != 'no'):
-        recovery = True
-
-    # Two-factor
-    twofactor = False
-    form = account["two_factor_settings"]
-    if form['enabled'] == 'yes' and form['second_factor_access'] != 'no':
-        twofactor = True
-
-    # Security questions
-    questions = False
-    form = account["security_questions"]
-    if form['present'] and form['know'] != 'no':
-        questions= True
-
-    ability_sentences = []
-    ability_concern = False
-
-    if not (pwd or recovery or twofactor or questions):
-
-        other = ""
-        if suspicious_logins:
-            other = "other "
-        ability_sentences.append("There is no {}evidence that anyone else could access this account.".format(other))
-    else:
-        ability_concern = True
-        methods = []
-        if pwd: methods.append("the password")
-        if recovery: methods.append("the recovery contact information")
-        if questions: methods.append("the security questions")
-
-        also = ""
-        if suspicious_logins:
-            also = "also "
-
-        if len(methods) > 1:
-            ability_sentences.append("There is {}evidence that {} [ex-]partner can access this account via these methods: {}.".format(also, possessive, ", ".join(methods)))
-        else:
-            ability_sentences.append("There is {}evidence that {} [ex-]partner can access this account via {}.".format(also, possessive, methods[0]))
-
-        if twofactor:
-            ability_sentences.append("{} [ex-]partner has access to the second authentication factor; if they know the password, they could access this account without alerting {}.".format(possessive.capitalize(), agent))
-
-    return " ".join(access_sentences), " ".join(ability_sentences), access_concern, ability_concern
 
 def get_screenshots(context, name, dir):
     screenshots = os.listdir(dir)
@@ -817,6 +676,7 @@ def get_scan_data(device, device_owner):
     for k in apps.keys():
         app = apps[k]
         app["id"] =k
+        app["app_name"] = app["title"]
         if 'dual-use' in app["flags"] or 'spyware' in app["flags"]:
             suspicious_apps.append(app)
         else:
@@ -825,7 +685,7 @@ def get_scan_data(device, device_owner):
     detailed_suspicious_apps = get_multiple_app_details(device, ser, suspicious_apps)
     detailed_other_apps = get_multiple_app_details(device, ser, other_apps)
 
-    pprint(other_apps)
+    pprint(detailed_suspicious_apps)
 
     return scan_d, detailed_suspicious_apps, detailed_other_apps
 
@@ -902,7 +762,7 @@ class Dictable:
         return json.loads(json.dumps(self, cls=EvidenceDataEncoder))
         
 # Base class for nested classes where we'll input data as dict (for ease)
-class DictInitClass:
+class DictInitClass (Dictable):
     attrs = []
     
     def __init__(self, datadict=dict()):
@@ -946,19 +806,53 @@ class SecurityQuestions(DictInitClass):
              'questions', 
              'know',
              'screenshot']
+    
+class PermissionInfo(DictInitClass):
+    attrs = ['permission_name',
+             'access',
+             'describe',
+             'screenshot']
+    
+class InstallInfo(DictInitClass):
+    attrs = ['knew_installed',
+             'installed',
+             'coerced',
+             'screenshot']
+    
+    
+class AppInfo(Dictable):
+    def __init__(self,
+                 title="",
+                 app_name="",
+                 appID="",
+                 flags=[],
+                 application_icon="",
+                 app_website="",
+                 description="",
+                 developerwebsite="",
+                 investigate=False,
+                 permissions=[],
+                 install_form=dict(),
+                 notes=dict(),
+                 **kwargs):
+        self.title = title,
+        self.app_name = app_name
+        self.appId = appID
+        self.flags = flags
+        self.application_icon = application_icon
+        self.app_website = app_website
+        self.description = description
+        self.developerwebsite = developerwebsite
+        self.investigate = investigate
 
-class AppData(DictInitClass):
-    attrs = ['title',
-             'appId',
-             'flags',
-             'application_icon',
-             'app_website',
-             'description',
-             'developerwebsite',
-             'permissions',
-             'subclass',
-             'summary',
-             'selected']
+        try: 
+            self.permissions = [PermissionInfo(**p) for p in permissions]
+        except:
+            self.permissions = permissions
+
+        self.install_info = InstallInfo(**install_form)
+        self.notes = Notes(notes)
+
 
 class CheckApps(Dictable):
     def __init__(self, 
@@ -969,9 +863,9 @@ class CheckApps(Dictable):
         pprint(spyware)
         pprint(dualuse)
         pprint(other)
-        self.spyware = [AppData(app) for app in spyware]
-        self.dualuse = [AppData(app) for app in dualuse]
-        self.other = [AppData(app) for app in other]
+        self.spyware = [AppInfo(app) for app in spyware]
+        self.dualuse = [AppInfo(app) for app in dualuse]
+        self.other = [AppInfo(app) for app in other]
 
 class TAQDevices(DictInitClass):
     attrs = ['live_together', 
@@ -1007,6 +901,27 @@ class Notes(DictInitClass):
 
 ### REAL CLASSES
 
+class ConsultationData(Dictable):
+
+    def generate_overall_summary(self):
+         return "TODO: WRITE CODE TO GENERATE AN OVERALL SUMMARY"
+        
+    def __init__(self,
+                 setup,
+                 taq,
+                 accounts,
+                 scans,
+                 screenshot_dir,
+                 **kwargs):
+        self.setup = ConsultSetupData(**setup)
+        self.taq = TAQData(**taq)
+        self.accounts = [AccountInvestigation(account) for account in accounts]
+        self.scans = [ScanData(**scan) for scan in scans]
+        self.screenshot_dir = screenshot_dir
+
+        self.overall_summary = self.generate_overall_summary()
+
+
 class AccountInvestigation(Dictable):
     def __init__(self, 
                  account_id=0,
@@ -1031,8 +946,91 @@ class AccountInvestigation(Dictable):
         self.security_questions = SecurityQuestions(security_questions)
         self.notes = Notes(notes)
 
-    def report():
-        return "TODO: Create report"
+        self.report = f"ACCOUNT REPORT: {self.account_nickname}"
+
+    '''
+    def generate_report(self, second_person=True):
+        agent = "you"
+        pronoun = "you"
+        possessive = "your"
+        if not second_person:
+            agent = "the client"
+            pronoun = "they"
+            possessive = "their"
+
+        # generally, more high level because there is a lot going on.
+        access_sentences = []
+        access_concern = False
+
+        # Suspicious logins
+        suspicious_logins = False
+        if self.suspicious_logins.recognize != "yes":
+            access_concern = True
+            suspicious_logins = True
+            if self.suspicious_logins.describe_logins != "":
+                access_sentences.append("There is evidence that someone other than {} is currently logged into this account using {}.".format(agent, self.suspicious_logins.describe_logins))
+            else:
+                access_sentences.append("There is evidence that someone other than {} is currently logged into this account.".format(agent))
+        elif self.suspicious_logins.activity_log != "no":
+            access_concern = True
+            suspicious_logins = True
+            access_sentences.append("There is evidence that someone other than {} has recently logged into this account.".format(agent))
+        else:
+            access_sentences.append("There is no evidence that someone other than {} has logged into this account recently.".format(agent))
+
+        # Passwords
+        pwd = False
+        if self.password_check.know != 'no' or self.password_check.guess != 'no':
+            pwd = True
+
+        # Recovery details
+        recovery = False
+        if (self.recovery_settings.email_present == 'yes' and self.recovery_settings.email_access != 'no'
+            ) or (
+            self.recovery_settings.phone_present == 'yes' and self.recovery_settings.phone_access != 'no'
+            ):
+            recovery = True
+
+        # Two-factor
+        twofactor = False
+        if self.two_factor_settings.enabled == 'yes' and self.two_factor_settings.second_factor_access != 'no':
+            twofactor = True
+
+        # Security questions
+        questions = False
+        if self.security_questions.present and self.security_questions.know != 'no':
+            questions= True
+
+        ability_sentences = []
+        ability_concern = False
+
+        if not (pwd or recovery or twofactor or questions):
+
+            other = ""
+            if suspicious_logins:
+                other = "other "
+            ability_sentences.append("There is no {}evidence that anyone else could access this account.".format(other))
+        else:
+            ability_concern = True
+            methods = []
+            if pwd: methods.append("the password")
+            if recovery: methods.append("the recovery contact information")
+            if questions: methods.append("the security questions")
+
+            also = ""
+            if suspicious_logins:
+                also = "also "
+
+            if len(methods) > 1:
+                ability_sentences.append("There is {}evidence that {} [ex-]partner can access this account via these methods: {}.".format(also, possessive, ", ".join(methods)))
+            else:
+                ability_sentences.append("There is {}evidence that {} [ex-]partner can access this account via {}.".format(also, possessive, methods[0]))
+
+            if twofactor:
+                ability_sentences.append("{} [ex-]partner has access to the second authentication factor; if they know the password, they could access this account without alerting {}.".format(possessive.capitalize(), agent))
+
+       # return " ".join(access_sentences), " ".join(ability_sentences), access_concern, ability_concern
+        '''
 
 
 class ScanData(Dictable):
@@ -1047,8 +1045,9 @@ class ScanData(Dictable):
                  is_rooted="",
                  rooted_reasons="",
                  all_apps=list(),
-                 check_apps=dict(), 
+                 selected_apps=list(),
                  **kwargs):
+
         self.scan_id = scan_id
         self.device_type = device_type
         self.device_nickname = device_nickname
@@ -1058,11 +1057,72 @@ class ScanData(Dictable):
         self.device_manufacturer = device_manufacturer
         self.is_rooted = is_rooted
         self.rooted_reasons = rooted_reasons
-        self.all_apps = [AppData(app) for app in all_apps]
-        self.check_apps = CheckApps(**check_apps)
+        self.all_apps = [AppInfo(**app) for app in all_apps]
+        self.selected_apps = [AppInfo(**app) for app in selected_apps]
 
-    def report():
-        return "TODO: Create report"
+        self.report = f"SCAN REPORT: {self.device_nickname}"
+
+    # THIS DOESN'T WORK
+    '''
+    def generate_app_report(self, app: AppInfo, spyware=True, second_person=True):
+        agent = "you"
+        pronoun = "you"
+        possessive = "your"
+        if not second_person:
+            agent = "the client"
+            pronoun = "they"
+            possessive = "their"
+
+        sentences = []
+        concern = False
+        if spyware:
+            concern = True
+            sentences.append("{} is an app designed for surveillance.".format(app.title))
+
+        # for all apps, look at install information
+        if app != 'yes':
+            concern = True
+            sentences.append("{} did not know that this app was installed on the phone.".format(agent.capitalize()))
+            if spyware:
+                sentences.append("This indicates that another person installed the app with the intention of surveilling {}.".format(agent))
+
+        elif app.knew_installed != 'yes':
+            #
+            # TODO: check if it is a system app
+            #
+            system_app = True
+            if system_app:
+                sentences.append("{} did not install this app. However, this is a system app which was likely installed on the phone when it was purchased.".format(agent.capitalize()))
+            else:
+                concern = True
+                if app.installed == 'no':
+                    sentences.append("{} knew this app was installed on the phone, but did not install it.".format(agent.capitalize()))
+                if app.installed == 'unsure':
+                    sentences.append("{} knew this app was installed on the phone, but {} are unsure whether {} installed it.".format(agent.capitalize(), pronoun, pronoun))
+                sentences.append("This indicates that another person installed this app, which would require physical access to the phone.")
+
+
+        elif app.coerced != 'no':
+            concern = True
+            sentences.append("{} [ex-]partner coerced {} to install this app, indicating that person is using the app to surveil {}.".format(possessive.capitalize(), agent, agent))
+        else:
+            sentences.append("{} installed this app voluntarily.".format(agent.capitalize()))
+
+        # for spyware apps, look at permission stuff
+        if not spyware:
+            any_issues = False
+            for perm in app['permissions']:
+                if perm['access'] != 'no':
+                    any_issues = True
+                    concern = True
+                    sentences.append("{} [ex-]partner can use this app to access the phone's {}.".format(possessive.capitalize(), perm['permission_name'].lower()))
+
+            if not any_issues:
+                sentences.append("There is no evidence that this app is being used maliciously against {}.".format(agent))
+
+        #return " ".join(sentences), concern
+         '''
+
 
 class TAQData(Dictable):
     def __init__(self,
@@ -1080,6 +1140,8 @@ class TAQData(Dictable):
         self.kids = TAQKids(kids)
         self.legal = TAQKids(legal)
 
+        self.report = "TAQ REPORT"
+
     def report():
         return "TODO: Create report"
 
@@ -1090,9 +1152,6 @@ class ConsultSetupData(Dictable):
                  **kwargs):
         self.client = client
         self.date = date
-
-    def report():
-        return "TODO: Create report"
     
 
 def get_scan_by_ser(ser, all_scan_data: list[ScanData]):
