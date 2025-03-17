@@ -1,3 +1,4 @@
+import json
 import os
 import pickle
 import traceback
@@ -8,7 +9,6 @@ from pprint import pprint
 
 from flask import (
     flash,
-    jsonify,
     redirect,
     render_template,
     request,
@@ -23,21 +23,27 @@ from evidence_collection import (
     CONTEXT_PKL_FNAME,
     FAKE_APP_DATA,
     AccountCompromiseForm,
+    AccountInvestigation,
     AccountsUsedForm,
     AppInvestigationForm,
     AppSelectPageForm,
+    CheckApps,
     ConsultDataTypes,
+    ConsultSetupData,
     DualUseForm,
     Pages,
+    ScanData,
     ScanForm,
     SetupForm,
     SpywareForm,
     StartForm,
+    TAQData,
     TAQForm,
     create_account_summary,
     create_app_summary,
     create_overall_summary,
     create_printout,
+    get_scan_by_ser,
     get_scan_data,
     get_screenshots,
     load_json_data,
@@ -45,6 +51,7 @@ from evidence_collection import (
     remove_unwanted_data,
     save_data_as_json,
     unpack_evidence_context,
+    update_scan_by_ser,
 )
 from web import app
 
@@ -61,10 +68,12 @@ def evidence_setup():
     if request.method == 'GET':
 
         # Load any data we already have
-        setup_data = load_json_data(ConsultDataTypes.SETUP.value)
-        if 'date' not in list(setup_data.keys()):
-            setup_data['date'] = datetime.now()
-        form.process(data=setup_data)
+        setup_data = ConsultSetupData(**load_json_data(ConsultDataTypes.SETUP.value))
+
+        if setup_data.date.strip() == "":
+            setup_data.date = datetime.now()
+
+        form.process(data=setup_data.to_dict())
 
         context = dict(
             task = "evidence-setup",
@@ -77,12 +86,12 @@ def evidence_setup():
     if request.method == 'POST':
         pprint(form.data)
         if form.is_submitted() and form.validate():
-
-            # clean up the submitted data
+            # clean up and save data
             clean_data = remove_unwanted_data(form.data)
+            setup_data = ConsultSetupData(**clean_data)
 
             # save clean data
-            save_data_as_json(clean_data, ConsultDataTypes.SETUP.value)
+            save_data_as_json(setup_data, ConsultDataTypes.SETUP.value)
 
             return redirect(url_for('evidence_home'))
         
@@ -119,14 +128,15 @@ def evidence_taq():
     if request.method == 'GET':
 
         # Load any data we already have
-        taq_data = load_json_data(ConsultDataTypes.TAQ.value)
-        form.process(data=taq_data)
+        taq_data = TAQData(**load_json_data(ConsultDataTypes.TAQ.value))
+        
+        form.process(data=taq_data.to_dict())
 
         context = dict(
             task = "evidence-taq",
             form = form,
             title=config.TITLE,
-            sessiondata = taq_data
+            sessiondata = taq_data.to_dict()
         )
 
         return render_template('main.html', **context)
@@ -137,11 +147,14 @@ def evidence_taq():
         pprint(form.data)
         if form.is_submitted() and form.validate():
 
-            # clean up the submitted data
+            # clean up data
             clean_data = remove_unwanted_data(form.data)
 
+            # load data as class
+            taq_data = TAQData(**clean_data)
+
             # save clean data
-            save_data_as_json(clean_data, ConsultDataTypes.TAQ.value)
+            save_data_as_json(taq_data, ConsultDataTypes.TAQ.value)
 
             return redirect(url_for('evidence_home'))
         
@@ -154,60 +167,176 @@ def evidence_taq():
 
 
 
-@app.route("/evidence/scan", methods={'GET'})
-def evidence_scan_default():
+@app.route("/evidence/scan", methods={'GET', 'POST'})
+def evidence_scan_start():
 
-    # place to save the num scans later if it becomes a pain to load it
-    scans = load_json_data(ConsultDataTypes.SCANS.value)
-    new_id = len(scans)
+    # always assume we are starting with a fresh scan
+    all_scan_data = [ScanData(**scan) for scan in 
+                     load_json_data(ConsultDataTypes.SCANS.value)]
+    current_scan = ScanData()
+    form = StartForm()
 
-    return redirect(url_for('evidence_scan', id=new_id, step=1))
+    if request.method == "GET":
+        context = dict(
+            task = "evidence-scan",
+            form = form,
+            title=config.TITLE,
+            scan_data = current_scan.to_dict(),
+            step = 1,
+            id = 0,
+        )
+        pprint(form.data)
 
-@app.route("/evidence/scan/<int:id>/<int:step>", methods={'GET', 'POST'})
-def evidence_scan(id,step):
+        return render_template('main.html', **context)
 
-    ## TODO: Save, and load by, device ID
+    if request.method == "POST":
+        pprint(form.data)
+        if form.is_submitted() and form.validate():
 
-    class ScanSteps(Enum):
-        DEVICEINFO = 1
-        APPLIST = 2
-        APPCHECKS = 3
+            # clean up the submitted data
+            clean_data = remove_unwanted_data(form.data)
 
-    # load current scan data if there is any; otherwise create a fresh dict
-    current_scan = dict()
-    all_scan_data = load_json_data(ConsultDataTypes.SCANS.value)
-    if len(all_scan_data) > id:
-        current_scan = all_scan_data[id]
+            # Ensure any previous screenshots have been removed before scan
+            print("Removing files:")
+            os.system("ls webstatic/images/screenshots/")
+            os.system("rm webstatic/images/screenshots/*")
 
-    if step == ScanSteps.DEVICEINFO.value:
-        form = StartForm()
+            try:
+                # Get app list
+                scan_data, suspicious_apps, other_apps = get_scan_data(clean_data["device_type"], clean_data["device_nickname"])
 
-    if step == ScanSteps.APPLIST.value:
-        form = AppSelectPageForm(apps=current_scan['all_apps'])
+                for i in range(len(suspicious_apps)):
+                    suspicious_apps[i]["selected"] = True
+                for i in range(len(other_apps)): 
+                    other_apps[i]["selected"] = False
+                all_apps = suspicious_apps + other_apps
+                
+                # Create pre-filled check app list
+                spyware, dualuse = reformat_verbose_apps(suspicious_apps)
+                check_apps = []
+                for app in spyware:
+                    app["type"] = "spyware"
+                    check_apps.append(app)
+                for app in dualuse:
+                    app["type"] = "dualuse"
+                    check_apps.append(app)
+                
+                # Create current scan object with this info
+                current_scan = ScanData(scan_id=len(all_scan_data), 
+                                        **clean_data, 
+                                        **scan_data, # this may input way too much
+                                        all_apps=all_apps, 
+                                        check_apps=check_apps)
+                
+                pprint(current_scan.__dict__)
+                
+                current_scan.id = len(all_scan_data)
+                all_scan_data.append(current_scan)
 
-    if step == ScanSteps.APPCHECKS.value:
-        check_apps = current_scan['check_apps']
-        form = AppInvestigationForm(spyware=check_apps['spyware'],
-                                    dualuse=check_apps['dualuse'],
-                                    other=check_apps['other'])
 
-    ### IF IT'S A GET:
+            except Exception as e:
+                print(traceback.format_exc())
+                flash(e, "error")
+                return redirect(url_for('evidence_scan_default', step=2))
+
+            
+            save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
+            return redirect(url_for('evidence_scan', ser=current_scan.serial, step=2))
+
+    return redirect(url_for('evidence_scan_default'))
+
+
+
+@app.route("/evidence/scan/select/<string:ser>", methods={'GET', 'POST'})
+def evidence_scan_select(ser):
+
+    # load all scans
+    all_scan_data = [ScanData(**scan) for scan in 
+                     load_json_data(ConsultDataTypes.SCANS.value)]
+
+    # get the right scan by serial number
+    current_scan = get_scan_by_ser(ser, all_scan_data)
+    assert current_scan.serial == ser
+
+    # fill form
+    form = AppSelectPageForm(apps=current_scan.all_apps)
+
+     ### IF IT'S A GET:
     if request.method == 'GET':
-        #if step == ScanSteps.APPLIST.value:
-            #form.process(data=current_scan) # TODO fix??
-        if step == ScanSteps.APPCHECKS.value:
-            form.process(data=current_scan['check_apps'])
+        form.process(data=current_scan.to_dict()) # TODO fix??
+        pprint(form.data)
 
         context = dict(
             task = "evidence-scan",
             form = form,
             title=config.TITLE,
-            scan_data = current_scan,
-            step = step,
-            id = id,
+            scan_data = current_scan.to_dict(),
+            step = 2
         )
 
+        return render_template('main.html', **context)
+
+    # Submit the form if it's a POST
+    if request.method == 'POST':
         pprint(form.data)
+        if form.is_submitted() and form.validate():
+
+            # clean up the submitted data
+            clean_data = remove_unwanted_data(form.data)
+
+            # get selected apps from the form data
+            selected_apps = [app for app in clean_data['apps'] if app['selected']]
+                 
+            # split selected apps into three groups
+            spyware, dualuse, other = [], [], []
+            for app in selected_apps:
+                if 'spyware' in app['flags']:
+                    spyware.append(app)
+                elif 'dual-use' in app['flags']:
+                    dualuse.append(app)
+                else:
+                    other.append(app)
+
+            # update the current scan data and save it as the most recent scan
+            current_scan.check_apps = CheckApps(spyware=spyware, dualuse=dualuse, other=other)
+            all_scan_data = update_scan_by_ser(current_scan, all_scan_data)
+
+            # save this updated data
+            save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
+        
+            return redirect(url_for('evidence_scan_investigate', ser=ser))
+        
+        
+
+@app.route("/evidence/scan/investigate/<string:ser>", methods={'GET', 'POST'})
+def evidence_scan_investigate(ser):
+
+    # load all scans
+    all_scan_data = [ScanData(**scan) for scan in 
+                     load_json_data(ConsultDataTypes.SCANS.value)]
+
+    # get the right scan by serial number
+    current_scan = get_scan_by_ser(ser, all_scan_data)
+    assert current_scan.serial == ser
+
+    # get apps to investigate from the scan data
+    check_apps = current_scan.check_apps
+    form = AppInvestigationForm(spyware=check_apps.to_dict()['spyware'],
+                                dualuse=check_apps.to_dict()['dualuse'],
+                                other=check_apps.to_dict()['other'])
+
+    ### IF IT'S A GET:
+    if request.method == 'GET':
+        form.process(data=current_scan.check_apps.to_dict())
+        pprint(form.data)
+
+        context = dict(
+            task = "evidence-scan",
+            form = form,
+            title=config.TITLE,
+            scan_data = current_scan.to_dict(),
+            step = 3
+        )
 
         return render_template('main.html', **context)
 
@@ -220,99 +349,14 @@ def evidence_scan(id,step):
             # clean up the submitted data
             clean_data = remove_unwanted_data(form.data)
 
-            ### STEP 1: Save device info, perform scan, and add list of apps
-            if step == ScanSteps.DEVICEINFO.value:
+            # update the current scan data and save it
+            current_scan.check_apps = CheckApps(**clean_data)
+            all_scan_data = update_scan_by_ser(current_scan, all_scan_data)
 
-                # create a new scan
-                current_scan['device_type'] = clean_data["device_type"]
-                current_scan['device_nickname'] = clean_data["device_nickname"]
+            #  save this updated data
+            save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
 
-                 # Ensure any previous screenshots have been removed before scan
-                print("Removing files:")
-                os.system("ls webstatic/images/screenshots/")
-                os.system("rm webstatic/images/screenshots/*")
-
-                try:
-                    # Get app list
-                    scan_data, suspicious_apps, other_apps = get_scan_data(clean_data["device_type"], clean_data["device_nickname"])
-
-                    for i in range(len(suspicious_apps)):
-                        suspicious_apps[i]["selected"] = True
-                    for i in range(len(other_apps)): 
-                        other_apps[i]["selected"] = False
-
-                    # add scan data
-                    current_scan['serial'] = scan_data['serial']
-                    current_scan['model'] = scan_data['device_model']
-                    current_scan['version'] = scan_data['device_version']
-                    current_scan['manufacturer'] = scan_data['device_manufacturer']
-                    current_scan['is_rooted'] = scan_data['is_rooted']
-                    current_scan['rooted_reasons'] = scan_data['rooted_reasons']
-
-                    # create app list 
-                    current_scan['all_apps'] = suspicious_apps + other_apps
-                    
-                    # Create pre-filled check app list
-                    spyware, dualuse = reformat_verbose_apps(suspicious_apps)
-                    current_scan['check_apps'] = []
-                    for app in spyware:
-                        app["type"] = "spyware"
-                        current_scan['check_apps'].append(app)
-                    for app in dualuse:
-                        app["type"] = "dualuse"
-                        current_scan['check_apps'].append(app)
-
-                    # add this scan to the scan data
-                    if len(all_scan_data) == id:
-                        all_scan_data.append(current_scan)
-                    else:
-                        # I don't think it'll get here but might as well
-                        all_scan_data[id] = current_scan
-
-                    save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
-
-
-                except Exception as e:
-                    print(traceback.format_exc())
-                    flash(e, "error")
-                    return redirect(url_for('evidence_scan', id=id, step=step))
-
-                return redirect(url_for('evidence_scan', id=id, step=step+1))
-            
-            
-
-
-            ### STEP 2: Create the list of apps we want to investigate in phase 2
-            if step == ScanSteps.APPLIST.value:
-
-                selected_apps = [app for app in clean_data['apps'] if app['selected']]
-
-                spyware = []
-                dualuse = []
-                other = []
-                for app in selected_apps:
-                    if 'spyware' in app['flags']:
-                        spyware.append(app)
-                    elif 'dual-use' in app['flags']:
-                        dualuse.append(app)
-                    else:
-                        other.append(app)
-
-                current_scan['check_apps'] = {"spyware": spyware, "dualuse": dualuse, "other": other}
-                all_scan_data[id] = current_scan
-                save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
-            
-                return redirect(url_for('evidence_scan', id=id, step=step+1))
-
-            ### STEP 3: Add investigation data for all of these apps, update session data
-            if step == ScanSteps.APPCHECKS.value:
-                
-                current_scan['check_apps'] = clean_data
-                all_scan_data[id] = current_scan
-                save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
-
-                return redirect(url_for('evidence_home'))
-
+            return redirect(url_for('evidence_home'))
 
 
 @app.route("/evidence/account", methods={'GET'})
@@ -327,21 +371,24 @@ def evidence_account_default():
 @app.route("/evidence/account/<int:id>", methods={'GET', 'POST'})
 def evidence_account(id):
 
-    current_account = dict()
-    all_account_data = load_json_data(ConsultDataTypes.ACCOUNTS.value)
+    all_account_data_json = load_json_data(ConsultDataTypes.ACCOUNTS.value)
+    all_account_data = [AccountInvestigation(**account) for account in all_account_data_json]
+
+    current_account = AccountInvestigation(account_id=id)
     if len(all_account_data) > id:
         current_account = all_account_data[id]
     
     form = AccountCompromiseForm()
 
     if request.method == 'GET':
-        form.process(data=current_account)
+        form.process(data=current_account.to_dict())
 
         context = dict(
             task = "evidence-account",
             form = form,
             title=config.TITLE,
-            sessiondata = current_account, # for now, don't load anything
+            sessiondata = current_account.to_dict()
+            # for now, don't load anything
         )
 
         return render_template('main.html', **context)
@@ -351,15 +398,14 @@ def evidence_account(id):
         pprint(form.data)
         if form.is_submitted() and form.validate():
 
-            # clean up the submitted data
-            clean_account_data = remove_unwanted_data(form.data)
-            if clean_account_data['account_nickname'].strip() == '':
-                clean_account_data['account_nickname'] = clean_account_data['platform']
+            # save data in class
+            account_investigation = AccountInvestigation(**form.data, account_id=id)
 
+            # add it to the account data
             if len(all_account_data) <= id:
-                all_account_data.append(clean_account_data)
+                all_account_data.append(account_investigation)
             else:
-                all_account_data[id] = clean_account_data
+                all_account_data[id] = account_investigation
 
             save_data_as_json(all_account_data, ConsultDataTypes.ACCOUNTS.value)
 

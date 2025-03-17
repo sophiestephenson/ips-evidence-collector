@@ -283,48 +283,48 @@ class AppSelectPageForm(FlaskForm):
     submit = SubmitField("Select")
 
 ### TAQ Forms
-class TAQDeviceComp(FlaskForm):
+class TAQDeviceCompForm(FlaskForm):
     title = "Device Compromise Indicators"
     live_together = RadioField("Do you live with the person of concern?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
     physical_access = RadioField("Has the person of concern had physical access to your devices at any point in time?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
 
-class TAQAccounts(FlaskForm):
+class TAQAccountsForm(FlaskForm):
     title = "Account and Password Management"
     pwd_mgmt = StringField("How do you manage passwords?")
     pwd_comp = RadioField("Do you believe the person of concern knows, or could guess, any of your passwords?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
     pwd_comp_which = StringField("Which ones?")
 
-class TAQSharing(FlaskForm):
+class TAQSharingForm(FlaskForm):
     title = "Account Sharing"
     share_phone_plan = RadioField("Do you share a phone plan with the person of concern?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
     phone_plan_admin = SelectMultipleField("If you share a phone plan, who is the family 'head' or plan administrator?", choices=PERSON_CHOICES)
     share_accounts = RadioField("Do you share any accounts with the person of concern?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
 
-class TAQSmartHome(FlaskForm):
+class TAQSmartHomeForm(FlaskForm):
     title = "Smart Home Devices"
     smart_home = RadioField("Do you have any smart home devices?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
     smart_home_setup = SelectMultipleField("Who installed and set up your smart home devices?", choices=PERSON_CHOICES)
     smart_home_access = RadioField("Did the person of concern ever have physical access to the devices?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
     smart_home_account = RadioField("Do you share any smart home accounts with the person of concern?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
 
-class TAQKids(FlaskForm):
+class TAQKidsForm(FlaskForm):
     title = "Children's Devices"
     custody = RadioField("Do you share custody of children with the person of concern?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
     child_phys_access = RadioField("Has the person of concern had physical access to any of the child(ren)'s devices?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
     child_phone_plan = RadioField("Does the person of concern pay for the child(ren)'s phone plan?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
 
-class TAQLegal(FlaskForm):
+class TAQLegalForm(FlaskForm):
     title = "Legal Proceedings"
     legal = SelectMultipleField("Do you have any ongoing legal cases?", choices=LEGAL_CHOICES)
 
 class TAQForm(FlaskForm):
     title = "Technology Assessment Questionnaire (TAQ)"
-    devices = FormField(TAQDeviceComp)
-    accounts = FormField(TAQAccounts)
-    sharing = FormField(TAQSharing)
-    smarthome = FormField(TAQSmartHome)
-    kids = FormField(TAQKids)
-    legal = FormField(TAQLegal)
+    devices = FormField(TAQDeviceCompForm)
+    accounts = FormField(TAQAccountsForm)
+    sharing = FormField(TAQSharingForm)
+    smarthome = FormField(TAQSmartHomeForm)
+    kids = FormField(TAQKidsForm)
+    legal = FormField(TAQLegalForm)
     submit = SubmitField("Save TAQ")
 
 
@@ -851,7 +851,7 @@ def get_data_filename(datatype: ConsultDataTypes):
 # Overwrites it always, assume any previous data has been incorporated
 def save_data_as_json(data, datatype: ConsultDataTypes):
 
-    json_object = json.dumps(data)
+    json_object = json.dumps(data, cls=EvidenceDataEncoder)
 
     fname = os.path.join(TMP_CONSULT_DATA_DIR, get_data_filename(datatype))
     
@@ -859,6 +859,9 @@ def save_data_as_json(data, datatype: ConsultDataTypes):
     with lock:
         with open(fname, 'w') as outfile:
             outfile.write(json_object)
+
+    
+    print("DATA SAVED:", type(data))
 
     return
 
@@ -878,3 +881,239 @@ def load_json_data(datatype: ConsultDataTypes):
             json_object = json.load(openfile)
 
     return json_object
+
+
+
+### ----------------------------------
+### ----------------------------------
+### DATA TYPING
+### ----------------------------------
+### ----------------------------------
+
+### HELPER CLASSES
+
+# Helps create JSON encoding from nested classes
+class EvidenceDataEncoder(json.JSONEncoder):
+        def default(self, o):
+            return o.__dict__
+        
+class Dictable:
+    def to_dict(self):
+        return json.loads(json.dumps(self, cls=EvidenceDataEncoder))
+        
+# Base class for nested classes where we'll input data as dict (for ease)
+class DictInitClass:
+    attrs = []
+    
+    def __init__(self, datadict=dict()):
+        for k in self.attrs:
+            if k in list(datadict.keys()):
+                setattr(self, k, datadict[k])
+            else:
+                setattr(self, k, "")
+
+class SuspiciousLogins(DictInitClass):
+    attrs = ['recognize',
+             'describe_logins',
+             'login_screenshot',
+             'activity_log',
+             'describe_activity',
+             'activity_screenshot']
+
+class PasswordCheck(DictInitClass):
+    attrs = ['know', 'guess']
+
+class RecoverySettings(DictInitClass):
+    attrs = ['phone_present',
+             'phone',
+             'phone_access',
+             'phone_screenshot',
+             'email_present', 
+             'email', 
+             'email_access', 
+             'email_screenshot']
+
+class TwoFactorSettings(DictInitClass):
+    attrs = ['enabled',
+             'second_factor_type',
+             'describe',
+             'second_factor_access',
+             'screenshot']
+
+
+class SecurityQuestions(DictInitClass):
+    attrs = ['present', 
+             'questions', 
+             'know',
+             'screenshot']
+
+class AppData(DictInitClass):
+    attrs = ['title',
+             'appId',
+             'flags',
+             'application_icon',
+             'app_website',
+             'description',
+             'developerwebsite',
+             'permissions',
+             'subclass',
+             'summary',
+             'selected']
+
+class CheckApps(Dictable):
+    def __init__(self, 
+                 spyware=list(), 
+                 dualuse=list(), 
+                 other=list(), 
+                 **kwargs):
+        pprint(spyware)
+        pprint(dualuse)
+        pprint(other)
+        self.spyware = [AppData(app) for app in spyware]
+        self.dualuse = [AppData(app) for app in dualuse]
+        self.other = [AppData(app) for app in other]
+
+class TAQDevices(DictInitClass):
+    attrs = ['live_together', 
+             'physical_access']
+
+class TAQAccounts(DictInitClass):
+    attrs = ['pwd_mgmt', 
+             'pwd_comp', 
+             'pwd_comp_which']
+
+class TAQSharing(DictInitClass):
+    attrs = ['share_phone_plan', 
+             'phone_plan_admin',
+             'share_accounts']
+
+class TAQSmarthome(DictInitClass):
+    attrs = ['smart_home',
+             'smart_home_setup',
+             'smart_home_access',
+             'smart_home_account']
+
+class TAQKids(DictInitClass):
+    attrs = ['custody',
+             'child_phys_access',
+             'child_phone_plan']
+
+class TAQLegal(DictInitClass):
+    attrs = ['legal']
+
+class Notes(DictInitClass):
+    attrs = ['client_notes', 'consultant_notes']
+
+
+### REAL CLASSES
+
+class AccountInvestigation(Dictable):
+    def __init__(self, 
+                 account_id=0,
+                 platform="", 
+                 account_nickname="", 
+                 suspicious_logins=dict(),
+                 password_check=dict(), 
+                 recovery_settings=dict(),  
+                 two_factor_settings=dict(),
+                 security_questions=dict(),
+                 notes=dict(), 
+                 **kwargs):
+        self.account_id = account_id
+        self.platform = platform
+        self.account_nickname = account_nickname
+        if self.account_nickname.strip() == "":
+            self.account_nickname = platform
+        self.suspicious_logins = SuspiciousLogins(suspicious_logins)
+        self.password_check = PasswordCheck(password_check)
+        self.recovery_settings = RecoverySettings(recovery_settings)
+        self.two_factor_settings = TwoFactorSettings(two_factor_settings)
+        self.security_questions = SecurityQuestions(security_questions)
+        self.notes = Notes(notes)
+
+    def report():
+        return "TODO: Create report"
+
+
+class ScanData(Dictable):
+    def __init__(self,
+                 scan_id=0,
+                 device_type="",
+                 device_nickname="",
+                 serial="",
+                 device_model="",
+                 device_version="",
+                 device_manufacturer="",
+                 is_rooted="",
+                 rooted_reasons="",
+                 all_apps=list(),
+                 check_apps=dict(), 
+                 **kwargs):
+        self.scan_id = scan_id
+        self.device_type = device_type
+        self.device_nickname = device_nickname
+        self.serial = serial
+        self.device_model = device_model
+        self.device_version = device_version
+        self.device_manufacturer = device_manufacturer
+        self.is_rooted = is_rooted
+        self.rooted_reasons = rooted_reasons
+        self.all_apps = [AppData(app) for app in all_apps]
+        self.check_apps = CheckApps(**check_apps)
+
+    def report():
+        return "TODO: Create report"
+
+class TAQData(Dictable):
+    def __init__(self,
+                 devices=dict(),
+                 accounts=dict(),
+                 sharing=dict(),
+                 smarthome=dict(),
+                 kids=dict(),
+                 legal=dict(), 
+                 **kwargs):
+        self.devices = TAQDevices(devices)
+        self.accounts = TAQAccounts(accounts)
+        self.sharing = TAQSharing(sharing)
+        self.smarthome = TAQSmarthome(smarthome)
+        self.kids = TAQKids(kids)
+        self.legal = TAQKids(legal)
+
+    def report():
+        return "TODO: Create report"
+
+class ConsultSetupData(Dictable):
+    def __init__(self, 
+                 client="",
+                 date="", 
+                 **kwargs):
+        self.client = client
+        self.date = date
+
+    def report():
+        return "TODO: Create report"
+    
+
+def get_scan_by_ser(ser, all_scan_data: list[ScanData]):
+
+    for scan in all_scan_data:
+        if scan.serial == ser:
+            return scan
+    
+    return ScanData()
+
+
+
+def update_scan_by_ser(new_scan: ScanData, all_scan_data: list[ScanData]):
+
+    for i in range(len(all_scan_data)):
+        scan = all_scan_data[i]
+
+        # if serial numbers match, replace with the new one
+        if scan.serial == new_scan.serial:
+            all_scan_data[i] = new_scan
+            return all_scan_data
+    
+    all_scan_data.append(new_scan)
+    return all_scan_data
