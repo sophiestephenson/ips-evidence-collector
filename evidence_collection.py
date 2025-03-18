@@ -835,8 +835,13 @@ class AppInfo(Dictable):
                  install_form=dict(),
                  notes=dict(),
                  **kwargs):
-        self.title = title,
+        
+        self.title = title
         self.app_name = app_name
+        if self.app_name.strip() == "":
+            self.app_name = title
+        if self.app_name.strip() == "":
+            self.app_name = appID
         self.appId = appID
         self.flags = flags
         self.application_icon = application_icon

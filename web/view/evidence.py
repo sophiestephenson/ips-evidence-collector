@@ -204,24 +204,20 @@ def evidence_scan_start():
                 # Get app list
                 scan_data, suspicious_apps_dict, other_apps_dict = get_scan_data(clean_data["device_type"], clean_data["device_nickname"])
 
-                suspicious_apps = [AppInfo(**app) for app in suspicious_apps_dict]
-                other_apps = [AppInfo(**app) for app in other_apps_dict]
-
                 # fill in the /investigate/ marker for suspicious apps
-                for i in range(len(suspicious_apps)):
-                    suspicious_apps[i].investigate = True
+                for i in range(len(suspicious_apps_dict)):
+                    suspicious_apps_dict[i]["investigate"] = True
 
-                all_apps = suspicious_apps + other_apps
+                all_apps = suspicious_apps_dict + other_apps_dict
                 
                 # Create current scan object with this info
                 current_scan = ScanData(scan_id=len(all_scan_data), 
                                         **clean_data, 
                                         **scan_data,
-                                        all_apps=[app.to_dict() for app in all_apps],
-                                        selected_apps=[app.to_dict() for app in suspicious_apps])
+                                        all_apps=all_apps,
+                                        selected_apps=suspicious_apps_dict)
                 
                 pprint(current_scan.__dict__)
-                pprint([app.to_dict() for app in all_apps])
                 
                 current_scan.id = len(all_scan_data)
                 all_scan_data.append(current_scan)
@@ -246,15 +242,12 @@ def evidence_scan_select(ser):
     # load all scans
     all_scan_data = [ScanData(**scan) for scan in 
                      load_json_data(ConsultDataTypes.SCANS.value)]
-
     # get the right scan by serial number
     current_scan = get_scan_by_ser(ser, all_scan_data)
     assert current_scan.serial == ser
 
     # fill form
     form = AppSelectPageForm(apps=[app.to_dict() for app in current_scan.all_apps])
-
-    pprint(current_scan.all_apps[0].to_dict())
 
      ### IF IT'S A GET:
     if request.method == 'GET':
