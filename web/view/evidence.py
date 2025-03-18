@@ -9,6 +9,7 @@ from pprint import pprint
 
 from flask import (
     flash,
+    jsonify,
     redirect,
     render_template,
     request,
@@ -92,6 +93,7 @@ def evidence_setup():
             # save clean data
             save_data_as_json(setup_data, ConsultDataTypes.SETUP.value)
 
+
             return redirect(url_for('evidence_home'))
         
 
@@ -130,6 +132,7 @@ def evidence_taq():
         taq_data = TAQData(**load_json_data(ConsultDataTypes.TAQ.value))
         
         form.process(data=taq_data.to_dict())
+
 
         context = dict(
             task = "evidence-taq",
@@ -352,6 +355,7 @@ def evidence_account(id):
     all_account_data = [AccountInvestigation(**account) for account in all_account_data_json]
 
     current_account = AccountInvestigation(account_id=id)
+
     if len(all_account_data) > id:
         current_account = all_account_data[id]
     

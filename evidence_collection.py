@@ -1189,3 +1189,52 @@ def update_scan_by_ser(new_scan: ScanData, all_scan_data: list[ScanData]):
     
     all_scan_data.append(new_scan)
     return all_scan_data
+=======
+    pprint(other_apps)
+
+    return scan_d, detailed_suspicious_apps, detailed_other_apps
+
+class ConsultDataTypes(Enum):
+    TAQ = 1
+    SCANS = 2
+    ACCOUNTS = 3
+    SETUP = 4
+
+def get_data_filename(datatype: ConsultDataTypes):
+
+    if datatype == ConsultDataTypes.SETUP.value:
+        return "setup.json"
+    elif datatype == ConsultDataTypes.TAQ.value:
+        return "taq.json"
+    elif datatype == ConsultDataTypes.SCANS.value:
+        return "scans.json"
+    else:
+        return "accounts.json"
+
+
+# Save data to the right tmp file as JSON
+# Overwrites it always, assume any previous data has been incorporated
+def save_data_as_json(data, datatype: ConsultDataTypes):
+
+    json_object = json.dumps(data)
+
+    fname = os.path.join(TMP_CONSULT_DATA_DIR, get_data_filename(datatype))
+
+    with open(fname, 'w') as outfile:
+        outfile.write(json_object)
+
+    return
+
+def load_json_data(datatype: ConsultDataTypes):
+
+    fname = os.path.join(TMP_CONSULT_DATA_DIR, get_data_filename(datatype))
+    if not os.path.exists(fname):
+        if datatype in [ConsultDataTypes.TAQ, ConsultDataTypes.SETUP] :
+            return dict()
+        else: 
+            return []
+
+    with open(fname, 'r') as openfile:
+        json_object = json.load(openfile)
+
+    return json_object
