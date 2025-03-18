@@ -111,16 +111,16 @@ class NotesForm(FlaskForm):
 ## HELPER FORMS FOR APPS
 class PermissionForm(FlaskForm):
     permission_name = HiddenField("Permission")
-    access = RadioField('Can your [ex-]partner access this information using this app?', choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
+    access = RadioField('Can your [ex-]partner access this information using this app?', choices=YES_NO_CHOICES,  default=YES_NO_DEFAULT)
     describe = TextAreaField("How do you know?")
     screenshot = MultipleFileField('Add screenshot(s)')
 
 # HELPER FORM FOR SCREENSHOTS
 
 class InstallForm(FlaskForm):
-    knew_installed = RadioField('Did you know this app was installed?', choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
-    installed = RadioField('Did you install this app?', choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
-    coerced = RadioField('Did your [ex-]partner coerce you into installing this app?', choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
+    knew_installed = RadioField('Did you know this app was installed?', choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+    installed = RadioField('Did you install this app?', choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+    coerced = RadioField('Did your [ex-]partner coerce you into installing this app?', choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
     #who = TextAreaField("If you were coerced, who coerced you?")
     screenshot = MultipleFileField('Add screenshot(s)')
 
@@ -142,7 +142,7 @@ class SpywareAppForm(FlaskForm):
 
 class DualUseAppForm(FlaskForm):
     title = HiddenField("App Name")
-    install_form = FormField(InstallForm)
+    install_info = FormField(InstallForm)
     permissions = FieldList(FormField(PermissionForm))
     app_name = HiddenField("App Name")
     appId = HiddenField("App ID")
@@ -240,14 +240,14 @@ class DualUseForm(FlaskForm):
 
 class SingleAppCheckForm(FlaskForm):
     title = HiddenField("App Name")
-    install_form = FormField(InstallForm)
+    install_info = FormField(InstallForm)
     permissions = FieldList(FormField(PermissionForm))
     appId = HiddenField("App ID")
     flags = HiddenField("Flags")
     application_icon = HiddenField("App Icon")
     app_website = HiddenField("App Website")
     description = HiddenField("Description")
-    #descriptionHTML = HiddenField("HTML Description")
+    descriptionHTML = HiddenField("HTML Description")
     developerwebsite = HiddenField("Developer Website")
     subclass = HiddenField("Subclass")
     summary = HiddenField("Summary")
@@ -274,7 +274,7 @@ class AccountCompromiseForm(FlaskForm):
 class SetupForm(FlaskForm):
     title = "Consultation Information"
     client = StringField('Client Name', validators=[InputRequired()])
-    date = StringField('Consultation Date and Time', validators=[InputRequired()])
+    date = StringField('Consultation Date and Time', validators=[InputRequired()], render_kw={'readonly': True})
     submit = SubmitField("Start Consultation")
 
 class AppSelectPageForm(FlaskForm):
@@ -386,7 +386,7 @@ def create_printout(context):
     pprint(context)
 
     filename = os.path.join('reports', 'test_report.pdf')
-    template = os.path.join('templates', 'printout-test.html')
+    template = os.path.join('templates', 'printout.html')
     css_path = os.path.join('webstatic', 'style.css')
 
     template_loader = jinja2.FileSystemLoader("./")
@@ -732,7 +732,7 @@ def load_json_data(datatype: ConsultDataTypes):
     lock = FileLock(fname + ".lock")
     with lock:
         if not os.path.exists(fname):
-            if datatype in [ConsultDataTypes.TAQ, ConsultDataTypes.SETUP] :
+            if datatype in [ConsultDataTypes.TAQ.value, ConsultDataTypes.SETUP.value] :
                 return dict()
             else: 
                 return []
@@ -809,6 +809,7 @@ class SecurityQuestions(DictInitClass):
     
 class PermissionInfo(DictInitClass):
     attrs = ['permission_name',
+             'reason',
              'access',
              'describe',
              'screenshot']
@@ -824,7 +825,7 @@ class AppInfo(Dictable):
     def __init__(self,
                  title="",
                  app_name="",
-                 appID="",
+                 appId="",
                  flags=[],
                  application_icon="",
                  app_website="",
@@ -832,7 +833,7 @@ class AppInfo(Dictable):
                  developerwebsite="",
                  investigate=False,
                  permissions=[],
-                 install_form=dict(),
+                 install_info=dict(),
                  notes=dict(),
                  **kwargs):
         
@@ -841,8 +842,8 @@ class AppInfo(Dictable):
         if self.app_name.strip() == "":
             self.app_name = title
         if self.app_name.strip() == "":
-            self.app_name = appID
-        self.appId = appID
+            self.app_name = appId
+        self.appId = appId
         self.flags = flags
         self.application_icon = application_icon
         self.app_website = app_website
@@ -850,12 +851,19 @@ class AppInfo(Dictable):
         self.developerwebsite = developerwebsite
         self.investigate = investigate
 
-        try: 
-            self.permissions = [PermissionInfo(**p) for p in permissions]
-        except:
-            self.permissions = permissions
+        placeholder_permissions = [{
+            "permission_name": "Camera",
+            "reason": "Needed to capture photos",
+        }]
+        
+        self.permissions = [PermissionInfo(p) for p in placeholder_permissions]
 
-        self.install_info = InstallInfo(**install_form)
+       # try: 
+        #    self.permissions = [PermissionInfo(**p) for p in permissions]
+       # except:
+        #    self.permissions = permissions
+
+        self.install_info = InstallInfo(install_info)
         self.notes = Notes(notes)
 
 

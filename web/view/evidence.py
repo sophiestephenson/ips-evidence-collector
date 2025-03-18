@@ -327,7 +327,7 @@ def evidence_scan_investigate(ser):
             clean_data = remove_unwanted_data(form.data)
 
             # update the current scan data and save it
-            current_scan.selected_apps = [AppInfo(**app) for app in clean_data]
+            current_scan.selected_apps = [AppInfo(**app) for app in clean_data["selected_apps"]]
             all_scan_data = update_scan_by_ser(current_scan, all_scan_data)
 
             #  save this updated data

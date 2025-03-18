@@ -38,13 +38,101 @@
         </div>
     </div>
 
+<div class="new-page">
+    <h1>Technology Assessment Questionnaire</h1>
+    <hr />
+    <p>A set of questions used to assess a client's technology risk factors.</p>
 
+    <h3>Risk of Device Compromise</h3>
+    <table>
+        <tbody>
+            <tr>
+                <th>Do you live with the person of concern?</th>
+                <td>{{taq.devices.live_together | capitalize}}</td>
+            </tr>
+            <tr>
+                <th>Has the person of concern had physical access to your devices at any point in time?</th>
+                <td>{{taq.devices.physical_access | capitalize}}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Risk of Account Compromise</h3>
+    <table>
+        <tbody>
+            <tr>
+                <th>How do you manage passwords?</th>
+                <td>{{taq.accounts.pwd_mgmt}}</td>
+            </tr>
+            <tr>
+                <th>Do you believe the person of concern knows, or could guess, any of your passwords?</th>
+                <td>{{taq.accounts.pwd_comp}}</td>
+            </tr>
+            <tr>
+                <th>Which ones?</th>
+                <td>{{taq.accounts.pwd_comp_which}}</td>
+            </tr>
+            <tr>
+                <th>Do you share any accounts with the person of concern?</th>
+                <td>{{taq.sharing.share_accounts}}</td>
+            </tr>
+            <tr>
+                <th>Do you share a phone plan with the person of concern?</th>
+                <td>{{taq.sharing.share_phone_plan}}</td>
+            </tr>
+            <tr>
+                <th>If you share a phone plan, who is the family 'head' or plan administrator?</th>
+                <td>{{taq.sharing.phone_plan_admin}}</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h3>Risks from Smart Home Devices</h3>
+    <table>
+        <tbody>
+            <tr>
+                <th>Do you have any smart home devices?</th>
+                <td>{{taq.smarthome.smart_home}}</td>
+            </tr>
+            <tr>
+                <th>Who installed and set up your smart home devices?</th>
+                <td>{{taq.smarthome.smart_home_setup}}</td>
+            </tr>
+            <tr>
+                <th>Did the person of concern ever have physical access to the devices?</th>
+                <td>{{taq.smarthome.smart_home_access}}</td>
+            </tr>
+            <tr>
+                <th>Do you share any smart home accounts with the person of concern?</th>
+                <td>{{taq.smarthome.smart_home_accounts}}</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <h3>Risks from Children's Devices</h3>
+    <table>
+        <tbody>
+            <tr>
+                <th>Do you share custody of children with the person of concern?</th>
+                <td>{{taq.kids.custody}}</td>
+            </tr>
+            <tr>
+                <th>Has the person of concern had physical access to any of the child(ren)'s devices?</th>
+                <td>{{taq.kids.child_phys_access}}</td>
+            </tr>
+            <tr>
+                <th>Does the person of concern pay for the child(ren)'s phone plan?</th>
+                <td>{{taq.kids.child_phone_plan}}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
 
 {% for scan in scans %}
 <div class="new-page">
-    <h1>Scan {{loop.index}} of {{scans|length}} </h1>
+    <h1>Device Scan ({{loop.index}} of {{scans|length}}) </h1>
     <hr />
-    <h2>Device Information</h2>
+    <h3>Device Information</h3>
     <table>
         <tbody>
             <tr>

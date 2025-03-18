@@ -131,37 +131,38 @@
                         <div class="app-info">
                             <h4>App information</h4>
                             <table>
+                                {% set app = scan_data.selected_apps[outer_loop.index0] %}
                                 <tr><th valign="top">App name</th><td>
-                                {% if scan_data.selected_apps[outer_loop.index0].url %}
-                                    <a href={{scan_data.selected_apps[outer_loop.index0].url}}>{{scan_data.selected_apps[outer_loop.index0].title}}</a>
+                                {% if app.url %}
+                                    <a href={{app.url}}>{{app.title}}</a>
                                     {% else %}
-                                    {{scan_data.selected_apps[outer_loop.index0].title}}
+                                    {{app.title}}
                                 {% endif %}
                                 </td></tr>
-                                {% if scan_data.selected_apps[outer_loop.index0].application_icon %}
-                                <tr><th valign="top">Icon</th><td><img src={{scan_data.selected_apps[outer_loop.index0].application_icon}}></td></tr>
-                                {% endif %}
-                                {% if scan_data.selected_apps[outer_loop.index0].description %}
-                                <tr><th valign="top">Description</th><td>{{scan_data.selected_apps[outer_loop.index0].description}}</td></tr>
-                                {% endif %}
+                                <tr><th>App ID</th><td>{{app.appId}}</td></tr>
+                                <tr><th>Flags</th><td>{{app.flags}}</td></tr>
                                 <tr><th valign="top">Install time</th><td>January 1, 1970 00:00:00</td></tr>
-                                {% if scan_data.selected_apps[outer_loop.index0].permissions|length > 0 %}
-                                <tr><th valign="top">Permissions used</th><td>
-                                    {% for perm in scan_data.selected_apps[outer_loop.index0].permissions %}
-                                    {{perm.permission_name}}{% if loop.index < scan_data.selected_apps[outer_loop.index0].permissions|length %}, {% endif %}
-                                    {% endfor %}
+                                <tr><th valign="top">Permissions used</th><td>{{app.permissions}}
                                 </td></tr>
-                                {% endif %}
+                                <tr><th valign="top">Description</th><td>
+                                    {% if app.descriptionHTML %}
+                                    {{app.descriptionHTML}}
+                                    {% elif app.description %}
+                                    {{app.description}}
+                                    {% else %}
+                                    <it>Not provided</it>
+                                    {% endif %}
+                                </td></tr>
                             </table>
                         </div>
                         <hr>
                         <h4>Questionnaires</h4>
-                        <h5>{{nested.install_form.label}}</h5>
+                        <h5>{{nested.install_info.label}}</h5>
                         <div class="subform">
-                            {{nested.install_form.hidden_tag()}}
+                            {{nested.install_info.hidden_tag()}}
                             <table>
                                 <tbody>
-                                    {% for subform in [nested.install_form.knew_installed, nested.install_form.installed, nested.install_form.coerced] %}
+                                    {% for subform in [nested.install_info.knew_installed, nested.install_info.installed, nested.install_info.coerced] %}
                                     <tr><th>{{subform.label}}</th><td>
                                         <div class="btn-group" data-toggle="buttons" id={{subform.id}}>
                                         {% for option in subform %}
@@ -180,7 +181,7 @@
                         </div>
 
                         {% for perm in nested.permissions %}
-                        <h5>Permission check: {{scan_data.selected_apps[outer_loop.index0].permissions[loop.index0]}}</h5>
+                        <h5>Permission check: {{scan_data.selected_apps[outer_loop.index0].permissions[loop.index0].permission_name}}</h5>
                         <div class="subform">
                             {{ perm.hidden_tag() }}
                             <table>
