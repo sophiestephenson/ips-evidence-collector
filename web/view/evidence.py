@@ -538,7 +538,7 @@ def evidence_printout():
         screenshot_dir = config.SCREENSHOT_LOCATION
     )
 
-    pprint(consult_data.__dict__)
+    pprint([account.to_dict() for account in consult_data.accounts])
 
     # TODO: Handle multiple scans
     # TODO: Generate text of the document

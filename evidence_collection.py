@@ -920,7 +920,7 @@ class ConsultationData(Dictable):
                  **kwargs):
         self.setup = ConsultSetupData(**setup)
         self.taq = TAQData(**taq)
-        self.accounts = [AccountInvestigation(account) for account in accounts]
+        self.accounts = [AccountInvestigation(**account) for account in accounts]
         self.scans = [ScanData(**scan) for scan in scans]
         self.screenshot_dir = screenshot_dir
 
@@ -951,8 +951,8 @@ class AccountInvestigation(Dictable):
         self.security_questions = SecurityQuestions(security_questions)
         self.notes = Notes(notes)
 
-        self.report = f"ACCOUNT REPORT: {self.account_nickname}"
-
+        self.access_report = f"ACCOUNT ACCESS REPORT: {self.account_nickname}"
+        self.ability_report = f"ACCESS CAPABILITY REPORT: {self.account_nickname}"
     '''
     def generate_report(self, second_person=True):
         agent = "you"
