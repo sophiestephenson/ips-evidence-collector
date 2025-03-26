@@ -34,10 +34,9 @@
         <h1>Summary of Findings</h1>
         <hr />
         <div class="overallsummary">
-            <p>This is an automated summary generated based on the detailed content of the report.</p>
+            <p><i>This is an automated summary generated based on the detailed content of the report.</i></p>
 
             <h2>Technology Assessment Questionnaire</h2> 
-            
             {% if taq.risk_factors|length == 0 %}
                 <b>No risk factors identified.</b>
             {% else%}
@@ -67,11 +66,19 @@
             </ol>
             {%endfor%}
     
-            {% if accounts|length > 0 %}
             <h2>Account Compromise Assessment</h2>
+            {% if concerning_accounts|length == 0 %}
+            No evidence of account compromise at this time.
+            {% else %}
+            {{concerning_accounts|length}} accounts may be compromised:
             <ul>
-                {% for account in accounts %}
-                <li><b>Account {{loop.index}} ({{account.account_nickname}})</b>: {{account.report}}</li>
+                {% for account in concerning_accounts %}
+                <li><b>Account {{loop.index}} ({{account.account_nickname}})</b>:
+                    {% if account.access_concern %}
+                    {{account.access_report}}
+                    {% endif %}
+                    {{account.ability_report}}
+                </li>
                 {% endfor %}
             </ul>
             {%endif%}

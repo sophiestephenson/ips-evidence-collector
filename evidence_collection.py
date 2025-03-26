@@ -877,7 +877,7 @@ class AppInfo(Dictable):
         if not spyware:
             any_issues = False
             for perm in self.permissions:
-                if perm.access != 'no':
+                if perm.access == 'yes':
                     any_issues = True
                     concern = True
                     sentences.append("{} can use this app to access the phone's {}.".format(harmdoer.capitalize(), perm.permission_name.lower()))
@@ -956,6 +956,7 @@ class ConsultationData(Dictable):
         self.setup = ConsultSetupData(**setup)
         self.taq = TAQData(**taq)
         self.accounts = [AccountInvestigation(**account) for account in accounts]
+        self.concerning_accounts = [acct for acct in self.accounts if acct.is_concerning]
         self.scans = [ScanData(**scan) for scan in scans]
         self.screenshot_dir = screenshot_dir
 
@@ -987,6 +988,8 @@ class AccountInvestigation(Dictable):
         self.notes = Notes(notes)
 
         self.access_report, self.ability_report, self.access_concern, self.ability_concern = self.generate_reports()
+
+        self.is_concerning = self.access_concern or self.ability_concern
 
 
     def generate_reports(self, second_person=True, harmdoer="the person of concern"):
@@ -1121,6 +1124,7 @@ class ScanData(Dictable):
         if len(self.selected_apps) == 0:
             report_sentences.append("No suspicious apps were found on this device.")
         else:
+            '''
             plural = ""
             if len(self.selected_apps) > 1:
                 plural = "s"
@@ -1129,6 +1133,7 @@ class ScanData(Dictable):
                     len(self.selected_apps), plural
                 )
             )
+            '''
 
             if len(self.concerning_apps) > 0:
                 plural = ""
