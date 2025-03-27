@@ -213,7 +213,9 @@
 
                 <br>
                 <br>
+                {% if step==1 %}
                 <div><span class="secondarybutton"><a href="{{ url_for('evidence_home') }}" class="btn btn-default">Abort Scan</a></span></div>
+                {% endif %}
                 {% if form.manualadd %}
                 <div><span class="secondarybutton">{{form.manualadd}}</div>
                 {% endif %}
