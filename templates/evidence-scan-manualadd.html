@@ -50,9 +50,21 @@
             </div>
             {% endfor %}
             <br>
-            <h2>Manually add apps here</h2>
+            <h2>{{form.title}}</h2>
             <hr>
-            <p>bleep bloop {{ser}}</p>
+            <form action method="post" class="form" role="form">
+                {{ form.hidden_tag() }}
+                <ul>
+                    {% for app in form.apps %}
+                    <li>{{ app.hidden_tag() }}{{app.app_name}}</li>
+                    {% endfor %}
+                </ul>
+                <div><span class="secondarybutton">{{form.addline}}</span></div>
+                <br>
+                <br>
+                <br>
+                <div><span class="primarybutton">{{form.submit}}</span></div>
+            </form>
         </div>
     </div>
 </div>

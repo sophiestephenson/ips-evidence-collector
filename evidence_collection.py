@@ -282,6 +282,30 @@ class AppSelectPageForm(FlaskForm):
     apps = FieldList(FormField(AppSelectForm))
     submit = SubmitField("Select")
 
+class ManualAppSelectForm(FlaskForm):
+    title = "Select app"
+    app_name = StringField("App Name")
+
+class ManualAddPageForm(FlaskForm):
+    title = "Manually select apps for investigation"
+    apps = FieldList(FormField(ManualAppSelectForm))
+    addline = SubmitField("Add a new app")
+    submit = SubmitField("Submit")
+
+    def update_self(self):
+        # read the data in the form
+        read_form_data = self.data
+
+        # modify the data as you see fit:
+        updated_list = read_form_data['apps']
+        if read_form_data['addline']:
+            updated_list.append({})
+        read_form_data['apps'] = updated_list
+
+        # reload the form from the modified data
+        self.__init__(formdata=None, **read_form_data)
+        self.validate()  # the errors on validation are cancelled in the line above
+
 ### TAQ Forms
 class TAQDeviceCompForm(FlaskForm):
     title = "Device Compromise Indicators"

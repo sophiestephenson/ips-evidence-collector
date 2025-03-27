@@ -33,6 +33,7 @@ from evidence_collection import (  # create_account_summary,; create_app_summary
     ConsultDataTypes,
     ConsultSetupData,
     DualUseForm,
+    ManualAddPageForm,
     Pages,
     ScanData,
     ScanForm,
@@ -293,13 +294,15 @@ def evidence_scan_manualadd():
 
     # not using ser rn because what if we can't get it?
     # collect a nickname here instead
+    form = ManualAddPageForm(apps = [""])
 
     ### IF IT'S A GET:
     if request.method == 'GET':
 
         context = dict(
             task = "evidence-scan-manualadd",
-            title = config.TITLE
+            title = config.TITLE,
+            form = form
         )
 
         return render_template('main.html', **context)
@@ -307,9 +310,33 @@ def evidence_scan_manualadd():
     ### IF IT'S A POST:
     if request.method == 'POST':
 
-        # Create new scan object with selected_apps filled here
+        if form.is_submitted():
 
-        pass
+            # if it's an addline request, do that and reload
+            if form.addline.data:
+                form.update_self()
+                context = dict(
+                    task = "evidence-scan-manualadd",
+                    title = config.TITLE,
+                    form = form
+                )
+                return render_template('main.html', **context)
+
+            elif form.validate():
+                # TODO take data and do something with it
+
+                pprint(form.data)
+
+                context = dict(
+                    task = "evidence-scan-manualadd",
+                    title = config.TITLE,
+                    form = form
+                )
+                return render_template('main.html', **context)
+                
+
+
+
 
 @app.route("/evidence/scan/investigate/<string:ser>", methods={'GET', 'POST'})
 def evidence_scan_investigate(ser):
