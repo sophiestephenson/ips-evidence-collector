@@ -225,6 +225,7 @@ class StartForm(FlaskForm):
     submit = SubmitField("Scan Device")
     manualadd = SubmitField("Select apps manually")
 
+
 class ScanForm(FlaskForm):
     title = "Scan Instructions"
     submit = SubmitField("Scan")
@@ -842,6 +843,7 @@ class AppInfo(Dictable):
         self.investigate = investigate
 
         # TODO: fix actual permissions
+
         placeholder_permissions = [{
             "permission_name": "Camera",
             "reason": "Needed to capture photos",

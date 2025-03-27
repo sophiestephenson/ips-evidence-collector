@@ -83,7 +83,6 @@
             </ul>
             {%endif%}
         </div>
-
     </div>
 
 <div class="new-page">
@@ -204,7 +203,6 @@
     {% if scan.selected_apps|length > 0 %}
         {% for app in scan.selected_apps %}
     <h3>{{app.title|capitalize}}</h3>
-
     <table>
         <tbody>
             <div class="appsummary">
@@ -365,7 +363,6 @@
 
                         </td>
                     </tr>
-
                 {% if screenshots|length > 0 %}
                 {% for filename in screenshots[1::] %}
                 <tr valign="top">

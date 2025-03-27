@@ -183,7 +183,6 @@ def evidence_scan_start():
     current_scan = ScanData()
     form = StartForm()
 
-
     context = dict(
         task = "evidence-scan",
         form = form,
@@ -392,7 +391,6 @@ def evidence_scan_investigate(ser):
 
     pprint([app.to_dict() for app in current_scan.selected_apps])
     pprint("INPUTTED INTO THE INVESTIGATION FORM")
-
     # get apps to investigate from the scan data
     form = AppInvestigationForm(selected_apps=[app.to_dict() for app in current_scan.selected_apps])
 
