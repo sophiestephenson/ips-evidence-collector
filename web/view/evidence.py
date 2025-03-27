@@ -288,7 +288,28 @@ def evidence_scan_select(ser):
         
             return redirect(url_for('evidence_scan_investigate', ser=ser))
         
+@app.route("/evidence/scan/manualadd", methods={'GET', 'POST'})
+def evidence_scan_manualadd():
 
+    # not using ser rn because what if we can't get it?
+    # collect a nickname here instead
+
+    ### IF IT'S A GET:
+    if request.method == 'GET':
+
+        context = dict(
+            task = "evidence-scan-manualadd",
+            title = config.TITLE
+        )
+
+        return render_template('main.html', **context)
+    
+    ### IF IT'S A POST:
+    if request.method == 'POST':
+
+        # Create new scan object with selected_apps filled here
+
+        pass
 
 @app.route("/evidence/scan/investigate/<string:ser>", methods={'GET', 'POST'})
 def evidence_scan_investigate(ser):
