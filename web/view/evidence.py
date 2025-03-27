@@ -97,6 +97,10 @@ def evidence_setup():
 
             return redirect(url_for('evidence_home'))
         
+        elif not form.validate():
+            flash("Missing required fields")
+            return redirect(url_for('evidence_setup'))
+        
 
     return redirect(url_for('evidence_setup'))
 
@@ -179,22 +183,27 @@ def evidence_scan_start():
     current_scan = ScanData()
     form = StartForm()
 
-    if request.method == "GET":
-        context = dict(
-            task = "evidence-scan",
-            form = form,
-            title=config.TITLE,
-            scan_data = current_scan.to_dict(),
-            step = 1,
-            id = 0,
-        )
-        pprint(form.data)
 
+    context = dict(
+        task = "evidence-scan",
+        form = form,
+        title=config.TITLE,
+        scan_data = current_scan.to_dict(),
+        step = 1,
+        id = 0,
+    )
+
+    if request.method == "GET":
+        pprint(form.data)
         return render_template('main.html', **context)
 
     if request.method == "POST":
         pprint(form.data)
         if form.is_submitted() and form.validate():
+
+            if form.manualadd.data:
+                return redirect(url_for('evidence_scan_manualadd', 
+                                        device_nickname=form.data["device_nickname"]))
 
             # clean up the submitted data
             clean_data = remove_unwanted_data(form.data)
@@ -225,16 +234,18 @@ def evidence_scan_start():
                 
                 current_scan.id = len(all_scan_data)
                 all_scan_data.append(current_scan)
-
+            
+                save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
+                return redirect(url_for('evidence_scan_select', ser=current_scan.serial))
 
             except Exception as e:
                 print(traceback.format_exc())
-                flash(e, "error")
-                return redirect(url_for('evidence_scan_start', step=2))
-
+                flash("Scan error: " + str(e))
+                return redirect(url_for('evidence_scan_start'))
             
-            save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
-            return redirect(url_for('evidence_scan_select', ser=current_scan.serial))
+        elif not form.validate():
+            flash("Missing required fields")
+            return redirect(url_for('evidence_scan_start'))
 
     return redirect(url_for('evidence_scan_start'))
 
@@ -289,12 +300,10 @@ def evidence_scan_select(ser):
         
             return redirect(url_for('evidence_scan_investigate', ser=ser))
         
-@app.route("/evidence/scan/manualadd", methods={'GET', 'POST'})
-def evidence_scan_manualadd():
+@app.route("/evidence/scan/manualadd/<string:device_nickname>", methods={'GET', 'POST'})
+def evidence_scan_manualadd(device_nickname):
 
-    # not using ser rn because what if we can't get it?
-    # collect a nickname here instead
-    form = ManualAddPageForm(apps = [""])
+    form = ManualAddPageForm(apps = [""], device_nickname=device_nickname)
 
     ### IF IT'S A GET:
     if request.method == 'GET':
@@ -326,6 +335,12 @@ def evidence_scan_manualadd():
                 # TODO take data and do something with it
 
                 pprint(form.data)
+
+                manual_scan = ScanData(
+                    device_nickname=device_nickname,
+                )
+
+                pprint(manual_scan.__dict__)
 
                 context = dict(
                     task = "evidence-scan-manualadd",

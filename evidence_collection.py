@@ -222,7 +222,8 @@ class StartForm(FlaskForm):
     title = "Device To Be Scanned"
     device_nickname = StringField('Device nickname', validators=[InputRequired()])
     device_type = RadioField('Device type', choices=DEVICE_TYPE_CHOICES, validators=[InputRequired()])
-    submit = SubmitField("Continue")
+    submit = SubmitField("Scan Device")
+    manualadd = SubmitField("Select apps manually")
 
 class ScanForm(FlaskForm):
     title = "Scan Instructions"
@@ -288,6 +289,7 @@ class ManualAppSelectForm(FlaskForm):
 
 class ManualAddPageForm(FlaskForm):
     title = "Manually select apps for investigation"
+    device_nickname = StringField("Device Nickname", validators=[InputRequired()])
     apps = FieldList(FormField(ManualAppSelectForm))
     addline = SubmitField("Add a new app")
     submit = SubmitField("Submit")
@@ -558,9 +560,7 @@ def get_scan_data(device, device_owner):
     if not ser:
         # FIXME: add pkexec scripts/ios_mount_linux.sh workflow for iOS if
         # needed.
-        error = "<b>A device wasn't detected. Please follow the "\
-            "<a href='/instruction' target='_blank' rel='noopener'>"\
-            "setup instructions here.</a></b>"
+        error = "A device wasn't detected."
         template_d["error"] = error
         raise Exception(error)
 
