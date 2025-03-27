@@ -60,7 +60,7 @@
                 <p>List app names below:</p>
                 <ul>
                     {% for app in form.apps %}
-                    <li>{{ app.hidden_tag() }}{{app.app_name}}</li>
+                    <li>{{ app.hidden_tag() }}{{app.app_name}} <br> {{app.spyware.label}} {{app.spyware}}</li>
                     {% endfor %}
                     <li><div><span class="secondarybutton">{{form.addline}}</span></div></li>
                 </ul>

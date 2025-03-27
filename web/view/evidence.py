@@ -336,18 +336,44 @@ def evidence_scan_manualadd(device_nickname):
 
                 pprint(form.data)
 
+                selected_apps = []
+                for app in form.data['apps']:
+                    flags = []
+                    if app['spyware']:
+                        flags = ['spyware']
+                    if app['app_name'].strip() != "":
+                        selected_apps.append({
+                            "title": app['app_name'],
+                            "investigate": True,
+                            "flags": flags
+                        })
+
+
                 manual_scan = ScanData(
+                    manual=True,
                     device_nickname=device_nickname,
+                    serial=device_nickname,
+                    all_apps=[],
+                    selected_apps=selected_apps
                 )
+
+
+                # load all scans
+                all_scan_data = [ScanData(**scan) for scan in 
+                                load_json_data(ConsultDataTypes.SCANS.value)]
+                
+                # add manual scan
+                all_scan_data = update_scan_by_ser(manual_scan, all_scan_data)
+
+                # save
+                save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
 
                 pprint(manual_scan.__dict__)
 
-                context = dict(
-                    task = "evidence-scan-manualadd",
-                    title = config.TITLE,
-                    form = form
-                )
-                return render_template('main.html', **context)
+                for app in manual_scan.selected_apps:
+                    pprint(app.__dict__)
+
+                return redirect(url_for('evidence_scan_investigate', ser=manual_scan.serial))
                 
 
 
@@ -400,6 +426,13 @@ def evidence_scan_investigate(ser):
             save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
 
             return redirect(url_for('evidence_home'))
+    
+        elif not form.validate():
+            flash("Missing required fields")
+            return redirect(url_for('evidence_scan_investigate', ser=ser))
+
+    return redirect(url_for('evidence_scan_investigate', ser=ser))
+
 
 
 @app.route("/evidence/account", methods={'GET'})

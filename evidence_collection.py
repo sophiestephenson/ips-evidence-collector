@@ -284,11 +284,11 @@ class AppSelectPageForm(FlaskForm):
     submit = SubmitField("Select")
 
 class ManualAppSelectForm(FlaskForm):
-    title = "Select app"
     app_name = StringField("App Name")
+    spyware = BooleanField("Appears to be a spyware app?")
 
 class ManualAddPageForm(FlaskForm):
-    title = "Manually select apps for investigation"
+    title = "Manual App Investigation: Select Apps"
     device_nickname = StringField("Device Nickname", validators=[InputRequired()])
     apps = FieldList(FormField(ManualAppSelectForm))
     addline = SubmitField("Add a new app")
@@ -1102,6 +1102,7 @@ class AccountInvestigation(Dictable):
 
 class ScanData(Dictable):
     def __init__(self,
+                 manual=False,
                  scan_id=0,
                  device_type="",
                  device_nickname="",
@@ -1115,6 +1116,7 @@ class ScanData(Dictable):
                  selected_apps=list(),
                  **kwargs):
 
+        self.manual = manual
         self.scan_id = scan_id
         self.device_type = device_type
         self.device_nickname = device_nickname
@@ -1175,6 +1177,9 @@ class ScanData(Dictable):
                 report_sentences.append(
                     "No apps determined to pose a concern."
                 )
+
+        if self.manual:
+            report_sentences.append("This device was not automatically scanned; instead, apps were manually investigated.")
 
         return " ".join(report_sentences)
 
