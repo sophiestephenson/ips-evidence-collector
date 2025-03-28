@@ -14,6 +14,7 @@ import os
 from collections import defaultdict
 from enum import Enum
 from pprint import pprint
+from time import sleep
 
 import jinja2
 import pdfkit
@@ -209,14 +210,20 @@ class AppInfo(Dictable):
         self.description = description
         self.developerwebsite = developerwebsite
         self.investigate = investigate
-
-        # TODO: fix actual permissions
-        placeholder_permissions = [{
-            "permission_name": "Camera",
-            "reason": "Needed to capture photos",
-        }]
         
-        self.permissions = [PermissionInfo(p) for p in placeholder_permissions]
+        pprint("PERMISSIONS WITHIN CLASS INIT")
+        pprint(permissions)
+        self.permissions = []
+        for p in permissions:
+            if type(p) == tuple:
+                permission_name, reason = p
+                self.permissions.append(PermissionInfo({
+                    "permission_name": permission_name,
+                    "reason": reason
+                }))
+            else:
+                self.permissions.append(PermissionInfo(p))
+
 
         self.install_info = InstallInfo(install_info)
         self.notes = Notes(notes)
