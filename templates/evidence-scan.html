@@ -85,7 +85,8 @@
                     {% for nested in form.apps %}
                     {{ nested.hidden_tag() }}
                     <tr>
-                        <th><p>{{all_apps[loop.index0].app_name}}</p></th>
+                        <th><p><a href={{all_apps[loop.index0].app_website}}>{{all_apps[loop.index0].app_name}}</a></p></th>
+                        <td>Flags: {{all_apps[loop.index0].flags}}</td>
                         <td><p>{{nested.investigate.label}}</p></td>
                         <td><p>{{nested.investigate}}</p></td>
                     </tr>
@@ -141,8 +142,17 @@
                                 <tr><th>App ID</th><td>{{app.appId}}</td></tr>
                                 <tr><th>Flags</th><td>{{app.flags}}</td></tr>
                                 <tr><th valign="top">Install time</th><td>January 1, 1970 00:00:00</td></tr>
-                                <tr><th valign="top">Permissions used</th><td>{{app.permissions}}
-                                </td></tr>
+                                <tr><th valign="top">Permissions used</th>
+                                    <td>
+                                        <ul>
+                                            {% for p in app.permission_info.permissions %}
+                                            <li>
+                                                <b>{{p[0]}}:</b> {{p[1]}}
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </td>
+                                </tr>
                                 <tr><th valign="top">Description</th><td>
                                     {% if app.descriptionHTML %}
                                     {{app.descriptionHTML}}
@@ -179,15 +189,14 @@
                             <button id="selected_apps_{{scan_data.selected_apps[outer_loop.index0].title}}" type="button" onclick="getScreenshot(this.id)" value="screenshot">Screenshot</button>
                         </div>
 
-                        {% for perm in nested.permissions %}
-                        <h5>Permission check: {{scan_data.selected_apps[outer_loop.index0].permissions[loop.index0].permission_name}}</h5>
+                        <h5>Permission check</h5>
                         <div class="subform">
-                            {{ perm.hidden_tag() }}
+                            {{ nested.permission_info.hidden_tag() }}
                             <table>
                                 <tbody>
-                                    <tr><th>{{perm.access.label}}</th><td>
-                                        <div class="btn-group" data-toggle="buttons" id={{perm.access.id}}>
-                                        {% for option in perm.access %}
+                                    <tr><th>{{nested.permission_info.access.label}}</th><td>
+                                        <div class="btn-group" data-toggle="buttons" id={{nested.permission_info.access.id}}>
+                                        {% for option in nested.permission_info.access %}
                                         <label class="btn btn-light" for="{{option.id}}">
                                             {{option.label.text}}
                                             <input type="radio" name={{option.name}} id={{option.id}} autocomplete="off" value={{option.label.text.lower()}}>
@@ -195,12 +204,11 @@
                                         </label>
                                         {% endfor %}
                                     </div></td></tr>
-                                    <tr><th>{{perm.describe.label}}</th><td>{{perm.describe}}</td></tr>
+                                    <tr><th>{{nested.permission_info.describe.label}}</th><td>{{nested.permission_info.describe}}</td></tr>
                                 </tbody>
                             </table>
-                            <button id="selected_appsperm_{{scan_data.selected_apps[outer_loop.index0].title}}_{{scan_data.selected_apps[outer_loop.index0].permissions[loop.index0]}}" type="button" onclick="getScreenshot(this.id)">Screenshot</button>
+                            <button id="selected_appsperm_{{scan_data.selected_apps[outer_loop.index0].title}}" type="button" onclick="getScreenshot(this.id)">Screenshot</button>
                         </div>
-                        {% endfor %}
 
                         <h5>{{nested.notes.label}}</h5>
                         <div class="subform notes">{{ nested.notes }}</div>

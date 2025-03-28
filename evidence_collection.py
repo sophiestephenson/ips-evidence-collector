@@ -41,43 +41,6 @@ from phone_scanner.privacy_scan_android import take_screenshot
 from web.view.index import get_device
 from web.view.scan import first_element_or_none
 
-FAKE_APP_DATA = {"spyware": [{"app_name": "MSpy",
-                                 "appId": "mspy.app.id",
-                                 "store": "offstore",
-                                 "url": "https://www.mspy.com/",
-                                 "genres": "spyware",
-                                 "install_time": "January 1, 1970 00:00:00",
-                                 "description": "mSpy is a computer security for parental control. Helps parents to give attention to their children online activities. It checks WhatsApp, Facebook, massage and snapchat messages. mSpy is a computer security for parental control.",
-                                 "permissions": [
-                                    {"permission_name": "Precise location"},
-                                    {"permission_name": "Camera"},
-                                    {"permission_name": "Messages"},
-                                    {"permission_name": "Calls"},
-                                ]
-                                 }],
-                    "dualuse": [{"app_name": "Snapchat",
-                                 "appId": "snapchat.app.id",
-                                 "store": "App Store",
-                                 "url": "https://www.snapchat.com",
-                                 "genres": "Photo and Video",
-                                 "install_time": "January 1, 1970 00:00:00",
-                                 "description": "Snapchat is a fast and fun way to share the moment with your friends and family.",
-                                "permissions": [
-                                    {"permission_name": "Location"},
-                                    {"permission_name": "Camera"},
-                                ]},
-                                {"app_name": "FindMy",
-                                 "appId": "findmy.app.id",
-                                 "store": "System App",
-                                 "url": "https://apps.apple.com/us/app/find-my/id1514844621",
-                                 "genres": "System apps",
-                                 "install_time": "January 1, 1970 00:00:00",
-                                 "description": "View the current location of your Apple devices, locate items you’ve attached AirTag to, keep track of Find My network accessories, and share your location with friends and family in a single, easy-to-use app.",
-                                "permissions": [
-                                    {"permission_name": "Precise location"},
-                                ]}]
-                    }
-
 TMP_CONSULT_DATA_DIR = "tmp-consult-data"
 
 SCREENSHOT_FOLDER = os.path.join("tmp", "isdi-screenshots/")
@@ -167,19 +130,17 @@ class SecurityQuestions(DictInitClass):
              'know',
              'screenshot']
     
-class PermissionInfo(DictInitClass):
-    attrs = ['permission_name',
-             'reason',
-             'access',
-             'describe',
-             'screenshot']
-    
 class InstallInfo(DictInitClass):
     attrs = ['knew_installed',
              'installed',
              'coerced',
              'screenshot']
     
+class PermissionInfo(DictInitClass):
+    attrs = ['permissions',
+             'access',
+             'describe']
+
     
 class AppInfo(Dictable):
     def __init__(self,
@@ -192,6 +153,7 @@ class AppInfo(Dictable):
                  description="",
                  developerwebsite="",
                  investigate=False,
+                 permission_info=dict(),
                  permissions=[],
                  install_info=dict(),
                  notes=dict(),
@@ -210,20 +172,13 @@ class AppInfo(Dictable):
         self.description = description
         self.developerwebsite = developerwebsite
         self.investigate = investigate
-        
-        pprint("PERMISSIONS WITHIN CLASS INIT")
-        pprint(permissions)
-        self.permissions = []
-        for p in permissions:
-            if type(p) == tuple:
-                permission_name, reason = p
-                self.permissions.append(PermissionInfo({
-                    "permission_name": permission_name,
-                    "reason": reason
-                }))
-            else:
-                self.permissions.append(PermissionInfo(p))
-
+    
+        if len(permission_info) == 0:
+            self.permission_info = PermissionInfo({
+                'permissions': permissions
+            })
+        else:
+            self.permission_info = PermissionInfo(permission_info)
 
         self.install_info = InstallInfo(install_info)
         self.notes = Notes(notes)
@@ -276,11 +231,10 @@ class AppInfo(Dictable):
         # for spyware apps, look at permission stuff
         if not spyware:
             any_issues = False
-            for perm in self.permissions:
-                if perm.access == 'yes':
-                    any_issues = True
-                    concern = True
-                    sentences.append("{} can use this app to access the phone's {}.".format(harmdoer.capitalize(), perm.permission_name.lower()))
+            if self.permission_info.access == 'yes':
+                any_issues = True
+                concern = True
+                sentences.append("Investigation indicates {} can use this app to access private information. Description: {}.".format(harmdoer, self.permission_info.description))
 
             if not any_issues:
                 sentences.append("There is no evidence that this app is being used maliciously against {}.".format(agent))
@@ -766,9 +720,9 @@ class NotesForm(FlaskForm):
 
 ## HELPER FORMS FOR APPS
 class PermissionForm(FlaskForm):
-    permission_name = HiddenField("Permission")
-    access = RadioField('Can your [ex-]partner access this information using this app?', choices=YES_NO_CHOICES,  default=YES_NO_DEFAULT)
-    describe = TextAreaField("How do you know?")
+    permissions = HiddenField("Permissions")
+    access = RadioField("Review the permissions used. Can any of this information be accessed by the person of concern using this app?", choices=YES_NO_CHOICES,  default=YES_NO_DEFAULT)
+    describe = TextAreaField("If yes, please describe.")
     screenshot = MultipleFileField('Add screenshot(s)')
 
 # HELPER FORM FOR SCREENSHOTS
@@ -863,14 +817,14 @@ class AppSelectForm(FlaskForm):
     appId = HiddenField("App ID")
     flags = HiddenField("Flags")
     app_name = HiddenField("App Name")
-    application_icon = HiddenField("App Icon")
+    #application_icon = HiddenField("App Icon")
     app_website = HiddenField("App Website")
-    description = HiddenField("Description")
+    #description = HiddenField("Description")
     #descriptionHTML = HiddenField("HTML Description")
-    developerwebsite = HiddenField("Developer Website")
-    permissions = HiddenField("Permissions")
-    subclass = HiddenField("Subclass")
-    summary = HiddenField("Summary")
+    #developerwebsite = HiddenField("Developer Website")
+    #permission_info = HiddenField(FormField(PermissionForm))
+    #subclass = HiddenField("Subclass")
+    #summary = HiddenField("Summary")
     investigate = BooleanField("Check this app?")
 
 ## INDIVIDUAL PAGES
@@ -898,7 +852,7 @@ class DualUseForm(FlaskForm):
 class SingleAppCheckForm(FlaskForm):
     title = HiddenField("App Name")
     install_info = FormField(InstallForm)
-    permissions = FieldList(FormField(PermissionForm))
+    permission_info = FormField(PermissionForm)
     appId = HiddenField("App ID")
     flags = HiddenField("Flags")
     application_icon = HiddenField("App Icon")

@@ -6,6 +6,7 @@ from datetime import datetime
 from enum import Enum
 from operator import itemgetter
 from pprint import pprint
+from time import sleep
 
 from flask import (
     flash,
@@ -22,7 +23,6 @@ from flask_bootstrap import Bootstrap
 import config
 from evidence_collection import (  # create_account_summary,; create_app_summary,
     CONTEXT_PKL_FNAME,
-    FAKE_APP_DATA,
     AccountCompromiseForm,
     AccountInvestigation,
     AppInfo,
@@ -226,10 +226,11 @@ def evidence_scan_start():
                 current_scan = ScanData(scan_id=len(all_scan_data), 
                                         **clean_data, 
                                         **scan_data,
-                                        all_apps=all_apps,
-                                        selected_apps=suspicious_apps_dict)
+                                        all_apps=all_apps)
                 
                 pprint(current_scan.__dict__)
+                for app in current_scan.all_apps:
+                    pprint(app.permission_info.__dict__)
                 
                 current_scan.id = len(all_scan_data)
                 all_scan_data.append(current_scan)
@@ -260,6 +261,8 @@ def evidence_scan_select(ser):
     current_scan = get_scan_by_ser(ser, all_scan_data)
     assert current_scan.serial == ser
 
+    pprint(current_scan.all_apps[0].permission_info.__dict__)
+
     # fill form
     form = AppSelectPageForm(apps=[app.to_dict() for app in current_scan.all_apps])
 
@@ -283,15 +286,23 @@ def evidence_scan_select(ser):
         if form.is_submitted() and form.validate():
 
             # clean up the submitted data
-            clean_data = remove_unwanted_data(form.data)
+            #clean_data = remove_unwanted_data(form.data)
 
             # get selected apps from the form data
-            selected_apps = [app for app in clean_data['apps'] if app['investigate']]
+            to_investigate_titles = [app["title"] for app in form.data['apps'] if app['investigate']]
+            
+            selected_apps = []
+            for app in current_scan.all_apps:
+                if app.title in to_investigate_titles:
+                    selected_apps.append(app)
+
             pprint(selected_apps)
             pprint("SELECTED APPS")
 
+            current_scan.selected_apps = selected_apps
+
             # update the current scan data and save it as the most recent scan
-            current_scan.selected_apps = [AppInfo(**app) for app in selected_apps]
+            #current_scan.selected_apps = [AppInfo(**app) for app in selected_apps]
             all_scan_data = update_scan_by_ser(current_scan, all_scan_data)
 
             # save this updated data
