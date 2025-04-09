@@ -3,7 +3,7 @@ Author: Rahul Chatterjee
 Date: 2018-06-11
 Doc: https://docs.google.com/document/d/1HAzmB1IiViMrY7eyEt2K7-IwqFOKcczsgtRRaySCInA/edit
 
-Privacy configuration for Android. An attempt to automate most of this.
+Privacy configuration for Android. An attempt to automate most of this. 
 
 
 Automatic settings check
@@ -12,7 +12,7 @@ To find what activity is running on the current window (*Super useful command*)
 
     adb shell dumpsys window windows | grep -E 'mCurrentFocus|mFocusedApp'
 
-Finally screen capture.
+Finally screen capture. 
 
     adb shell screencap -p | perl -pe 's/\x0D\x0A/\x0A/g' > screen.png
 
@@ -32,24 +32,21 @@ Finally screen capture.
 from subprocess import Popen, PIPE
 import re
 import time
-from flask import url_for, session
+from flask import url_for
 import random
 import config
-import os
-from datetime import datetime
 
-from wtforms.validators import ValidationError
-adb=config.ADB_PATH
+adb = config.ADB_PATH
 print(f">>>>>>>>>>>>>>> {adb} <<<<<<<<<<<<<<<<<<<<")
 
+
 def run_command(cmd, **kwargs):
-    _cmd = cmd.format(
-        **kwargs
-    )
+    _cmd = cmd.format(**kwargs)
     print(_cmd)
     p = Popen(_cmd, stdout=PIPE, stderr=PIPE, shell=True)
     p.wait(4)
-    return p.stdout.read().decode('utf-8'), p.stderr.read().decode('utf-8')
+    return p.stdout.read().decode("utf-8"), p.stderr.read().decode("utf-8")
+
 
 def thiscli(ser):
     if ser:
@@ -57,12 +54,13 @@ def thiscli(ser):
     else:
         return "{adb}".format(adb=adb)
 
+
 def get_screen_res(ser):
     cmd = "{cli} shell dumpsys window | grep 'mUnrestrictedScreen'"
     out, err = run_command(cmd, cli=thiscli(ser))
-    m = re.match(r'mUnrestrictedScreen=\(0,0\) (?P<w>\d+)x(?P<h>\d+)', out.strip())
+    m = re.match(r"mUnrestrictedScreen=\(0,0\) (?P<w>\d+)x(?P<h>\d+)", out.strip())
     if m:
-        return int(m.group('w')), int(m.group('h'))
+        return int(m.group("w")), int(m.group("h"))
     else:
         return -1, -1
 
@@ -76,10 +74,11 @@ def open_activity(ser, activity_name):
     if err:
         print("ERROR (open_activity): {!r}".format(err))
         return False
-    if 'error' in out.lower():
+    if "error" in out.lower():
         print("ERROR (open_activity) stdout=: {!r}".format(out))
         return False
     return True
+
 
 def tap(ser, xpercent, ypercent):
     """
@@ -93,13 +92,9 @@ def tap(ser, xpercent, ypercent):
     if err:
         print("ERROR (tap): {!r}".format(err))
 
+
 def keycode(ser, evt):
-    cmds = {
-        "home": "3",
-        "back": "4",
-        "menu": "82",
-        "power": "26"
-    }
+    cmds = {"home": "3", "back": "4", "menu": "82", "power": "26"}
     if evt not in cmds:
         print("ERROR (keycode): No support for {}".format(evt))
 
@@ -113,10 +108,11 @@ def is_screen_on(ser):
     if err:
         print("ERROR (is_screen_on): {!r}".format(err))
     out = out.strip()
-    if out == 'true':
+    if out == "true":
         return True
     else:
         return False
+
 
 def take_screenshot(ser, fname=None):
     """
@@ -126,58 +122,82 @@ def take_screenshot(ser, fname=None):
     #     keycode(ser, 'power'); keycode(ser, 'menu') # Wakes the screen up
     if not fname:
         fname = "tmp_screencap.png"
-
-    cmd = "{cli} shell screencap -p | perl -pe 's/\\x0D\\x0A/\\x0A/g' > '{fname}'" # Formatting for windows
-    if os.name == 'posix': # Formatting for posix systems
-        cmd = "{cli} shell screencap -p > '{fname}'"
+    cmd = "{cli} shell screencap -p | perl -pe 's/\\x0D\\x0A/\\x0A/g' > '{fname}'"
+    # cmd = "{cli} shell screencap -p > '{fname}'"
     run_command(cmd, cli=thiscli(ser), fname=fname)
 
 
 def wait(t):
     time.sleep(t)
-def add_image(img, nocache=False):
+
+
+def do_privacy_check(ser, command):
+    def add_image(img, nocache=False):
         rand = random.randint(0, 10000)
-        return "<img height='400px' src='" + \
-            url_for('static', filename=img) + "?{}'/>".format(rand if nocache else '')
-def do_privacy_check(ser, command, context):
+        return (
+            "<img height='400px' src='"
+            + url_for("static", filename="images/" + img)
+            + "?{}'/>".format(rand if nocache else "")
+        )
+
     command = command.lower()
-    if command == "account": # 1. Account ownership  & 3. Sync (if present)
-        open_activity(ser, "com.google.android.gms/com.google.android.gms.app.settings.GoogleSettingsLink")
+    if command == "account":  # 1. Account ownership  & 3. Sync (if present)
+        open_activity(
+            ser,
+            "com.google.android.gms/com.google.android.gms.app.settings.GoogleSettingsLink",
+        )
         # wait(2)
         # keycode(ser, 'home')
         # take_screenshot(ser, 'account.png')
-        return ("Click on the <code>Google Account</code> on the phone, and check the "
-                "<em>account email address</em> at the top.")
-    elif command == "backup": # 2. Backup & reset
+        return (
+            "Click on the <code>Google Account</code> on the phone, and check the "
+            "<em>account email address</em> at the top."
+        )
+    elif command == "backup":  # 2. Backup & reset
         open_activity(ser, "com.android.settings/.Settings\$PrivacySettingsActivity")
         # wait(2)
         # keycode(ser, 'home')
         # take_screenshot(ser, 'account.png')
-        return ("If backup is <b>on</b>, then check the email address where <code>Backup "
-                "account</code> is registered to.")
+        return (
+            "If backup is <b>on</b>, then check the email address where <code>Backup "
+            "account</code> is registered to."
+        )
     elif command == "gmap":  # 4. Google Maps sharing
-        open_activity(ser, "com.google.android.apps.maps/com.google.android.maps.MapsActivity")
+        open_activity(
+            ser, "com.google.android.apps.maps/com.google.android.maps.MapsActivity"
+        )
         wait(2)
         keycode(ser, "menu")
-        return ("Check the <code>location sharing</code> option; " + add_image('google_maps_sharing.png'))
+        return "Check the <code>location sharing</code> option; " + add_image(
+            "google_maps_sharing.png"
+        )
     elif command == "gphotos":  # 5. Google Photos sharing
-        open_activity(ser, "com.google.android.apps.photos/com.google.android.apps.photos.home.HomeActivity")
+        open_activity(
+            ser,
+            "com.google.android.apps.photos/com.google.android.apps.photos.home.HomeActivity",
+        )
         wait(2)
         keycode(ser, "menu")
-        return "Check the <code>Shared library</code>. " + add_image('google_maps_sharing.png')
+        return "Check the <code>Shared library</code>. " + add_image(
+            "google_maps_sharing.png"
+        )
     elif command == "sync":
-        if not open_activity(ser, 'com.android.settings/.Settings\$AccountsGroupSettingsActivity'):
-            return "I could not find syncing functionality in your Android. This most likely mean this is not available, "\
+        if not open_activity(
+            ser, "com.android.settings/.Settings\$AccountsGroupSettingsActivity"
+        ):
+            return (
+                "I could not find syncing functionality in your Android. This most likely mean this is not available, "
                 "and no need to check."
+            )
         else:
-            return ("Click on the <code>Google</code> (or other account) where the phone is syncing its data "
-                    "and what data is being synced.")
+            return (
+                "Click on the <code>Google</code> (or other account) where the phone is syncing its data "
+                "and what data is being synced."
+            )
 
     elif command == "screenshot":
-        curr_time = datetime.now().strftime('%d_%m_%Y_%H_%M_%S')
-        fname = 'images/screenshots/' + context + '_' + curr_time + '.png';
-        take_screenshot(ser, fname='webstatic/' + fname)
-        return add_image(fname, nocache=True)
+        take_screenshot(ser, fname="webstatic/images/tmp.png")
+        return add_image("tmp.png", nocache=True)
     else:
         return "Command not supported; should be one of ['account', 'backup', 'gmap', 'gphotos'] (case in-sensitive)"
 
@@ -187,4 +207,4 @@ if __name__ == "__main__":
     # print(get_screen_res(ser)
     # print(is_screen_on(ser))
     # do_privacy_check(ser, 'account')
-    take_screenshot(ser='')
+    take_screenshot(ser="")

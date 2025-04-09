@@ -90,7 +90,7 @@
     <body>
     <body>
         <div class="header">
-            <h3>Name of tool!</h3>
+            <h3>SHERLOC</h3>
         </div>
       {% block content %}
         {% if task == 'home' %}
@@ -101,6 +101,24 @@
         {% endif %}
         {% if task == 'privacy' %}
           {% include "privacy.html" %}
+        {% endif %}
+        {% if task == 'evidence-setup' %}
+          {% include "evidence-setup.html" %}
+        {% endif %}
+        {% if task == 'evidence-home' %}
+          {% include "evidence-home.html" %}
+        {% endif %}
+        {% if task == 'evidence-taq' %}
+          {% include "evidence-taq.html" %}
+        {% endif %}
+        {% if task == 'evidence-scan' %}
+          {% include "evidence-scan.html" %}
+        {% endif %}
+        {% if task == 'evidence-scan-manualadd' %}
+          {% include "evidence-scan-manualadd.html" %}
+        {% endif %}
+        {% if task == 'evidence-account' %}
+          {% include "evidence-account.html" %}
         {% endif %}
         {% if task == 'evidence' %}
           {% include "evidence.html" %}

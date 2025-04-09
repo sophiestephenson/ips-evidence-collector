@@ -16,15 +16,11 @@ serial=$(pymobiledevice3 usbmux list | awk -F'"' '/Identifier/ {print $4}')
 mkdir -p phone_dumps/"$1"_ios
 cd phone_dumps/"$1"_ios
 # gets all of the details about each app (basically what ios_deploy does but with extra fields)
-if [[ "$platform" == 'linux' ]]; then
-  pymobiledevice3 apps list > $2
-else
-  pymobiledevice3 apps list > $2
-fi
+ideviceinstaller -u "$serial" -l -o xml -o list_all > "$2"
 
 # get around bug in Python 3 that doesn't recognize utf-8 encodings.
-sed -i -e 's/<data>/<string>/g' $2
-sed -i -e 's/<\/data>/<\/string>/g' $2
+# sed -i -e 's/<data>/<string>/g' $2
+# sed -i -e 's/<\/data>/<\/string>/g' $2
 
 # maybe for macOS...
 # plutil -convert json $2
@@ -32,8 +28,8 @@ sed -i -e 's/<\/data>/<\/string>/g' $2
 # gets OS version, serial, etc. -x for xml. Raw is easy to parse, too.
 pymobiledevice3 lockdown info > $3
 
-sed -i -e 's/<data>/<string>/g' $3
-sed -i -e 's/<\/data>/<\/string>/g' $3
+# sed -i -e 's/<data>/<string>/g' $3
+# sed -i -e 's/<\/data>/<\/string>/g' $3
 
 # remove identifying info (delete file after saving
 # relevant bits of scan in server.py, actually)
@@ -57,7 +53,7 @@ sed -i -e 's/<\/data>/<\/string>/g' $3
 # if fails (so in that case not jailbroken -- or 'not sure' for false negative).
 rm -rf /tmp/phonescanmnt
 mkdir -p /tmp/phonescanmnt
-ifuse -u "$serial" --root /tmp/phonescanmnt &> $4
+# ifuse -u "$serial" --root /tmp/phonescanmnt &> $4
 
 #lsof -ti tcp:2222 | xargs kill
 iproxy 2222 22 & "${DIR}/ios_ssh_expect.sh" localhost
