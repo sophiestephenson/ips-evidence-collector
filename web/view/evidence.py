@@ -171,6 +171,7 @@ def evidence_taq():
         
         elif not form.validate():
             flash("Form validation error - are you missing required fields?", 'error')
+            pprint(form.errors)
             return redirect(url_for('evidence_taq'))
         
     return redirect(url_for('evidence_taq'))
