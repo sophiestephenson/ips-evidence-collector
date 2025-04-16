@@ -398,6 +398,7 @@ def evidence_scan_manualadd(device_nickname):
 
 
 
+
 @app.route("/evidence/scan/investigate/<string:ser>", methods={'GET', 'POST'})
 def evidence_scan_investigate(ser):
 
@@ -508,8 +509,6 @@ def evidence_account(id):
         if not form.validate():
             flash("Form validation error - are you missing required fields?", 'error')
             pprint(form.errors)
-
-        return redirect(url_for('evidence_account', id=id))
 
 
 @app.route("/evidence/printout", methods=["GET"])

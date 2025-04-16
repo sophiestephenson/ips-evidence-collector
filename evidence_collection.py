@@ -246,7 +246,6 @@ class AppInfo(Dictable):
 
         return " ".join(sentences), concern
 
-
 class CheckApps(Dictable):
     def __init__(self, 
                  spyware=list(), 
@@ -1049,14 +1048,15 @@ def create_printout(context):
     template = template_env.get_template(template)
     output_text = template.render(context)
 
+
     config = pdfkit.configuration(wkhtmltopdf='/usr/local/bin/wkhtmltopdf')
     options = {'enable-local-file-access': None,
             'footer-right': '[page]'}
     pdfkit.from_string(output_text, filename, configuration=config, options=options, css=css_path)
 
     print("Printout created. Filename is", filename)
-
     return filename
+
 
 def create_overall_summary(context, second_person=False):
     concerns = dict(
