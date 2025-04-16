@@ -48,6 +48,7 @@ from evidence_collection import (  # create_account_summary,; create_app_summary
     get_scan_data,
     get_screenshots,
     load_json_data,
+    load_object_from_json,
     reformat_verbose_apps,
     remove_unwanted_data,
     save_data_as_json,
@@ -69,7 +70,8 @@ def evidence_setup():
     if request.method == 'GET':
 
         # Load any data we already have
-        setup_data = ConsultSetupData(**load_json_data(ConsultDataTypes.SETUP.value))
+        setup_data = load_object_from_json(ConsultDataTypes.SETUP.value)
+        pprint(setup_data)
 
         if setup_data.date.strip() == "":
             setup_data.date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
@@ -134,10 +136,9 @@ def evidence_taq():
     if request.method == 'GET':
 
         # Load any data we already have
-        taq_data = TAQData(**load_json_data(ConsultDataTypes.TAQ.value))
-        
+        taq_data = load_object_from_json(ConsultDataTypes.TAQ.value)
+    
         form.process(data=taq_data.to_dict())
-
 
         context = dict(
             task = "evidence-taq",
@@ -178,8 +179,7 @@ def evidence_taq():
 def evidence_scan_start():
 
     # always assume we are starting with a fresh scan
-    all_scan_data = [ScanData(**scan) for scan in 
-                     load_json_data(ConsultDataTypes.SCANS.value)]
+    all_scan_data = load_object_from_json(ConsultDataTypes.SCANS.value)
     current_scan = ScanData()
     form = StartForm()
 
@@ -255,8 +255,8 @@ def evidence_scan_start():
 def evidence_scan_select(ser):
 
     # load all scans
-    all_scan_data = [ScanData(**scan) for scan in 
-                     load_json_data(ConsultDataTypes.SCANS.value)]
+    all_scan_data = load_object_from_json(ConsultDataTypes.SCANS.value)
+
     # get the right scan by serial number
     current_scan = get_scan_by_ser(ser, all_scan_data)
     assert current_scan.serial == ser
@@ -369,8 +369,7 @@ def evidence_scan_manualadd(device_nickname):
 
 
                 # load all scans
-                all_scan_data = [ScanData(**scan) for scan in 
-                                load_json_data(ConsultDataTypes.SCANS.value)]
+                all_scan_data = load_object_from_json(ConsultDataTypes.SCANS.value)
                 
                 # add manual scan
                 all_scan_data = update_scan_by_ser(manual_scan, all_scan_data)
@@ -393,8 +392,7 @@ def evidence_scan_manualadd(device_nickname):
 def evidence_scan_investigate(ser):
 
     # load all scans
-    all_scan_data = [ScanData(**scan) for scan in 
-                     load_json_data(ConsultDataTypes.SCANS.value)]
+    all_scan_data = load_object_from_json(ConsultDataTypes.SCANS.value)
 
     # get the right scan by serial number
     current_scan = get_scan_by_ser(ser, all_scan_data)
@@ -456,9 +454,7 @@ def evidence_account_default():
 @app.route("/evidence/account/<int:id>", methods={'GET', 'POST'})
 def evidence_account(id):
 
-    all_account_data_json = load_json_data(ConsultDataTypes.ACCOUNTS.value)
-    all_account_data = [AccountInvestigation(**account) for account in all_account_data_json]
-
+    all_account_data = load_object_from_json(ConsultDataTypes.ACCOUNTS.value)
     current_account = AccountInvestigation(account_id=id)
 
     if len(all_account_data) > id:

@@ -46,14 +46,18 @@ TMP_CONSULT_DATA_DIR = "tmp-consult-data"
 SCREENSHOT_FOLDER = os.path.join("tmp", "isdi-screenshots/")
 CONTEXT_PKL_FNAME = "context.pkl"
 
-YES_NO_DEFAULT = "yes"
+YES_NO_DEFAULT = ""
+PERSON_DEFAULT = ""
+LEGAL_DEFAULT = ""
+
 SECOND_FACTORS = ["Phone", "Email", "App"]
 ACCOUNTS = ["Google", "iCloud", "Microsoft", "Lyft", "Uber", "Doordash", "Grubhub", "Facebook", "Twitter", "Snapchat", "Instagram"]
 
-YES_NO_CHOICES = [( 'yes', 'Yes'), ('no', 'No'), ('unsure', 'Unsure')]
-PERSON_CHOICES = [( 'me', 'Me'), ('poc', 'Person of concern'), ('other', 'Someone else'), ('unsure', 'Unsure')]
+EMPTY_CHOICE = [('', 'Nothing selected')]
+YES_NO_CHOICES = EMPTY_CHOICE + [('yes', 'Yes'), ('no', 'No'), ('unsure', 'Unsure')]
+PERSON_CHOICES = EMPTY_CHOICE + [('me', 'Me'), ('poc', 'Person of concern'), ('other', 'Someone else'), ('unsure', 'Unsure')]
 
-LEGAL_CHOICES = [('ro', 'Restraining order'), ('div', 'Divorce or other family court'), ('cl', 'Criminal case'), ('other', 'Other')]
+LEGAL_CHOICES = EMPTY_CHOICE + [('ro', 'Restraining order'), ('div', 'Divorce or other family court'), ('cl', 'Criminal case'), ('other', 'Other')]
 DEVICE_TYPE_CHOICES = [('android', 'Android'), ('ios', 'iOS')]
 #two_factor_choices = [empty_choice] + [(x.lower(), x) for x in second_factors]
 TWO_FACTOR_CHOICES = [(x.lower(), x) for x in SECOND_FACTORS] + [('none', 'None')]
@@ -284,8 +288,8 @@ class TAQSmarthome(DictInitClass):
 class TAQKids(DictInitClass):
     questions = {
         'custody': "Do you share custody of children with the person of concern?",
-            'child_phys_access': "Has the person of concern had physical access to any of the child(ren)'s devices?",
-             'child_phone_plan': "Does the person of concern pay for the child(ren)'s phone plan?"}
+        'child_phys_access': "Has the person of concern had physical access to any of the child(ren)'s devices?",
+        'child_phone_plan': "Does the person of concern pay for the child(ren)'s phone plan?"}
     attrs = list(questions.keys())
 
 class TAQLegal(DictInitClass):
@@ -721,7 +725,7 @@ class NotesForm(FlaskForm):
 ## HELPER FORMS FOR APPS
 class PermissionForm(FlaskForm):
     permissions = HiddenField("Permissions")
-    access = RadioField("Review the permissions used. Can any of this information be accessed by the person of concern using this app?", choices=YES_NO_CHOICES,  default=YES_NO_DEFAULT)
+    access = RadioField("Review the permissions used. Can any of this information be accessed by the person of concern using this app?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
     describe = TextAreaField("If yes, please describe.")
     screenshot = MultipleFileField('Add screenshot(s)')
 
@@ -776,30 +780,30 @@ class SuspiciousLoginsForm(FlaskForm):
     activity_screenshot = MultipleFileField('Add screenshot(s)')
 
 class PasswordForm(FlaskForm):
-    know = RadioField("Does your [ex-]partner know the password for this account?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
-    guess = RadioField("Do you believe your [ex-]partner could guess the password?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
+    know = RadioField("Does your [ex-]partner know the password for this account?", choices=YES_NO_CHOICES, validators=[InputRequired()])
+    guess = RadioField("Do you believe your [ex-]partner could guess the password?", choices=YES_NO_CHOICES, validators=[InputRequired()])
 
 class RecoveryForm(FlaskForm):
-    phone_present = RadioField("Is there a recovery phone number set for this account?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
+    phone_present = RadioField("Is there a recovery phone number set for this account?", choices=YES_NO_CHOICES, validators=[InputRequired()])
     phone = TextAreaField("What is the recovery phone number?")
-    phone_access = RadioField("Do you believe your [ex-]partner has access to the recovery phone number?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
+    phone_access = RadioField("Do you believe your [ex-]partner has access to the recovery phone number?", choices=YES_NO_CHOICES, validators=[InputRequired()])
     phone_screenshot = MultipleFileField('Add screenshot(s)')
-    email_present = RadioField("Is there a recovery email address set for this account?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
+    email_present = RadioField("Is there a recovery email address set for this account?", choices=YES_NO_CHOICES, validators=[InputRequired()])
     email = TextAreaField("What is the recovery email address?")
-    email_access = RadioField("Do you believe your [ex-]partner has access to this recovery email address?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
+    email_access = RadioField("Do you believe your [ex-]partner has access to this recovery email address?", choices=YES_NO_CHOICES, validators=[InputRequired()])
     email_screenshot = MultipleFileField('Add screenshot(s)')
 
 class TwoFactorForm(FlaskForm):
-    enabled = RadioField("Is two-factor authentication enabled for this account?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
-    second_factor_type = RadioField("What type of two-factor authentication is it?", choices=TWO_FACTOR_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
+    enabled = RadioField("Is two-factor authentication enabled for this account?", choices=YES_NO_CHOICES, validators=[InputRequired()])
+    second_factor_type = RadioField("What type of two-factor authentication is it?", choices=TWO_FACTOR_CHOICES, validators=[InputRequired()])
     describe = TextAreaField("Which phone/email/app is set as the second factor?")
-    second_factor_access = RadioField("Do you believe your [ex-]partner has access to this second factor?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
+    second_factor_access = RadioField("Do you believe your [ex-]partner has access to this second factor?", choices=YES_NO_CHOICES, validators=[InputRequired()])
     screenshot = MultipleFileField('Add screenshot(s)')
 
 class SecurityQForm(FlaskForm):
-    present = RadioField("Does the account use security questions?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
+    present = RadioField("Does the account use security questions?", choices=YES_NO_CHOICES, validators=[InputRequired()])
     questions = TextAreaField("Which questions are set?")
-    know = RadioField("Do you believe your [ex-]partner knows the answer to any of these questions?", choices=YES_NO_CHOICES, validators=[InputRequired()], default=YES_NO_DEFAULT)
+    know = RadioField("Do you believe your [ex-]partner knows the answer to any of these questions?", choices=YES_NO_CHOICES, validators=[InputRequired()])
     screenshot = MultipleFileField('Add screenshot(s)')
 
 class AccountInfoForm(FlaskForm):
@@ -938,7 +942,7 @@ class TAQSharingForm(FlaskForm):
     share_phone_plan = RadioField(
         TAQSharing().questions['share_phone_plan'], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
     phone_plan_admin = SelectMultipleField(
-        TAQSharing().questions['phone_plan_admin'], choices=PERSON_CHOICES)
+        TAQSharing().questions['phone_plan_admin'], choices=PERSON_CHOICES, default=PERSON_DEFAULT)
     share_accounts = RadioField(
         TAQSharing().questions['share_accounts'],  choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
 
@@ -947,7 +951,7 @@ class TAQSmartHomeForm(FlaskForm):
     smart_home = RadioField(
         TAQSmarthome().questions['smart_home'],   choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
     smart_home_setup = SelectMultipleField(
-        TAQSmarthome().questions['smart_home_setup'],   choices=PERSON_CHOICES)
+        TAQSmarthome().questions['smart_home_setup'],   choices=PERSON_CHOICES, default=PERSON_DEFAULT)
     smart_home_access = RadioField(
         TAQSmarthome().questions['smart_home_access'],    choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
     smart_home_account = RadioField(
@@ -965,7 +969,7 @@ class TAQKidsForm(FlaskForm):
 class TAQLegalForm(FlaskForm):
     title = "Legal Proceedings"
     legal = SelectMultipleField(
-        TAQLegal().questions['legal'],  choices=LEGAL_CHOICES)
+        TAQLegal().questions['legal'], choices=LEGAL_CHOICES, default=LEGAL_DEFAULT)
 
 class TAQForm(FlaskForm):
     title = "Technology Assessment Questionnaire (TAQ)"
@@ -1148,7 +1152,7 @@ def get_multiple_app_details(device, ser, apps):
     for app in apps:
         d = get_app_details(device, ser, app["id"])
         d["flags"] = app["flags"]
-        filled_in_apps.append(d)
+        filled_in_apps.append(d)    
     return filled_in_apps
 
 
@@ -1346,10 +1350,7 @@ def load_json_data(datatype: ConsultDataTypes):
     lock = FileLock(fname + ".lock")
     with lock:
         if not os.path.exists(fname):
-            if datatype in [ConsultDataTypes.TAQ.value, ConsultDataTypes.SETUP.value] :
-                return dict()
-            else: 
-                return []
+            None
 
         with open(fname, 'r') as openfile:
             json_object = json.load(openfile)
@@ -1378,12 +1379,39 @@ def load_json_data(datatype: ConsultDataTypes):
 
     fname = os.path.join(TMP_CONSULT_DATA_DIR, get_data_filename(datatype))
     if not os.path.exists(fname):
-        if datatype in [ConsultDataTypes.TAQ, ConsultDataTypes.SETUP] :
-            return dict()
-        else: 
-            return []
+        return None
+        #if datatype in [ConsultDataTypes.TAQ, ConsultDataTypes.SETUP] :
+        #    return dict()
+        #else: 
+        #    return []
 
     with open(fname, 'r') as openfile:
         json_object = json.load(openfile)
 
     return json_object
+
+def load_object_from_json(datatype: ConsultDataTypes):
+    json_data = load_json_data(datatype)
+    if datatype == ConsultDataTypes.SETUP.value:
+        if json_data:
+            return ConsultSetupData(**json_data)
+        return ConsultSetupData()
+    
+    if datatype == ConsultDataTypes.TAQ.value:
+        if json_data:
+            return TAQData(**json_data)
+        return TAQData()
+    
+    if datatype == ConsultDataTypes.ACCOUNTS.value:
+        if json_data:
+            assert type(json_data) == list
+            return [AccountInvestigation(**acct) for acct in json_data]
+        return list()
+    
+    if datatype == ConsultDataTypes.SCANS.value:
+        if json_data:
+            assert type(json_data) == list
+            return [ScanData(**scan) for scan in json_data]
+        return list()
+
+    return None
