@@ -1,5 +1,6 @@
 {% extends 'bootstrap/base.html' %}
 {% import "bootstrap/wtf.html" as wtf %}
+{% from "_formhelpers.html" import render_select, render_text_field %}
 
 <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
 <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
@@ -61,18 +62,8 @@
 
                 <table id="scan-form">
                     <tbody>
-                        <tr><th><label>{{ form.device_nickname.label }}</label></th><td> {{ form.device_nickname }}</td> </tr>
-                        <tr><th><label>{{form.device_type.label}}</label></th><td>
-                            <div class="btn-group" data-toggle="buttons" id={{form.device_type.id}}>
-                            {% for option in form.device_type %}
-                            <label class="btn btn-secondary" for="{{option.id}}">
-                                {{option.label.text}}
-                                <input type="radio" name={{option.name}} id={{option.id}} autocomplete="off" value={{option.label.text.lower()}}>
-                                <span class="glyphicon glyphicon-ok"></span>
-                            </label>
-                            {% endfor %}
-                            </div>
-                        </td></tr>
+                        {{ render_text_field(form.device_nickname) }}
+                        {{ render_select(form.device_type) }}
                     </tbody>
                 </table>
                 <br>
@@ -172,16 +163,7 @@
                             <table>
                                 <tbody>
                                     {% for subform in [nested.install_info.knew_installed, nested.install_info.installed, nested.install_info.coerced] %}
-                                    <tr><th>{{subform.label}}</th><td>
-                                        <div class="btn-group" data-toggle="buttons" id={{subform.id}}>
-                                        {% for option in subform %}
-                                        <label class="btn btn-light" for="{{option.id}}">
-                                            {{option.label.text}}
-                                            <input type="radio" name={{option.name}} id={{option.id}} autocomplete="off" value={{option.label.text.lower()}}>
-                                            <span class="glyphicon glyphicon-ok"></span>
-                                        </label>
-                                        {% endfor %}
-                                    </div></td></tr>
+                                    {{ render_select(subform) }}
                                     {% endfor %}
 
                                 </tbody>
@@ -194,17 +176,8 @@
                             {{ nested.permission_info.hidden_tag() }}
                             <table>
                                 <tbody>
-                                    <tr><th>{{nested.permission_info.access.label}}</th><td>
-                                        <div class="btn-group" data-toggle="buttons" id={{nested.permission_info.access.id}}>
-                                        {% for option in nested.permission_info.access %}
-                                        <label class="btn btn-light" for="{{option.id}}">
-                                            {{option.label.text}}
-                                            <input type="radio" name={{option.name}} id={{option.id}} autocomplete="off" value={{option.label.text.lower()}}>
-                                            <span class="glyphicon glyphicon-ok"></span>
-                                        </label>
-                                        {% endfor %}
-                                    </div></td></tr>
-                                    <tr><th>{{nested.permission_info.describe.label}}</th><td>{{nested.permission_info.describe}}</td></tr>
+                                    {{ render_select(nested.permission_info.access) }}
+                                    {{ render_text_field(nested.permission_info.describe) }}
                                 </tbody>
                             </table>
                             <button id="selected_appsperm_{{scan_data.selected_apps[outer_loop.index0].title}}" type="button" onclick="getScreenshot(this.id)">Screenshot</button>

@@ -19,6 +19,7 @@ from flask import (
     url_for,
 )
 from flask_bootstrap import Bootstrap
+from wtforms import ValidationError
 
 import config
 from evidence_collection import (  # create_account_summary,; create_app_summary,
@@ -167,8 +168,7 @@ def evidence_taq():
             return redirect(url_for('evidence_home'))
         
         elif not form.validate():
-            print(traceback.format_exc())
-            flash(form.errors, "error")
+            flash("Form validation error - are you missing required fields?", 'error')
             return redirect(url_for('evidence_taq'))
         
     return redirect(url_for('evidence_taq'))
@@ -244,8 +244,7 @@ def evidence_scan_start():
                 return redirect(url_for('evidence_scan_start'))
             
         elif not form.validate():
-            flash("Missing required fields")
-            return redirect(url_for('evidence_scan_start'))
+            flash("Form validation error - are you missing required fields?", 'error')
 
     return redirect(url_for('evidence_scan_start'))
 
@@ -309,6 +308,11 @@ def evidence_scan_select(ser):
             save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
         
             return redirect(url_for('evidence_scan_investigate', ser=ser))
+        
+        if not form.validate():
+            flash("Form validation error - are you missing required fields?", 'error')
+
+        return redirect(url_for('evidence_scan_select'), ser=ser)
         
 @app.route("/evidence/scan/manualadd/<string:device_nickname>", methods={'GET', 'POST'})
 def evidence_scan_manualadd(device_nickname):
@@ -383,7 +387,11 @@ def evidence_scan_manualadd(device_nickname):
                     pprint(app.__dict__)
 
                 return redirect(url_for('evidence_scan_investigate', ser=manual_scan.serial))
+            
+            if not form.validate():
+                flash("Form validation error - are you missing required fields?", 'error')
                 
+            return redirect(url_for('evidence_scan_manualadd', device_nickname=device_nickname))
 
 
 
@@ -435,7 +443,7 @@ def evidence_scan_investigate(ser):
             return redirect(url_for('evidence_home'))
     
         elif not form.validate():
-            flash("Missing required fields")
+            flash("Form validation error - are you missing required fields?", 'error')
             return redirect(url_for('evidence_scan_investigate', ser=ser))
 
     return redirect(url_for('evidence_scan_investigate', ser=ser))
@@ -493,6 +501,10 @@ def evidence_account(id):
 
             return redirect(url_for('evidence_home'))
         
+        if not form.validate():
+            flash("Form validation error - are you missing required fields?", 'error')
+            pprint(form.errors)
+
         return redirect(url_for('evidence_account', id=id))
 
 

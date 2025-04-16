@@ -18,11 +18,13 @@
     <td>
     <div class="btn-group" data-toggle="buttons" id={{field.id}}>
     {% for key, value, checked, attrs in field.iter_choices() %}
+    {% if key != '' %}
         <label class="btn btn-light" for="{{key}}">
             {{value}}
             <input type="radio" name={{key}} id={{key}} autocomplete="true" value={{value}}>
             <span class="glyphicon glyphicon-ok"></span>
         </label>
+    {% endif %}
     {% endfor %}
 </div>
 </td></tr>
