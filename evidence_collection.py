@@ -542,14 +542,14 @@ class TAQData(Dictable):
                  **kwargs):
         self.devices = TAQDevices(devices)
         self.accounts = TAQAccounts(accounts)
-        if self.accounts.pwd_comp_which.strip() == "":
-            self.accounts.pwd_comp_which = "[Not provided]"
+        #if self.accounts.pwd_comp_which.strip() == "":
+        #    self.accounts.pwd_comp_which = "[Not provided]"
         self.sharing = TAQSharing(sharing)
         if self.sharing.phone_plan_admin == []:
             self.sharing.phone_plan_admin = ""
         self.smarthome = TAQSmarthome(smarthome)
         self.kids = TAQKids(kids)
-        self.legal = TAQKids(legal)
+        self.legal = TAQLegal(legal)
 
         self.risk_factors = self.get_risk_factors()
 

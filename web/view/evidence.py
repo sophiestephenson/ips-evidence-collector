@@ -153,7 +153,9 @@ def evidence_taq():
 
     # Submit the form
     if request.method == 'POST':
+        pprint("FORM DATA START")
         pprint(form.data)
+        pprint("FORM DATA END")
         if form.is_submitted() and form.validate():
 
             # clean up data
@@ -485,7 +487,9 @@ def evidence_account(id):
 
     # Submit the form if it's a POST
     if request.method == 'POST':
+        pprint("FORM DATA START")
         pprint(form.data)
+        pprint("FORM DATA END")
         if form.is_submitted() and form.validate():
 
             # save data in class
