@@ -177,13 +177,14 @@ def evidence_taq():
 
 
 
-@app.route("/evidence/scan", methods={'GET', 'POST'})
-def evidence_scan_start():
+@app.route("/evidence/scan", methods={'GET', 'POST'}, defaults={'device_type': '', 'device_nickname': ''})
+@app.route("/evidence/scan/<device_type>/<device_nickname>", methods={'GET', 'POST'})
+def evidence_scan_start(device_type, device_nickname):
 
     # always assume we are starting with a fresh scan
     all_scan_data = load_object_from_json(ConsultDataTypes.SCANS.value)
     current_scan = ScanData()
-    form = StartForm()
+    form = StartForm(device_type=device_type, device_nickname=device_nickname)
 
     context = dict(
         task = "evidence-scan",
@@ -251,7 +252,9 @@ def evidence_scan_start():
             except Exception as e:
                 print(traceback.format_exc())
                 flash("Scan error: " + str(e))
-                return redirect(url_for('evidence_scan_start'))
+                return redirect(url_for('evidence_scan_start',  
+                                        device_type=form.data["device_type"],
+                                        device_nickname=form.data["device_nickname"]))
             
         elif not form.validate():
             flash("Form validation error - are you missing required fields?", 'error')
