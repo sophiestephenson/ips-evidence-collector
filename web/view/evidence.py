@@ -215,8 +215,15 @@ def evidence_scan_start():
             os.system("rm webstatic/images/screenshots/*")
 
             try:
-                # Get app list
+                # Get scan data
                 scan_data, suspicious_apps_dict, other_apps_dict = get_scan_data(clean_data["device_type"], clean_data["device_nickname"])
+
+                # Before moving on, check if we're scanning a device we've already scanned.
+                # If so, just load the next page for that device
+                for scan in all_scan_data:
+                    if scan.serial == scan_data["serial"]:
+                        flash("This device was already scanned.")
+                        return redirect(url_for('evidence_scan_select', ser=scan_data["serial"]))
 
                 # fill in the /investigate/ marker for suspicious apps
                 for i in range(len(suspicious_apps_dict)):
@@ -229,7 +236,8 @@ def evidence_scan_start():
                                         **clean_data, 
                                         **scan_data,
                                         all_apps=all_apps)
-                
+
+    
                 pprint(current_scan.__dict__)
                 for app in current_scan.all_apps:
                     pprint(app.permission_info.__dict__)
