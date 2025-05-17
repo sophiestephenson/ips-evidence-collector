@@ -13,8 +13,15 @@
         <script src="{{ url_for('static', filename='myjscript.js') }}?3"></script>
 	<title>{{ title.title }}</title>
         <script>
-
-         var device = "{{ device }}";
+          var cleanData = "{{ scan_data }}";
+         var device = "";
+         if(cleanData.includes("android")){
+            device ="android";
+         }
+         else{
+            device="ios";
+         }
+   
          var serial = "{{ serial }}";
          var scanid = "{{ scanid }}";
 	
