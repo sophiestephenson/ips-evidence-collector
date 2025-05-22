@@ -205,15 +205,18 @@ def evidence_scan_start(device_type, device_nickname):
 
             if form.manualadd.data:
                 return redirect(url_for('evidence_scan_manualadd',
-                                        device_nickname=form.data["device_nickname"]))
+                                        device_nickname=form.data["device_nickname"], 
+                                        device_type=form.data["device_type"]))
 
             # clean up the submitted data
             clean_data = remove_unwanted_data(form.data)
 
-            # Ensure any previous screenshots have been removed before scan
-            print("Removing files:")
-            os.system("ls webstatic/images/screenshots/")
-            os.system("rm webstatic/images/screenshots/*")
+            # Ensure any previous screenshots have been removed before scan 
+            # print("Removing files:")
+            # os.system("ls webstatic/images/screenshots/")
+            # os.system("rm webstatic/images/screenshots/*")
+
+            # Do the above at end of consult instead
 
             try:
                 # Get scan data
@@ -331,10 +334,10 @@ def evidence_scan_select(ser):
 
         return redirect(url_for('evidence_scan_select'), ser=ser)
 
-@app.route("/evidence/scan/manualadd/<string:device_nickname>", methods={'GET', 'POST'})
-def evidence_scan_manualadd(device_nickname):
+@app.route("/evidence/scan/manualadd/<string:device_type>/<string:device_nickname>", methods={'GET', 'POST'})
+def evidence_scan_manualadd(device_type, device_nickname):
 
-    form = ManualAddPageForm(apps = [""], device_nickname=device_nickname)
+    form = ManualAddPageForm(apps = [""], device_nickname=device_nickname, device_type=device_type)
 
     ### IF IT'S A GET:
     if request.method == 'GET':
@@ -383,6 +386,7 @@ def evidence_scan_manualadd(device_nickname):
                 manual_scan = ScanData(
                     manual=True,
                     device_nickname=device_nickname,
+                    device_type=device_type,
                     serial=device_nickname,
                     all_apps=[],
                     selected_apps=selected_apps
