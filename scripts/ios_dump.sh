@@ -12,7 +12,7 @@ elif [[ "$unamestr" == 'FreeBSD' ]]; then
    platform='freebsd'
 fi
 
-echo "$platform" "$adb"
+#echo "$platform" "$adb"
 
 serial=$(pymobiledevice3 usbmux list | awk -F'"' '/Identifier/ {print $4}')
 mkdir -p phone_dumps/"$1"_ios
