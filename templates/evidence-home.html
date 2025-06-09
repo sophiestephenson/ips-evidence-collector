@@ -60,7 +60,7 @@
                             </td>
                             {% if scan.manual %}
                             <td>
-                                <a href="{{ url_for('evidence_scan_manualadd', device_type=scan.device_type, device_nickname=scan.device_nickname) }}" class="btn btn-default">Add more apps</a>
+                                <a href="{{ url_for('evidence_scan_manualadd', ser=scan.serial) }}" class="btn btn-default">Add more apps</a>
                             </td>
                             {% else %} 
                             <td>
