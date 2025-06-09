@@ -357,7 +357,10 @@ def evidence_scan_manualadd(ser):
     current_scan = get_scan_by_ser(ser, all_scan_data)
     assert current_scan.serial == ser
 
-    form = ManualAddPageForm(apps = current_scan.selected_apps, 
+    manual_add_apps = [{"app_name": app.title, "spyware": "spyware" in app.flags} 
+                        for app in current_scan.selected_apps]
+
+    form = ManualAddPageForm(apps = manual_add_apps, 
                              device_nickname=current_scan.device_nickname, 
                              device_type=current_scan.device_type)
 
