@@ -33,9 +33,20 @@
                 <details>
                     <summary>
                     <span class="icon">▼</span>
-                    TAQ Data</summary>
+                    TAQ Risk Factors</summary>
                     <div class="content">
-                    <p>{{consultdata.taq}}</p>
+                        <div class="risks">
+                            <ul>
+                            {% for risk in consultdata.taq.risk_factors %}
+                            <li>
+                                <div class="riskbox">
+                                <b>{{risk.risk}}</b>: {{risk.description}}
+                                </div>
+                            </li>
+                            {% endfor %}
+                                
+                            </ul>
+                        </div>
                     </div>
                 </details>
                 <br/>
