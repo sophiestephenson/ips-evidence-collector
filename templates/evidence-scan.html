@@ -63,7 +63,7 @@
                                 </summary>
                                 <div>
                                 <ul>
-                                    <li><b>ID:</b> {{app.appId}}</li>
+                                    <li><b>ID:</b> <a href="https://www.google.com/search?q={{ app.appId }}" target="_blank">{{app.appId}}</a></li>
                                     <li><b>Link:</b> <a href={{app.app_website}}>{{app.app_website}}</a></li>
                                     <li><b>Permissions:</b>
                                         {% for p in app.permission_info.permissions %}

@@ -85,7 +85,6 @@ details {
   }
 
   table.appselect > tbody > tr > td > details {
-    max-width: 600px;
     overflow-wrap: anywhere;
     padding-right: 10px;
   }
@@ -393,8 +392,11 @@ table.appinfo th {
 
 table.appselect > tbody > tr > td > p {
     color: purple;
-    width: 250px;
     overflow-wrap: break-word;
+}
+
+table.appselect > tbody > tr > td.infocolumn {
+    width: 700px;
 }
 
 table.appselect > tbody > tr > th {
