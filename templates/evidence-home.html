@@ -114,11 +114,18 @@
                     <div class="content">
                     <table class="summarytable">
                         <tbody>
+                        <tr><th>Nickname</th>
+                            <th>Platform</th>
+                        </tr>
+
                         {% for account in consultdata.accounts %}
                         <tr>
-                            <th>
+                            <td>
                                 <p>{{account.account_nickname}}</p>
-                            </th>
+                            </td>
+                            <td>
+                                <p>{{account.platform}}</p>
+                            </td>
                             <td>
                                 <a href="{{ url_for('evidence_account', id=loop.index0) }}" class="btn btn-default">Edit Account</a>
                             </td>
