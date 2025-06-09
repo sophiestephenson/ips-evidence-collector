@@ -26,9 +26,9 @@
                 <a href="{{ url_for('evidence_account_default') }}" class="btn btn-default">Add an account</a>
 
                 <br><br>
-                <b>Consultation Info:</b>
-                <p>{{consultdata.setup.client}}</p>
-                <p>{{consultdata.setup.date}}</p>
+                <h3>Consultation Summary</h3>
+                <p><b>Client Name:</b> {{consultdata.setup.client}}</p>
+                <p><b>Consultation Date:</b> {{consultdata.setup.date}}</p>
                 <br/>
                 <details>
                     <summary>
