@@ -39,6 +39,7 @@
                 <br>
 
             {% elif step == 2 %}
+            <p>Apps found: <b>{{ form.apps|length - num_sys_apps }} installed apps</b>, {{ num_sys_apps }} system apps</p>
             <div class="scrollapps">
                 <table class="appselect">
                     <tbody>
