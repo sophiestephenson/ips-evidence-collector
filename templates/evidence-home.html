@@ -57,32 +57,47 @@
                         Scans ({{consultdata.scans|length}})
                     </summary>
                     <div class="content">
-                    <table>
+                    <table class="summarytable">
+                        <tbody>
+                        <tr><th>Nickname</th>
+                            <th>Type</th>
+                            <th>Manual?</th>
+                            <th>Apps Found</th>
+                            <th>Apps Checked</th>
+                        </tr>
+
                         {% for scan in consultdata.scans %}
                         <tr>
-                            <th>
+                            <td>
                                 <p>{{scan.device_nickname}}</p>
-                            </th>
+                            </td>
                             <td>
                                 <p>{{scan.device_type}}</p>
                             </td>
                             <td>
-                                <p>{{scan.selected_apps|length}} apps checked</p>
+                                <p>{{scan.manual}}</p>
+                            </td>
+                            <td>
+                                <p>{{scan.all_apps|length}}</p>
+                            </td>
+                            <td>
+                                <p>{{scan.selected_apps|length}}</p>
                             </td>
                             {% if scan.manual %}
                             <td>
-                                <a href="{{ url_for('evidence_scan_manualadd', ser=scan.serial) }}" class="btn btn-default">Add more apps</a>
+                                <a href="{{ url_for('evidence_scan_manualadd', ser=scan.serial) }}" class="btn btn-default">Select apps</a>
                             </td>
                             {% else %} 
                             <td>
-                                <a href="{{ url_for('evidence_scan_select', ser=scan.serial) }}" class="btn btn-default">Change app selection</a>
+                                <a href="{{ url_for('evidence_scan_select', ser=scan.serial) }}" class="btn btn-default">Select apps</a>
                             </td>
                             {% endif %}
                             <td>
-                                <a href="{{ url_for('evidence_scan_investigate', ser=scan.serial) }}" class="btn btn-default">Edit app investigation</a>
+                                <a href="{{ url_for('evidence_scan_investigate', ser=scan.serial) }}" class="btn btn-default">Edit investigation</a>
                             </td>
                         </tr> 
                         {% endfor %}
+                        </tbody>
                     </table></div>
                 </details>
                 {% else %}
@@ -97,7 +112,8 @@
                     </summary>
 
                     <div class="content">
-                    <table>
+                    <table class="summarytable">
+                        <tbody>
                         {% for account in consultdata.accounts %}
                         <tr>
                             <th>
@@ -108,6 +124,7 @@
                             </td>
                         </tr> 
                         {% endfor %}
+                    </tbody>
                     </table>
                     </div>
                 </details>
