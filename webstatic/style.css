@@ -56,6 +56,11 @@ details {
     float: left;
   }
 
+  details.appselect > summary span.icon {
+    margin-left: 0px;
+    margin-right: 0px;
+  }
+
   details >summary img {
     float: right;
     align-self: center;
@@ -70,6 +75,10 @@ details {
   }
 
   details[open] summary span.icon {
+    transform: rotate(180deg) translate(7px, 0px);
+  }
+
+  details[open].appselect summary span.icon {
     transform: rotate(180deg) translate(10px, 7px);
   }
 

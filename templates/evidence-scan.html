@@ -133,7 +133,14 @@
                                 {% endif %}
                                 </td></tr>
                                 <tr><th>App ID</th><td>{{app.appId}}</td></tr>
-                                <tr><th>Flags</th><td>{{app.flags}}</td></tr>
+                                <tr><th>Flags</th><td>
+                                        {% for flag in app.flags %}
+                                            {% if flag == 'system-app' %}
+                                            <span class="badge badge-secondary">{{flag}}</span>
+                                            {% else %}
+                                            <span class="badge badge-warning">{{flag}}</span>
+                                            {% endif %}
+                                        {% endfor %}</td></tr>
                                 <tr><th valign="top">Install time</th><td>January 1, 1970 00:00:00</td></tr>
                                 <tr><th valign="top">Permissions used</th>
                                     <td>
