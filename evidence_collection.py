@@ -184,10 +184,16 @@ class AppInfo(Dictable):
         self.developerwebsite = developerwebsite
         self.investigate = investigate
 
+        # I DON"T REALLY KNOW WHY THE BELOW LOGIC IS NECESSARY
+
+        # If permission_info is empty, then we need to create
+        # a new PermissionInfo object with the permissions
         if len(permission_info) == 0:
             self.permission_info = PermissionInfo({
                 'permissions': permissions
             })
+
+        # Otherwise, create a PermissionInfo object with the provided data
         else:
             self.permission_info = PermissionInfo(permission_info)
 
