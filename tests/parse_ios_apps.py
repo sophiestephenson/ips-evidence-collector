@@ -16,17 +16,6 @@ APPS_PLIST = readPlist(path + "ios_apps.plist")
 DEVICE_INFO = readPlist(path + "ios_info.xml")
 
 
-def _retrieve(dict_, nest):
-    """
-    Navigates dictionaries like dict_[nest0][nest1][nest2]...
-    gracefully.
-    """
-    try:
-        return reduce(operator.getitem, nest, dict_)
-    except KeyError as e:
-        return ""
-
-
 def _check_unseen_permissions(permissions):
     for permission in permissions:
         if permission not in PERMISSIONS_MAP:
@@ -60,7 +49,7 @@ def get_permissions(app):
             map(
                 lambda x: (
                     PERMISSIONS_MAP[x],
-                    app.get(x, "permission granted by system"),
+                    app.get(x, "(No description provided)"),
                 ),
                 list(
                     set(system_permissions)

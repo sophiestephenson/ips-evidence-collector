@@ -118,22 +118,6 @@ def prune_empty_keys(d):
     return d
 
 
-def retrieve(dict_: pd.DataFrame, nest: list) -> str:
-    """
-    Navigates dictionaries like dict_[nest0][nest1][nest2]...
-    gracefully.
-    """
-    dict_ = dict_.to_dict()  # for pandas
-    try:
-        return reduce(operator.getitem, nest, dict_)
-    except KeyError as e:
-        print(f"KeyError: {e} for dict_={dict_} and nest={nest}")
-        return ""
-    except TypeError as e:
-        print(f"TypeError: {e} for dict_={dict_} and nest={nest}")
-        return ""
-
-
 class PhoneDump(object):
     def __init__(self, dev_type, fname):
         self.device_type = dev_type
