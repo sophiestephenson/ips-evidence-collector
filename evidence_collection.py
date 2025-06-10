@@ -174,7 +174,10 @@ class AppInfo(Dictable):
             self.app_name = appId
             self.title = appId
         self.appId = appId
-        self.flags = flags
+
+        # Fill in flags, removing any flags == ""
+        self.flags = list(filter(None, flags))
+        
         self.application_icon = application_icon
         self.app_website = app_website
         self.description = description
