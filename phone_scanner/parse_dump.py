@@ -508,13 +508,16 @@ class IosDump(PhoneDump):
         """
         system_permissions = app["Entitlements"].get("com.apple.private.tcc.allow", [])
 
-        def flatten(matrix):
-            return [item for row in matrix for item in row]
-        def check_nested_list(data):
-            return any(isinstance(item, list) for item in data)
-
-        if check_nested_list(system_permissions):
-            system_permissions = flatten(system_permissions)
+        # Need to clean up some permissions that are nested lists
+        if any(isinstance(item, list) for item in system_permissions):
+            # Flatten the list of lists
+            new_sys_perms = []
+            for perm in system_permissions:
+                if isinstance(perm, list):
+                    for p in perm:
+                        new_sys_perms.append(p)
+                else:
+                    new_sys_perms.append(perm)
 
         adjustable_system_permissions = app["Entitlements"].get("com.apple.private.tcc.allow.overridable", [])
         
