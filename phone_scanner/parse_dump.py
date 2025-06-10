@@ -522,9 +522,7 @@ class IosDump(PhoneDump):
         Could modify this function to include whether or not the permission can be adjusted
         in Settings.
         """
-        system_permissions = retrieve(
-            app, ["Entitlements", "com.apple.private.tcc.allow"]
-        )
+        system_permissions = app["Entitlements"].get("com.apple.private.tcc.allow", [])
 
         def flatten(matrix):
             return [item for row in matrix for item in row]
@@ -534,9 +532,8 @@ class IosDump(PhoneDump):
         if check_nested_list(system_permissions):
             system_permissions = flatten(system_permissions)
 
-        adjustable_system_permissions = retrieve(
-            app, ["Entitlements", "com.apple.private.tcc.allow.overridable"]
-        )
+        adjustable_system_permissions = app["Entitlements"].get("com.apple.private.tcc.allow.overridable", [])
+        
         third_party_permissions = list(set(app.keys()) & set(self.permissions_map))
 
         # unpack

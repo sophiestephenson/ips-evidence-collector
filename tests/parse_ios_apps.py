@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-from plistlib import readPlist
-from functools import reduce
-import operator
 import json
+import operator
+from functools import reduce
+from plistlib import readPlist
 
 path = "serial/"
 # load permissions mappings and apps plist
@@ -47,10 +47,8 @@ def get_permissions(app):
     Could modify this function to include whether or not the permission can be adjusted
     in Settings.
     """
-    system_permissions = _retrieve(app, ["Entitlements", "com.apple.private.tcc.allow"])
-    adjustable_system_permissions = _retrieve(
-        app, ["Entitlements", "com.apple.private.tcc.allow.overridable"]
-    )
+    system_permissions = app["Entitlements"].get("com.apple.private.tcc.allow", [])
+    adjustable_system_permissions = app["Entitlements"].get("com.apple.private.tcc.allow.overridable", [])
     third_party_permissions = list(set(app) & set(PERMISSIONS_MAP))
     _check_unseen_permissions(
         list(system_permissions) + list(adjustable_system_permissions)
@@ -72,9 +70,8 @@ def get_permissions(app):
             )
         )
     )
-    pii = _retrieve(
-        app, ["Entitlements", "com.apple.private.MobileGestalt.AllowedProtectedKeys"]
-    )
+    pii = app["Entitlements"].get("com.apple.private.MobileGestalt.AllowedProtectedKeys", [])
+    
     # print("\tPII: "+str(pii))
 
     return all_permissions
