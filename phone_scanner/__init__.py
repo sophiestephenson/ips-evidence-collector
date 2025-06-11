@@ -442,17 +442,25 @@ class AndroidScan(AppScan):
 
         if len(hf_recent.get("label", "")) > 0:
             hf_recent["label"] = hf_recent.apply(
-                lambda x: "{} (last used: {})".format(
+                lambda x: "{} (Last used: {})".format(
                     x["label"],
                     "never" if "unknown" in x["timestamp"].lower() else x["timestamp"],
                 ),
                 axis=1,
             )
+
+        permissions = hf_recent["label"].tolist()
+        d["permissions"] = [ ]
+        for p in permissions:
+            name = p.split(" (")[0]
+            last_used = p.split(" (")[1].replace(")", "")
+            d["permissions"].append((name, last_used))
+ 
         # print("hf_recent['label']=", hf_recent['label'].tolist())
         # print(~hf_recent['timestamp'].str.contains('unknown'))
         non_hf_recent.drop("appId", axis=1, inplace=True)
         print(d)
-        d["permissions"] = hf_recent["label"].tolist()
+        #d["permissions"] = hf_recent["label"].tolist()
         d["non_hf_permissions_html"] = non_hf_recent.to_html()
         print("App info dict:", d)
 
