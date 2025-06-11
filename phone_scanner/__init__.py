@@ -256,7 +256,11 @@ class AndroidScan(AppScan):
             )
 
     def _get_apps_from_device(self, serialno, flag) -> list:
-        """get apps from the device"""
+        """
+        Uses adb to list packages on the device. 
+        Returns the list of installed packages.
+        """
+
         cmd = "{cli} -s {serial} shell pm list packages {flag} | sed 's/^package://g' | sort"
         s = catch_err(
             run_command(cmd, serial=serialno, flag=flag),
@@ -270,19 +274,30 @@ class AndroidScan(AppScan):
             installed_apps = [x for x in s.splitlines() if x]
             return installed_apps
 
-    def _get_apps_from_dump(self, serialno):
-        # hmac_serial = config.hmac_serial(serialno)
-        # Try to read from the dump
-        dump_file = self.dump_path(serialno)
+    def _get_apps_from_dump(self, hmac_serial):
+        """Parses the dump file to get the list of installed apps."""
+
+        # Read from dump and put the data in self.dump_d
+        dump_file = self.dump_path(hmac_serial)
         self.dump_d = parse_dump.AndroidDump(dump_file)
+
+        # Uses dump_d (the AndroidDump obj) to get the app information
         app_and_codes = self.dump_d.apps()
+
+        # Return just the list of app names
         return [a for a, c in app_and_codes]
 
     def get_apps(self, serialno: str, from_dump: bool = False) -> list:
+        """Returns the list of installed apps on the device."""
+
         print(f"Getting Android apps: {serialno} from_dump={from_dump}")
         hmac_serial = config.hmac_serial(serialno)
         if not from_dump:
+            # Get list of installed packages using adb
             installed_apps = self._get_apps_from_device(serialno, "-u")
+
+            # If the list is non-empty, run a full scan 
+            # (TODO: When would this be empty?)
             if installed_apps:
                 q = run_command(
                     "bash scripts/android_scan.sh scan {ser} {hmac_serial}",
@@ -465,7 +480,6 @@ class AndroidScan(AppScan):
                 "com.ramdroid.appquarantine",
             ]
         )
-        print(root_pkgs_check_str)
         root_checks = {
             "su binary": ("command -v su", "0"),
             "oem unlock": ("getprop ro.boot.flash.locked", "0"),

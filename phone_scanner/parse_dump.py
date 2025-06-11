@@ -10,6 +10,7 @@ from functools import reduce
 from pathlib import Path
 from plistlib import load
 from pprint import pprint
+from time import sleep
 from typing import Dict, List
 
 import pandas as pd
@@ -81,11 +82,19 @@ def get_all_leaves(d):
 
 
 def extract(d, lkeys_dict):
-    """This is super inefficient"""
+    """
+    Extracts the values from d that match the keys in lkeys_dict??
+    This is super inefficient
+    """
     if isinstance(d, list) and len(d) > 0:
+        # If d is a list, we take the first element (for some reason??)
         d = d[0]
+
     if isinstance(lkeys_dict, list):
+        # If lkeys_dict is a list, we just return the values for those keys
         return [d[k] for k in lkeys_dict if k in d]
+    
+    # Else, we assume d is a dictionary
     r = []
     for k, v in lkeys_dict.items():
         if k in d:
@@ -123,7 +132,7 @@ class PhoneDump(object):
         self.device_type = dev_type
         self.fname = fname
         # df must be a dictionary
-        self.df = self.load_file()
+        # self.df = self.load_file()
 
     def load_file(self):
         raise Exception("Not Implemented")
@@ -350,15 +359,22 @@ class AndroidDump(PhoneDump):
         return b
 
     def apps(self):
+        """
+        Uses the JSON dump information to get all apps installed on the device.
+        Returns: A list of tuples (appid, human-readable name).
+        If JSON dump is not loaded, it will return an empty dict.
+        """
         d = self.df
         if not d:
             return {}
 
         def get_appid_h(txt):
+            """Extracts appId and human-readable name using regex match."""
             m = re.match(r"Package \[(?P<appId>.*)\] \((?P<h>.*)\)", txt)
             if m:
                 return m.groups()
 
+        # Get appId and human-readable name for all packages
         packages = map(
             get_appid_h,
             get_all_leaves(match_keys(d, "^package$//^Packages//^Package .*")),
@@ -366,9 +382,19 @@ class AndroidDump(PhoneDump):
         return [c for c in packages if c]
 
     def info(self, appid):
+        """
+        Uses the JSON dump information to get info about a specific app (appid).
+        If JSON dump is not loaded, it will return an empty dict.
+        """
+
+        # Get the loaded json dump 
         d = self.df
         if not d:
             return {}
+        
+        # ERROR: D = {'package': []}. What does this mean?
+        
+        # Wtf is this meant to do? 
         package = extract(
             d, match_keys(d, "^package$//^Packages//^Package [{}].*".format(appid))
         )
