@@ -2,12 +2,17 @@
 Must work completely from the dumps, no interaction with the device is required.
 """
 
-from rsonlite import simpleparse
-import pandas as pd
 import datetime
-import config
 import re
-from .runcmd import run_command, catch_err
+from pprint import pprint
+from time import sleep
+
+import pandas as pd
+from rsonlite import simpleparse
+
+import config
+
+from .runcmd import catch_err, run_command
 
 # MAP = config.ANDROID_PERMISSIONS
 DUMPPKG = "dumppkg"
@@ -96,6 +101,10 @@ def package_info(dumpf, appid):
     print(cmd)
     # TODO: Need to udpate it once the catch_err function is fixed.
     package_dump = run_command(cmd).stdout.read().decode()
+
+    # Edge case: Where "Hidden system packages" comes right after a package
+    # We need to remove it, otherwise the parsing will fail.
+    package_dump = package_dump.split("Hidden system packages")[0]
 
     # cmd = '{cli} shell dumpsys usagestats {app} | grep "App Standby States:" -A 1'\
     #     .format(cli=config.ADB_PATH, app=appid)
