@@ -387,50 +387,88 @@ class AndroidDump(PhoneDump):
         If JSON dump is not loaded, it will return an empty dict.
         """
 
-        # Get the loaded json dump 
-        d = self.df
-        if not d:
+        if not self.df:
+            pprint("JSON dump not loaded. Cannot get info for appid={}".format(appid))
             return {}
-        
-        # ERROR: D = {'package': []}. What does this mean?
-        
-        # Wtf is this meant to do? 
-        package = extract(
-            d, match_keys(d, "^package$//^Packages//^Package [{}].*".format(appid))
-        )
 
-        other_info = [
-            get_all_leaves(match_keys(package, v))
-            for v in ["userId", "firstInstallTime", "lastUpdateTime"]
-        ]
-        res = dict(map(split_equalto_delim, [x[0] for x in other_info if x]))
+        # Get the package information for the appid.
+        # It's found under the key 'package' -> 'Packages'.
+        try:
+            # This should return a dictionary with keys of the form 
+            #     'Package [<appid>] (<some numbers>)'.
+            package_list = self.df["package"]["Packages"]
+            
+            # Find the right key for this appid.
+            key_matches = [k for k in list(package_list.keys()) if "[{}]".format(appid) in k]
+            if len(key_matches) != 1:
+                raise KeyError("{} keys found for appid: {}".format(len(key_matches), appid))
 
-        if "userId" not in res:
-            print("UserID not found in res={}".format(res))
+            # Get the package info using this key.
+            all_package_info = package_list[key_matches[0]]
+
+            # all_package_info looks like one of two things:
+            #   1. A list of ["key1=value1", "key2=value2", ...]
+            #   2. A dict, where the keys are "key1=value1", "key2=value2", ...
+            # So, simplify it by transforming #2 into #1 when applicable.
+            if type(all_package_info) is dict:
+                all_package_info = list(all_package_info.keys())
+            # TODO: See if there are any desired infos that actually do map to something
+            #       If so, this won't work!
+
+            # Now, create a dictionary of the desired package information
+            desired_info = ["userId", "firstInstallTime", "lastUpdateTime"]
+            relevant_package_info = {}
+            for item in all_package_info:
+                item_pieces = item.split("=", 1) # "key1=value1" -> ["key1", "value1"]
+                if len(item_pieces) > 1:
+                    key, value = item_pieces 
+                    if key in desired_info:
+                        relevant_package_info[key] = value
+
+        except KeyError as e:
+            print(f"KeyError: {e}.")
             return {}
-        process_uid = res["userId"]
-        del res["userId"]
-        # memory = match_keys(d, "meminfo//Total PSS by process//.*: {}.*".format(appid))
-        uidu_match = list(
-            get_all_leaves(
-                match_keys(d, "procstats//CURRENT STATS//* {} / .*".format(appid))
-            )
-        )
-        print(uidu_match)
-        if uidu_match:
-            uidu = uidu_match[-1].split(" / ")
-        else:
-            uidu = "Not Found"
-        if len(uidu) > 1:
-            uidu = uidu[1]
-        else:
-            uidu = uidu[0]
-        res["data_usage"] = self.get_data_usage(d, process_uid)
-        res["battery_usage"] = self.get_battery_stat(d, uidu)  # (mAh)
-        # print('RESULTS')
-        # print(res)
-        # print('END RESULTS')
-        return res
+
+
+        # Get data usage using the process UID 
+        # TODO: Check get_data_usage function
+        try:
+            process_uid = relevant_package_info["userId"]
+            del relevant_package_info["userId"]
+            relevant_package_info["data_usage"] = self.get_data_usage(self.df, process_uid)
+
+        except KeyError as e:
+            relevant_package_info["data_usage"] = "Unavailable"
+
+        # Get the battery usage using the UID
+        # TODO: Check this whole logic + get_battery_stat function
+        try: 
+            uidu = "Not found"
+            uidu_matches = [
+               item for item in list(self.df["procstats"]["CURRENT STATS"].keys())
+                if appid in item
+            ]
+            if len(uidu_matches) > 0:
+                uidu = uidu_matches[-1].split(" / ") # ?
+                if len(uidu) > 1:
+                    uidu = uidu[1]
+                else:
+                    uidu = uidu[0]
+            relevant_package_info["battery_usage"] = self.get_battery_stat(self.df, uidu)
+
+        except KeyError as e:
+            relevant_package_info["battery_usage"] = "Unavailable"
+
+        # Get memory information - was commented out. 
+        # TODO: Look into this. Revive?
+        #memory_matches = [
+        #    item for item in list(self.df["meminfo"]["Total PSS by process"].keys())
+        #    if appid in item
+        #]
+
+        return relevant_package_info
+    
+
 
 
 class IosDump(PhoneDump):
