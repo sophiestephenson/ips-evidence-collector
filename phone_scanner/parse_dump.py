@@ -1,16 +1,10 @@
 import io
-import itertools
 import json
-import operator
 import os
 import re
 import sys
-from collections import OrderedDict
-from functools import reduce
 from pathlib import Path
-from plistlib import load
 from pprint import pprint
-from time import sleep
 from typing import Dict, List
 
 import pandas as pd
@@ -30,89 +24,6 @@ def get_d_at_level(d, lvl):
             d[level] = {}
         d = d[level]
     return d
-
-
-def clean_json(d):
-    if not any(d.values()):
-        return list(d.keys())
-    else:
-        for k, v in d.items():
-            d[k] = clean_json(v)
-
-
-def _match_keys_w_one(d, key, only_last=False):
-    """Returns a list of keys that matches @key"""
-    sk = re.compile(key)
-    if not d:
-        return []
-    if isinstance(d, list):
-        d = d[0]
-    ret = [k for k in d if sk.match(k) is not None]
-    if only_last:
-        return ret[-1:]
-    else:
-        return ret
-
-
-def match_keys(d, keys):
-    """d is a dictionary, and finds all keys that matches @keys
-    Returns a list of lists
-    """
-    if isinstance(keys, str):
-        keys = keys.split("//")
-    ret = _match_keys_w_one(d, keys[0])
-    if len(keys) == 1:
-        return ret
-    return OrderedDict((k, match_keys(d[k], keys[1:])) for k in ret)
-
-
-def prune_empty_leaves(dkeys):
-    """Remove the entries from dkeys all the paths that lead to empty keys"""
-    if isinstance(dkeys, list):
-        return dkeys
-    for k, v in dkeys.items():
-        dkeys[k] = prune_empty_leaves(v)
-    return {k: v for k, v in dkeys.items() if v}
-
-
-def get_all_leaves(d):
-    if not isinstance(d, dict):
-        return d
-    return itertools.chain(*(get_all_leaves(v) for v in d.values()))
-
-
-def extract(d, lkeys_dict):
-    """
-    Extracts the values from d that match the keys in lkeys_dict??
-    This is super inefficient
-    """
-    if isinstance(d, list) and len(d) > 0:
-        # If d is a list, we take the first element (for some reason??)
-        d = d[0]
-
-    if isinstance(lkeys_dict, list):
-        # If lkeys_dict is a list, we just return the values for those keys
-        return [d[k] for k in lkeys_dict if k in d]
-    
-    # Else, we assume d is a dictionary
-    r = []
-    for k, v in lkeys_dict.items():
-        if k in d:
-            r.extend(extract(d[k], v))
-    return r
-
-
-def _extract_one(d, lkeys):
-    for k in lkeys:
-        if isinstance(d, list):
-            d = d[0]
-        d = d.get(k, {})
-    return d
-
-
-def split_equalto_delim(k):
-    return k.split("=", 1)
-
 
 def prune_empty_keys(d):
     """d is an multi-layer dictionary. The function
@@ -314,6 +225,9 @@ class AndroidDump(PhoneDump):
 
     @staticmethod
     def get_data_usage(d, process_uid):
+        # TODO: Fix this!
+        # Currently, net_stats is not in d (for what I'm testing)
+
         if "net_stats" not in d:
             return {"foreground": "unknown", "background": "unknown"}
         # FIXME: pandas.errors.ParserError: Error tokenizing data. C error: Expected 21 fields in line 556, saw 22
@@ -342,44 +256,56 @@ class AndroidDump(PhoneDump):
 
     @staticmethod
     def get_battery_stat(d, uidu):
-        b = list(
-            get_all_leaves(
-                match_keys(
-                    d,
-                    "batterystats//Statistics since last charge//Estimated power use .*"
-                    "//^Uid {}:.*".format(uidu),
-                )
-            )
-        )
-        if not b:
-            return "0 (mAh)"
-        else:
-            t = b[0].split(":")
-            return t[1]
-        return b
+        # Apparently this is where batterystats info is located:
+        #   'batterystats'
+        #       'Statistics since last charge'
+        #           'Estimated power use <something>'
+        #               'Uid {UIDU}: <something>'
+
+        # TODO: Fix this.
+
+        return "Unavailable"
 
     def apps(self):
         """
         Uses the JSON dump information to get all apps installed on the device.
         Returns: A list of tuples (appid, human-readable name).
         If JSON dump is not loaded, it will return an empty dict.
+
+        TODO: Would be great to return a list of dicts {name=x, id=y}
         """
-        d = self.df
-        if not d:
+        if not self.df:
+            pprint("JSON dump not loaded. Cannot get list of apps.")
             return {}
+        
+        # Structure of the dump:
+        # package
+        #   Packages
+        #       Package [<appid1>] (<name1>)
+        #       Package [<appid2>] (<name2>)
+        #       ...
+        all_package_keys = []
+        for key in list(self.df["package"]["Packages"].keys()):
+            appid = ""
+            app_name = ""
 
-        def get_appid_h(txt):
-            """Extracts appId and human-readable name using regex match."""
-            m = re.match(r"Package \[(?P<appId>.*)\] \((?P<h>.*)\)", txt)
-            if m:
-                return m.groups()
+            try:
+                appid = key.split("[", 1)[1].split("]", 1)[0] # Extract appid
+                app_name = key.split("(", 1)[1].split(")", 1)[0] # Extract name
+                all_package_keys.append( (appid, app_name) )
 
-        # Get appId and human-readable name for all packages
-        packages = map(
-            get_appid_h,
-            get_all_leaves(match_keys(d, "^package$//^Packages//^Package .*")),
-        )
-        return [c for c in packages if c]
+            except IndexError as e:
+                # Weren't able to extract appid or name correctly
+                # Insert appid if it was collected though
+                pprint(f"IndexError: {e}")
+                all_package_keys.append( (appid, "Unavailable") )
+
+        # Remove duplicates and sort
+        all_package_keys = list(set(all_package_keys))
+        all_package_keys.sort()
+        
+        return all_package_keys
+    
 
     def info(self, appid):
         """
@@ -395,7 +321,7 @@ class AndroidDump(PhoneDump):
         # It's found under the key 'package' -> 'Packages'.
         try:
             # This should return a dictionary with keys of the form 
-            #     'Package [<appid>] (<some numbers>)'.
+            #     'Package [<appid>] (<name>)'.
             package_list = self.df["package"]["Packages"]
             
             # Find the right key for this appid.
