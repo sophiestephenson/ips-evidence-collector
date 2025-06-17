@@ -67,6 +67,9 @@
                                 <div>
                                 <ul>
                                     <li><b>ID:</b> <a href="https://www.google.com/search?q={{ app.appId }}" target="_blank">{{app.appId}}</a></li>
+                                    <li><b>Version:</b> {{app.app_version}}</li>
+                                    <li><b>Installed:</b>{{app.install_time}}</li>
+                                    <li><b>Updated:</b>{{app.last_updated}}</li>
                                     <li><b>Link:</b> <a href={{app.app_website}}>{{app.app_website}}</a></li>
                                     <li><b>Permissions:</b>
                                         {% for p in app.permission_info.permissions %}
@@ -143,6 +146,13 @@
                                             <span class="flag flag-warning">{{flag}}</span>
                                             {% endif %}
                                         {% endfor %}</td></tr>
+                                <tr><th>App version</th>
+                                    <td>{{app.app_version}}</td>
+                                <tr><th>Install time</th>
+                                    <td>{{app.install_time}}</td>
+                                <tr><th>Last updated</th>
+                                    <td>{{app.last_updated}}</td>
+                                </tr>
                                 <tr><th valign="top">Permissions used</th>
                                     <td>
                                         <ul>
