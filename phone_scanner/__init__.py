@@ -121,6 +121,13 @@ class AppScan(object):
             config.logging.info("info={}".format(info))
             config.logging.info("END APP INFO")
 
+            # For Android, combine permissions together
+            # We start with three types: runtime, declared, install
+            if self.device_type == "android":
+                # declared and install are regular
+                # runtime is nested under "User ...."
+                pass
+
             # FIXME: sloppy iOS hack but should fix later, just add these to DF
             # directly.
             if self.device_type == "ios":
@@ -136,11 +143,6 @@ class AppScan(object):
             if self.device_type == "ios":
                 d["permissions"] = info.get("permissions", [])
                 d["title"] = info.get("title", "")
-
-            # NOTE: Exception happens in the below line.
-            #   Appears to be when d is empty to begin with - check why!
-
-            #pprint("Permissions in cols?: {}".format("permissions" in d.columns))
 
             # TEMP FIX: mask InfoPlist.strings references
             old_permissions = d.get("permissions", []) 
@@ -422,14 +424,19 @@ class AndroidScan(AppScan):
         return s != -1
 
     def app_details(self, serialno, appid) -> tuple[dict, dict]:
+
+        # First, get basic app details using the Super class
         d, info = super(AndroidScan, self).app_details(serialno, appid)
-        # part that requires android to be connected / store this somehow.
+
+        # runtime/install/declared permissions
+
+        # Then, get more details about permissions
+        # This requires the phone to be connected
         hf_recent, non_hf_recent, non_hf, stats = all_permissions(
             self.dump_path(serialno), appid
         )
         # FIXME: some appopps in non_hf_recent are not included in the
         # output.  maybe concat hf_recent with them?
-        info["Date of Scan"] = datetime.now().strftime(config.DATE_STR)
         info["install_time"] = stats.get("firstInstallTime", "")
         info["last_updated"] = stats.get("lastUpdateTime", "")
         # info['Last Used'] = stats['used']

@@ -351,49 +351,50 @@ class AndroidDump(PhoneDump):
                     if key in desired_info:
                         relevant_package_info[key] = value
 
+            # Get permissions information
+            # ALL KINDS
+
+            # Get data usage using the process UID 
+            # TODO: Check get_data_usage function
+            try:
+                process_uid = relevant_package_info["userId"]
+                del relevant_package_info["userId"]
+                relevant_package_info["data_usage"] = self.get_data_usage(self.df, process_uid)
+
+            except KeyError as e:
+                relevant_package_info["data_usage"] = "Unavailable"
+
+            # Get the battery usage using the UID
+            # TODO: Check this whole logic + get_battery_stat function
+            try: 
+                uidu = "Not found"
+                uidu_matches = [
+                item for item in list(self.df["procstats"]["CURRENT STATS"].keys())
+                    if appid in item
+                ]
+                if len(uidu_matches) > 0:
+                    uidu = uidu_matches[-1].split(" / ") # ?
+                    if len(uidu) > 1:
+                        uidu = uidu[1]
+                    else:
+                        uidu = uidu[0]
+                relevant_package_info["battery_usage"] = self.get_battery_stat(self.df, uidu)
+
+            except KeyError as e:
+                relevant_package_info["battery_usage"] = "Unavailable"
+
+            # Get memory information - was commented out. 
+            # TODO: Look into this. Revive?
+            #memory_matches = [
+            #    item for item in list(self.df["meminfo"]["Total PSS by process"].keys())
+            #    if appid in item
+            #]
+
+            return relevant_package_info
+
         except KeyError as e:
             print(f"KeyError: {e}.")
             return {}
-
-
-        # Get data usage using the process UID 
-        # TODO: Check get_data_usage function
-        try:
-            process_uid = relevant_package_info["userId"]
-            del relevant_package_info["userId"]
-            relevant_package_info["data_usage"] = self.get_data_usage(self.df, process_uid)
-
-        except KeyError as e:
-            relevant_package_info["data_usage"] = "Unavailable"
-
-        # Get the battery usage using the UID
-        # TODO: Check this whole logic + get_battery_stat function
-        try: 
-            uidu = "Not found"
-            uidu_matches = [
-               item for item in list(self.df["procstats"]["CURRENT STATS"].keys())
-                if appid in item
-            ]
-            if len(uidu_matches) > 0:
-                uidu = uidu_matches[-1].split(" / ") # ?
-                if len(uidu) > 1:
-                    uidu = uidu[1]
-                else:
-                    uidu = uidu[0]
-            relevant_package_info["battery_usage"] = self.get_battery_stat(self.df, uidu)
-
-        except KeyError as e:
-            relevant_package_info["battery_usage"] = "Unavailable"
-
-        # Get memory information - was commented out. 
-        # TODO: Look into this. Revive?
-        #memory_matches = [
-        #    item for item in list(self.df["meminfo"]["Total PSS by process"].keys())
-        #    if appid in item
-        #]
-
-        return relevant_package_info
-    
 
 
 
