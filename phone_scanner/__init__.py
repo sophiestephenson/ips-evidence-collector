@@ -92,24 +92,29 @@ class AppScan(object):
 
     def app_details(self, serialno, appid) -> tuple[dict, dict]:
         try:
+            # Read the database and get info about this app
+            # TODO: Stop using the database
             d = pd.read_sql(
                 "select * from apps where appid=?", self.app_info_conn, params=(appid,)
             )
+
+            # Ensure the permissions attribute is a list
             if not isinstance(d.get("permissions", ""), list):
                 d["permissions"] = d.get("permissions", pd.Series([]))
                 d["permissions"] = d["permissions"].fillna("").str.split(", ")
 
+            # Update descriptionHTML
             if "descriptionHTML" not in d:
                 d["descriptionHTML"] = d["description"]
-            dfname = self.dump_path(serialno)
 
+            # Parse the dump to get dump info (which includes..?)
+            dfname = self.dump_path(serialno)
             if self.device_type == "ios":
                 ddump = self.parse_dump
                 if not ddump:
                     ddump = parse_dump.IosDump(dfname)
             else:
                 ddump = parse_dump.AndroidDump(dfname)
-
             info = ddump.info(appid)
 
             config.logging.info("BEGIN APP INFO")
@@ -126,15 +131,19 @@ class AppScan(object):
                 d["title"] = pd.Series(info.get("title", ""))
                 #del info["permissions"]
 
-            d = d.fillna("").to_dict(orient="index").get(0, {})
+            d = d.fillna("").to_dict(orient="index").get(0, {}) # what does this do?
+
             if self.device_type == "ios":
                 d["permissions"] = info.get("permissions", [])
                 d["title"] = info.get("title", "")
-            pprint(type(d["permissions"]))
-            pprint(d["permissions"])
+
+            # NOTE: Exception happens in the below line.
+            #   Appears to be when d is empty to begin with - check why!
+
+            #pprint("Permissions in cols?: {}".format("permissions" in d.columns))
 
             # TEMP FIX: mask InfoPlist.strings references
-            old_permissions = d["permissions"]
+            old_permissions = d.get("permissions", []) 
             new_permissions = []
 
             if self.device_type == "ios":
