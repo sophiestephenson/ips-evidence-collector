@@ -144,11 +144,10 @@ class AppScan(object):
                 d["permissions"] = info.get("permissions", [])
                 d["title"] = info.get("title", "")
 
-            # TEMP FIX: mask InfoPlist.strings references
-            old_permissions = d.get("permissions", []) 
-            new_permissions = []
+                # TEMP FIX: mask InfoPlist.strings references
+                old_permissions = d.get("permissions", []) 
+                new_permissions = []
 
-            if self.device_type == "ios":
                 for perm, reason in old_permissions:
                     if "permission granted by system" in reason.lower():
                         reason = "[system permission]"
@@ -157,11 +156,12 @@ class AppScan(object):
                     elif "NSLocationWhenInUseUsageDescriptionUndefined".lower() in reason.lower():
                         reason = "[description not available]"
                     
-                new_permissions.append((perm, reason))
+                    new_permissions.append((perm, reason))
 
-            d["permissions"] = new_permissions
+                d["permissions"] = new_permissions
 
             return d, info
+        
         except KeyError as ex:
             print(">>> Exception:::", ex, file=sys.stderr)
             return dict(), dict()
@@ -472,6 +472,8 @@ class AndroidScan(AppScan):
                                          f"Last used: {timestamp}"))
                 
         # Combine with labeled permissions listed first
+        # TODO: Should we also get the non-hf permissions? 
+        # it's just ignoring those for now...
         d["permissions"] = labeled_permissions + unlabeled_permissions
                 
         
@@ -530,6 +532,7 @@ class IosScan(AppScan):
 
     def __init__(self):
         super(IosScan, self).__init__("ios", cli=config.LIBIMOBILEDEVICE_PATH)
+        print("iOS Scan initialized with super.__init__()")
         self.installed_apps = None
         self.serialno = None
         self.parse_dump = None
@@ -576,12 +579,15 @@ class IosScan(AppScan):
 
     def get_apps(self, serialno: str, from_dump: bool) -> list:
         """iOS always read everything from dump, so nothing to change."""
+        print("inside get_apps()")
         self.serialno = serialno
         if not from_dump:
             if not self._dump_phone(serialno):
                 print("Failed to dump the phone. Check error on the terminal")
                 return []
+        print("before _load_dump()")
         self._load_dump(serialno)
+        print("after _load_dump()")
         self.installed_apps = self.parse_dump.installed_apps()
         print("iOS INFO DUMPED.")
         return self.installed_apps

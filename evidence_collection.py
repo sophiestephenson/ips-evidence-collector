@@ -1104,9 +1104,13 @@ def get_app_details(device, ser, appid):
     # TODO: Just return this all in one clean dictionary from app_details()...
     info_things = ["install_time", "last_updated", "app_version"]
     for item in info_things:
-        d[item] = info[item]
-        if d[item].strip() == "":
-            d[item] = "Unknown"
+        try:
+            d[item] = info[item]
+            if d[item].strip() == "":
+                d[item] = ""
+        except KeyError as e:
+            print(f"Key {item} not found in app details for {appid}: {e}")
+            d[item] = ""
 
     #d = d.fillna('')
     #d = d.to_dict(orient='index').get(0, {})
