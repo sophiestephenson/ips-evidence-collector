@@ -1,13 +1,12 @@
 import hashlib
 import hmac
+import logging
+import logging.handlers as handlers
 import os
 import secrets
 import shlex
 from pathlib import Path
 from sys import platform
-
-import logging
-import logging.handlers as handlers
 
 SCREENSHOT_LOCATION = "/Users/Soph/research/evidence-project/ips-evidence-collector/screenshots/"
 
@@ -134,7 +133,9 @@ SCRIPT_DIR = THIS_DIR / "scripts"
 DATE_STR = "%Y-%m-%d %I:%M %p"
 ERROR_LOG = []
 
-APPROVED_INSTALLERS = {"com.android.vending", "com.sec.android.preloadinstaller"}
+APPROVED_INSTALLERS = {"com.android.vending", 
+                       "com.sec.android.preloadinstaller", 
+                       "com.sec.android.app.samsungapps"}
 
 REPORT_PATH = THIS_DIR / "reports"
 PII_KEY_PATH = STATIC_DATA / "pii.key"
