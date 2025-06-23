@@ -448,29 +448,29 @@ class AndroidScan(AppScan):
         info["app_version"] = stats.get("versionName", "")
         # info['App Version Code'] = stats['versionCode']
 
-        # FIXME: if Unknown, use 'permission_abbrv' instead.
-        hf_recent.loc[hf_recent["label"] == "unknown", "label"] = hf_recent.get(
-            "permission_abbrv", ""
-        )
-
         # hf_recent['label'] = hf_recent[['label',
         # 'timestamp']].apply(lambda x: ''.join(str(x), axis=1))
 
-        if len(hf_recent.get("label", "")) > 0:
-            hf_recent["label"] = hf_recent.apply(
-                lambda x: "{} (Last used: {})".format(
-                    x["label"],
-                    "never" if "unknown" in x["timestamp"].lower() else x["timestamp"],
-                ),
-                axis=1,
-            )
+        # Format recent permissions as (label, timestamp) tuples
+        # If the label is empty, just use permission
+        # If the label is not empty, use "<label> (<permission_abbrv>)"
 
-        permissions = hf_recent["label"].tolist()
-        d["permissions"] = [ ]
-        for p in permissions:
-            name = p.split(" (")[0]
-            last_used = p.split(" (")[1].replace(")", "")
-            d["permissions"].append((name, last_used))
+        permission_info_tmp = list(zip(hf_recent["label"].tolist(), 
+                                       hf_recent["permission"].to_list(), 
+                                       hf_recent["permission_abbrv"].to_list(),
+                                       hf_recent["timestamp"].tolist()))
+
+        d["permissions"] = []
+        for tup in permission_info_tmp:
+            label, permission, permission_abbrv, timestamp = tup
+            if label:
+                # If label is not empty, use it with the permission abbreviation
+                d["permissions"].append((f"{label} ({permission_abbrv})", timestamp))
+            else:
+                # If label is empty, just use the permission
+                d["permissions"].append((permission, timestamp))
+                
+        #d["permissions"] = list(zip(hf_recent["label"].tolist(), hf_recent["timestamp"].tolist()))
  
         # print("hf_recent['label']=", hf_recent['label'].tolist())
         # print(~hf_recent['timestamp'].str.contains('unknown'))

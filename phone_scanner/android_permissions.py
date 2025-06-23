@@ -229,45 +229,87 @@ def all_permissions(dumpf, appid):
     non human-friendly permissions, and summary stats.
     """
 
-    # Get app permissions and package info
-    app_perms, pkg_info = package_info(dumpf, appid)
-    recent_permissions = recent_permissions_used(appid)
 
-    permissions = pd.read_csv(config.ANDROID_PERMISSIONS_CSV)
-    permissions["label"] = permissions.apply(
+    # Apply labels (e.g., "dangerous") to the permissions based on our static list.
+    all_static_permissions = pd.read_csv(config.ANDROID_PERMISSIONS_CSV)
+    all_static_permissions["label"] = all_static_permissions.apply(
         lambda x: (
             x["permission"].rsplit(".", n=1)[-1] if x["label"] == "null" else x["label"]
         ),
         axis=1,
     )
-    app_permissions_tbl = permissions[
-        permissions["permission"].isin(app_perms)
+    
+    # Use abd to get the permissions (requested + installed) and package info 
+    app_perms, pkg_info = package_info(dumpf, appid)
+
+    # Filter the permissions to only those that are used by the app.
+    app_static_permissions = all_static_permissions[
+        all_static_permissions["permission"].isin(app_perms)
     ].reset_index(drop=True)
-    app_permissions_tbl["permission_abbrv"] = app_permissions_tbl.permission.str.rsplit(
+    app_static_permissions["permission_abbrv"] = app_static_permissions.permission.str.rsplit(
         ".", n=1
     ).str[-1]
 
+    ### Now, compare this list with the recently used permissions.
+
+    # Use adb to get the recently used permissions, sorted by time ago (descending)
+    recent_permissions = recent_permissions_used(appid)
+
+    # Create a dataframe with the recently-used permissions
+    # and the information we have about them in our static list.
+    # The human-readable name is "op" or "permission_abbrv"
     # TODO: really 'unknown'?
     hf_recent_permissions = pd.merge(
         recent_permissions,
-        app_permissions_tbl,
+        app_static_permissions, # Right merge, so keeps all lines from this df
         left_on="op",
         right_on="permission_abbrv",
         how="right",
-    ).fillna("Unknown permission")
+    ).fillna("Never")
 
+    # Clean up missing data if permission was never used.
+    hf_recent_permissions.loc[
+        hf_recent_permissions["timestamp"] == "Never", 
+        ["mode", "duration"]
+    ] = "N/A"
+    hf_recent_permissions.loc[
+        hf_recent_permissions["appId"] == "Never", 
+        "op"
+    ] = hf_recent_permissions["permission"]
+
+    hf_recent_permissions["label"] = hf_recent_permissions["label"].apply(
+        lambda x: x.capitalize()
+    )
+    
+    # If there's no label, replace it with an empty string.
+    hf_recent_permissions.loc[
+        hf_recent_permissions["label"] == "Never",
+        "label"
+    ] = ""
+
+    if appid == "com.android.carrierdefaultapp":
+        sleep(2)
+
+    # Create a separate list of the recently used permissions
+    # that do not have a human-friendly name in our static list.
+    # This is done by checking if the "op" is in the "permission_abbrv" column
+    # of the app_permissions_tbl.
     no_hf_recent_permissions = recent_permissions[
-        ~recent_permissions["op"].isin(app_permissions_tbl["permission_abbrv"])
+        ~recent_permissions["op"].isin(app_static_permissions["permission_abbrv"])
     ]
-    no_hf = set(app_perms) - set(app_permissions_tbl["permission"].tolist())
+
+    # Get all the permissions used by the app 
+    # that do not have a human-friendly name in our static list.
+    no_hf = set(app_perms) - set(app_static_permissions["permission"].tolist())
 
     stats = {
         "total_permissions": len(app_perms),
-        "hf_permissions": app_permissions_tbl.shape[0],
+        "hf_permissions": app_static_permissions.shape[0],
         "recent_permissions": recent_permissions.shape[0],
         "not_hf_ops": no_hf_recent_permissions.shape[0],
         "not_hf_permissions": len(no_hf),
     }
+
     return hf_recent_permissions, no_hf_recent_permissions, no_hf, {**stats, **pkg_info}
 
 
