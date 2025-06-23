@@ -277,18 +277,14 @@ def all_permissions(dumpf, appid):
         "op"
     ] = hf_recent_permissions["permission"]
 
+    # Clean up labels
     hf_recent_permissions["label"] = hf_recent_permissions["label"].apply(
         lambda x: x.capitalize()
     )
-    
-    # If there's no label, replace it with an empty string.
     hf_recent_permissions.loc[
         hf_recent_permissions["label"] == "Never",
         "label"
     ] = ""
-
-    if appid == "com.android.carrierdefaultapp":
-        sleep(2)
 
     # Create a separate list of the recently used permissions
     # that do not have a human-friendly name in our static list.
