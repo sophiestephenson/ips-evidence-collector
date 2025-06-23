@@ -472,6 +472,8 @@ class AndroidScan(AppScan):
                                          f"Last used: {timestamp}"))
                 
         # Combine with labeled permissions listed first
+        # TODO: Should we also get the non-hf permissions? 
+        # it's just ignoring those for now...
         d["permissions"] = labeled_permissions + unlabeled_permissions
                 
         
