@@ -203,10 +203,9 @@ def do_privacy_check(ser, command, context):
             )
 
     elif command == "screenshot":
-        curr_time = datetime.now().strftime('%d_%m_%Y_%H_%M_%S')
-        fname = 'images/screenshots/' + context.replace(" ", "") + '_' + curr_time + '.png'
-        take_screenshot(ser, fname='webstatic/' + fname)
-        return add_image(fname, nocache=True)
+        fname = config.create_screenshot_fname(context)
+        take_screenshot(ser, fname=fname)
+        return add_image(fname.replace("webstatic/", ""), nocache=True)
 
     else:
         return "Command not supported; should be one of ['account', 'backup', 'gmap', 'gphotos'] (case in-sensitive)"

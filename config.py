@@ -5,6 +5,7 @@ import logging.handlers as handlers
 import os
 import secrets
 import shlex
+from datetime import datetime
 from pathlib import Path
 from sys import platform
 
@@ -198,3 +199,14 @@ def error():
 
         print(f"ERROR: {e}")
     return e.replace("\n", "<br/>")
+
+def create_screenshot_fname(context):
+    # Verify the directory exists and create it if not
+    dir_path = os.path.join("webstatic", "images", "screenshots")
+    os.makedirs(dir_path, exist_ok=True)
+
+    # Create a filename with the current time and context
+    curr_time = datetime.now().strftime('%d-%m-%Y_%H-%M-%S')
+    fname = os.path.join(dir_path, context.replace(" ", "") + '_' + curr_time + '.png')
+
+    return fname

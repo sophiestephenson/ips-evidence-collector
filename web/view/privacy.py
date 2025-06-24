@@ -49,14 +49,7 @@ def privacy_scan(device, cmd, context):
     return res
 
 def iosScreenshot(serialNumber, context, nocache = False):
-    curr_time = datetime.now().strftime('%d_%m_%Y_%H_%M_%S')
-    homePro = subprocess.run(["pwd"], stdout=subprocess.PIPE)
-    homeDir = str(homePro.stdout.decode('utf-8')).strip()
-
-    # Verify the directory exists and create it if not
-    dir_path = os.path.join(homeDir, "webstatic/images/screenshots")
-    os.makedirs(dir_path, exist_ok=True)
-    fname = 'images/screenshots/' + context.replace(" ", "") + '_' + curr_time + '.png'
+    fname = config.create_screenshot_fname(context)
     linkPro = subprocess.Popen(["pymobiledevice3", "lockdown", "start-tunnel"], stdout= subprocess.PIPE)
     time.sleep(2)
     output = linkPro.stdout
@@ -74,10 +67,9 @@ def iosScreenshot(serialNumber, context, nocache = False):
             lineSplit = line.split(":")
             rsdPort = lineSplit[1][1:]
         i += 1
-    tempFname = 'webstatic/' + fname
-    command = "pymobiledevice3 developer dvt screenshot " + tempFname + " --rsd " + rsdAddress + " " + rsdPort
+    command = "pymobiledevice3 developer dvt screenshot " + fname + " --rsd " + rsdAddress + " " + rsdPort
     subprocess.run(shlex.split(command))
-    return add_image(fname, nocache=True)
+    return add_image(fname.replace("webstatic/", ""), nocache=True)
 def add_image(img, nocache=False):
         rand = random.randint(0, 10000)
         return "<img height='400px' src='" + \
