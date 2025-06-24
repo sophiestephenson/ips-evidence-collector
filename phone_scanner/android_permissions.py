@@ -54,7 +54,8 @@ def recent_permissions_used(appid):
     cols = ["appId", "op", "mode", "timestamp", "time_ago", "duration"]
     df = pd.DataFrame([], columns=cols)
     cmd = "{cli} shell appops get {app}"
-    recently_used = catch_err(run_command(cmd, app=appid))
+    recently_used = run_command(cmd, app=appid).stdout.read().decode("utf-8")
+    #recently_used = catch_err(run_command(cmd, app=appid))
 
     if "No operations." in recently_used:
         return df
@@ -104,7 +105,7 @@ def package_info(dumpf, appid):
         appid=appid, dumpf=dumpf.replace(".json", ".txt")
     )
     # TODO: Need to udpate it once the catch_err function is fixed.
-    package_dump = run_command(cmd).stdout.read().decode()
+    package_dump = run_command(cmd).stdout.read().decode('utf-8')
 
     # Edge case: Where "Hidden system packages" comes right after a package
     # We need to remove it, otherwise the parsing will fail.
