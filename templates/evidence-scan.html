@@ -39,7 +39,8 @@
                 <br>
 
             {% elif step == 2 %}
-            <p>Apps found: <b>{{ form.apps|length - num_sys_apps }} installed apps</b>, {{ num_sys_apps }} system apps</p>
+            <p><b>Evidence of jailbreaking?</b> {{is_rooted}}. <b>Explanation:</b> {{rooted_reasons}}</p>
+            <p><b>Apps found:</b> {{ form.apps|length - num_sys_apps }} installed apps and {{ num_sys_apps }} system apps</p>
             <div class="scrollapps">
                 <table class="appselect">
                     <tbody>

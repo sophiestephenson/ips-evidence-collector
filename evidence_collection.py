@@ -509,7 +509,7 @@ class ScanData(Dictable):
                 )
             )
         else:
-            report_sentences.append("This device is not jailbroken.")
+            report_sentences.append("There is no evidence that this device is jailbroken.")
 
         if len(self.selected_apps) == 0:
             report_sentences.append("No suspicious apps were found on this device.")
