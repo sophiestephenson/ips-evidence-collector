@@ -232,7 +232,11 @@
 
                 {% if step==3 %}
                 <div><span class="secondarybutton">
+                    {% if scan_data.manual %}
+                    <a href="{{ url_for('evidence_scan_manualadd', ser=scan_data.serial) }}" class="btn btn-default">
+                    {% else %}
                     <a href="{{ url_for('evidence_scan_select', ser=scan_data.serial) }}" class="btn btn-default">
+                    {% endif %}
                         Go back
                     </a></span></div>
                 {% endif %}
