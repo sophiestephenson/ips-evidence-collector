@@ -328,6 +328,7 @@ def evidence_scan_select(ser):
             for app in current_scan.all_apps:
                 if app.title in to_investigate_titles:
                     selected_apps.append(app)
+                    app.investigate = True
 
             pprint(selected_apps)
             pprint("SELECTED APPS")
@@ -425,9 +426,6 @@ def evidence_scan_manualadd(ser):
             return redirect(url_for('evidence_scan_manualadd', ser=ser))
 
 
-
-
-
 @app.route("/evidence/scan/investigate/<string:ser>", methods={'GET', 'POST'})
 def evidence_scan_investigate(ser):
 
@@ -441,6 +439,7 @@ def evidence_scan_investigate(ser):
     pprint([app.to_dict() for app in current_scan.selected_apps])
     pprint("INPUTTED INTO THE INVESTIGATION FORM")
     # get apps to investigate from the scan data
+
     form = AppInvestigationForm(selected_apps=[app.to_dict() for app in current_scan.selected_apps])
 
     ### IF IT'S A GET:
