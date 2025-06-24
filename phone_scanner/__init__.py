@@ -671,7 +671,7 @@ class IosScan(AppScan):
         # dict with 'True' and 'False' mapping to a list of reasons for root/no root
         rooted = defaultdict(list)
         # TODO This should be removed once the check is fixed
-        rooted["False"].append("Jailbreak and root checks are currently " "disabled")
+        rooted["False"].append("Jailbreak and root checks are currently disabled for iOS devices.")
         return (False, rooted["False"])
         try:
             with open(self.dump_path(serial, "Jailbroken-FS"), "r") as fh:
