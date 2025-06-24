@@ -27,7 +27,7 @@ def error():
 # application level errors. They should go to particular application specific
 # handling.
 def catch_err(
-    p: subprocess.Popen[bytes], cmd="", msg="", time=10, large_output=False
+    p: subprocess.Popen[bytes], cmd="", msg="", time=1, large_output=False
 ) -> str:
     """TODO: Therer are two different types. homogenize them"""
     try:
@@ -38,13 +38,10 @@ def catch_err(
                     large_output_var += line
 
         p.wait(time)
-        print("Returncode: ", p.returncode)
         if p.returncode != 0:
-
             err_msg = (
                     "stderr was none. This may indicate large issues with process."
                 )
-
             if p.stderr:
                 err_msg = p.stderr.read().decode("utf-8")
                 
