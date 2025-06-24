@@ -299,6 +299,7 @@ def evidence_scan_select(ser):
             task = "evidence-scan",
             form = form,
             device = current_scan.device_type,
+            nickname = current_scan.device_nickname,
             title=config.TITLE,
             all_apps = [app.to_dict() for app in current_scan.all_apps],
             isrooted = current_scan.is_rooted,
