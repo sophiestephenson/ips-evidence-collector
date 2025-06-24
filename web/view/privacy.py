@@ -1,4 +1,17 @@
-from flask import render_template, request
+import hashlib
+import hmac
+import os
+import random
+import re
+import shlex
+import sqlite3
+import subprocess
+import sys
+import time
+from collections import defaultdict
+from datetime import datetime
+
+from flask import render_template, request, url_for
 
 import config
 
@@ -7,19 +20,6 @@ from phone_scanner.privacy_scan_android import do_privacy_check, take_screenshot
 from web import app
 from web.view.index import get_device
 
-import hashlib
-import hmac
-import os
-import re
-import shlex
-import sqlite3
-from flask import url_for
-import sys
-from collections import defaultdict
-from datetime import datetime
-import subprocess
-import time
-import random
 
 @app.route("/privacy", methods=["GET"])
 def privacy():
@@ -56,7 +56,7 @@ def iosScreenshot(serialNumber, context, nocache = False):
     # Verify the directory exists and create it if not
     dir_path = os.path.join(homeDir, "webstatic/images/screenshots")
     os.makedirs(dir_path, exist_ok=True)
-    fname = 'images/screenshots/' + context + '_' + curr_time + '.png'
+    fname = 'images/screenshots/' + context.replace(" ", "") + '_' + curr_time + '.png'
     linkPro = subprocess.Popen(["pymobiledevice3", "lockdown", "start-tunnel"], stdout= subprocess.PIPE)
     time.sleep(2)
     output = linkPro.stdout
