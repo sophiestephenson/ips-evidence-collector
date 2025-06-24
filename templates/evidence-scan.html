@@ -222,9 +222,29 @@
                 {% if step==1 %}
                 <div><span class="secondarybutton"><a href="{{ url_for('evidence_home') }}" class="btn btn-default">Abort Scan</a></span></div>
                 {% endif %}
-                {% if form.manualadd %}
-                <div><span class="secondarybutton">{{form.manualadd}}</div>
+
+                {% if step==2 %}
+                <div><span class="secondarybutton">
+                    <a href="{{ url_for('evidence_scan_start', device_type=device, device_nickname=nickname) }}" class="btn btn-default">
+                        Go back
+                    </a></span></div>
                 {% endif %}
+
+                {% if step==3 %}
+                <div><span class="secondarybutton">
+                    {% if scan_data.manual %}
+                    <a href="{{ url_for('evidence_scan_manualadd', ser=scan_data.serial) }}" class="btn btn-default">
+                    {% else %}
+                    <a href="{{ url_for('evidence_scan_select', ser=scan_data.serial) }}" class="btn btn-default">
+                    {% endif %}
+                        Go back
+                    </a></span></div>
+                {% endif %}
+
+                {% if form.manualadd %}
+                <div><span class="secondarybutton">{{form.manualadd}}</span></div>
+                {% endif %}
+
                 <div><span class="primarybutton">{{form.submit}}</span></div>
                 </form>
         </div>
