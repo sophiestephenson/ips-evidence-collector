@@ -27,14 +27,15 @@ function delete_app(appid, e) {
     })
 }
 
-function getScreenshot(buttonId, device) { // ButtonId is the context which the screenshot was taken
+function getScreenshot(buttonId, device, ser) { // ButtonId is the context which the screenshot was taken
+    console.log("getScreenshot called for " + buttonId + " on device " + device + " with serial " + ser);
     var imageDiv = document.createElement('div');
     imageDiv.classList.add("form-screenshot");
     var loading = document.createElement('img')
     loading.src = "../../../webstatic/images/waiting.gif";
     imageDiv.innerHTML = loading.outerHTML;
     document.getElementById(buttonId).parentNode.insertBefore(imageDiv, document.getElementById(buttonId).nextSibling);
-      fetch('/privacy/' + device + '/screenshot/' + buttonId)
+      fetch('/privacy/' + device + '/screenshot/' + buttonId + '/' + ser)
       .then(response => response.text())
       .then(data => {
           imageDiv.innerHTML = data;

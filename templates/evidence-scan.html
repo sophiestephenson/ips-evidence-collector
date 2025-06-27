@@ -181,6 +181,7 @@
                             </table>
                         </div>
                         <hr>
+                            <button id="{{app.appId}}" type="button" onclick="getScreenshot(this.id, '{{device}}', '{{scan_data.adb_serial}}')" value="screenshot">Screenshot</button>
                         <h4>Questionnaires</h4>
                         <h5>{{nested.install_info.label}}</h5>
                         <div class="subform">
@@ -193,7 +194,6 @@
 
                                 </tbody>
                             </table>
-                            <button id="selected_apps_{{scan_data.selected_apps[outer_loop.index0].title}}" type="button" onclick="getScreenshot(this.id, '{{device}}')" value="screenshot">Screenshot</button>
                         </div>
 
                         <h5>Permission check</h5>
@@ -205,7 +205,6 @@
                                     {{ render_text_field(nested.permission_info.describe) }}
                                 </tbody>
                             </table>
-                            <button id="selected_appsperm_{{scan_data.selected_apps[outer_loop.index0].title}}" type="button" onclick="getScreenshot(this.id, '{{device}}')">Screenshot</button>
                         </div>
 
                         <h5>{{nested.notes.label}}</h5>

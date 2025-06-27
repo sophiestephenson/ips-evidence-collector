@@ -35,21 +35,19 @@ def privacy():
     )
 
 
-@app.route("/privacy/<device>/<cmd>/<context>", methods=["GET"])
-def privacy_scan(device, cmd, context):
-    print(cmd)
-    print(device)
-    sc = get_device(device)
+@app.route("/privacy/<device>/<cmd>/<context>/<ser>", methods=["GET"])
+def privacy_scan(device, cmd, context, ser):
+    print(ser)
     if(device == "ios"):
         print("Taking a IOS screenhsot")
-        res = iosScreenshot(sc.serialno, context, nocache=True)
+        res = iosScreenshot(ser, context, nocache=True)
     else:
-        res = do_privacy_check(sc.serialno, cmd, context)
+        res = do_privacy_check(ser, cmd, context)
     print("Screenshot Taken")
     return res
 
-def iosScreenshot(serialNumber, context, nocache = False):
-    fname = config.create_screenshot_fname(context)
+def iosScreenshot(ser, context, nocache = False):
+    fname = config.create_screenshot_fname(context, ser)
     linkPro = subprocess.Popen(["pymobiledevice3", "lockdown", "start-tunnel"], stdout= subprocess.PIPE)
     time.sleep(2)
     output = linkPro.stdout

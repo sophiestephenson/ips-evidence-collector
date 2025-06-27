@@ -136,11 +136,11 @@ def wait(t):
     time.sleep(t)
 
 def add_image(img, nocache=False):
-    rand = random.randint(0, 10000)
+    #rand = random.randint(0, 10000)
     return (
         "<img height='400px' src='"
         + url_for("static", filename=img)
-        + "?{}'/>".format(rand if nocache else "")
+        + "'/>"
     )
 
 def do_privacy_check(ser, command, context):
@@ -201,7 +201,7 @@ def do_privacy_check(ser, command, context):
             )
 
     elif command == "screenshot":
-        fname = config.create_screenshot_fname(context)
+        fname = config.create_screenshot_fname(context, ser)
         take_screenshot(ser, fname=fname)
         return add_image(fname.replace("webstatic/", ""), nocache=True)
 

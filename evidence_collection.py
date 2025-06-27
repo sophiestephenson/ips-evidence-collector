@@ -471,6 +471,7 @@ class ScanData(Dictable):
                  device_type="",
                  device_nickname="",
                  serial="",
+                 adb_serial="",
                  device_model="",
                  device_version="",
                  device_manufacturer="",
@@ -485,6 +486,7 @@ class ScanData(Dictable):
         self.device_type = device_type
         self.device_nickname = device_nickname
         self.serial = serial
+        self.adb_serial = adb_serial
         self.device_model = device_model
         self.device_version = device_version
         self.device_manufacturer = device_manufacturer
@@ -1200,6 +1202,7 @@ def get_scan_data(device, device_owner):
         scan_d = {
             'clientid': clientid,
             'serial': config.hmac_serial(ser),
+            'adb_serial': ser,
             'device': device,
             'device_model': device_name_map.get('model', '<Unknown>').strip(),
             'device_version': device_name_map.get('version', '<Unknown>').strip(),
