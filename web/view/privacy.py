@@ -69,6 +69,5 @@ def iosScreenshot(ser, context, nocache = False):
     subprocess.run(shlex.split(command))
     return add_image(fname.replace("webstatic/", ""), nocache=True)
 def add_image(img, nocache=False):
-        rand = random.randint(0, 10000)
         return "<img height='400px' src='" + \
-            url_for('static', filename=img) + "?{}'/>".format(rand if nocache else '')
+            url_for('static', filename=img) + "'/>"

@@ -469,7 +469,7 @@ def evidence_scan_investigate(ser):
             clean_data = remove_unwanted_data(form.data)
 
             # update the current scan data and save it
-            current_scan.selected_apps = [AppInfo(**app) for app in clean_data["selected_apps"]]
+            current_scan.selected_apps = [AppInfo(**app, device_hmac_serial=ser) for app in clean_data["selected_apps"]]
             all_scan_data = update_scan_by_ser(current_scan, all_scan_data)
 
             #  save this updated data
@@ -574,9 +574,10 @@ def evidence_printout():
         screenshot_dir = config.SCREENSHOT_LOCATION
     )
 
-    pprint([account.to_dict() for account in consult_data.accounts])
+    context = consult_data.to_dict()
+    context["url_root"] = request.url_root
 
     # create the printout document
-    filename = create_printout(consult_data.to_dict())
+    filename = create_printout(context)
     workingdir = os.path.abspath(os.getcwd())
     return send_from_directory(workingdir, filename)

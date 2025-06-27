@@ -19,7 +19,7 @@ from time import sleep
 import jinja2
 import pdfkit
 from filelock import FileLock
-from flask import session
+from flask import session, url_for
 from flask_wtf import FlaskForm
 from wtforms import (
     BooleanField,
@@ -166,6 +166,7 @@ class AppInfo(Dictable):
                  permissions=[],
                  install_info=dict(),
                  notes=dict(),
+                 device_hmac_serial="",
                  **kwargs):
 
         self.title = title
@@ -207,7 +208,23 @@ class AppInfo(Dictable):
         self.install_info = InstallInfo(install_info)
         self.notes = Notes(notes)
 
+        self.screenshot_files = self._get_screenshot_files(device_hmac_serial)
+
         self.report, self.is_concerning = self.generate_app_report()
+
+    def _get_screenshot_files(self, device_hmac_serial):
+        """
+        Returns a list of screenshot filenames for this app.
+        They will be under webstatic/images/screenshots/<device_hmac_serial>/<appId>/
+        """
+        screenshot_dir = os.path.join("webstatic", "images", "screenshots", device_hmac_serial, self.appId)
+        if os.path.exists(screenshot_dir):
+            # get full filepaths
+            files = os.listdir(screenshot_dir)
+            full_fnames = [os.path.join(screenshot_dir, f) for f in files] 
+            full_fnames.sort()
+            return full_fnames
+        return []
 
     def generate_app_report(self, second_person=True, harmdoer="the person of concern"):
         agent = "you"
@@ -492,8 +509,8 @@ class ScanData(Dictable):
         self.device_manufacturer = device_manufacturer
         self.is_rooted = is_rooted
         self.rooted_reasons = rooted_reasons
-        self.all_apps = [AppInfo(**app) for app in all_apps]
-        self.selected_apps = [AppInfo(**app) for app in selected_apps]
+        self.all_apps = [AppInfo(**app, device_hmac_serial=serial) for app in all_apps]
+        self.selected_apps = [AppInfo(**app, device_hmac_serial=serial) for app in selected_apps]
         self.concerning_apps = [app for app in self.selected_apps if app.is_concerning]
 
         self.report = self.generate_report()
@@ -1009,25 +1026,30 @@ class TAQForm(FlaskForm):
     submit = SubmitField("Save TAQ")
 
 def create_printout(context):
-
-    pprint(context)
-
-    filename = os.path.join('reports', 'test_report.pdf')
+    out_file = os.path.join('reports', 'test_report.pdf')
     template = os.path.join('templates', 'printout.html')
     css_path = os.path.join('webstatic', 'style.css')
 
     template_loader = jinja2.FileSystemLoader("./")
     template_env = jinja2.Environment(loader=template_loader)
     template = template_env.get_template(template)
-    output_text = template.render(context)
+    html_string = template.render(context)
 
     config = pdfkit.configuration(wkhtmltopdf='/usr/local/bin/wkhtmltopdf')
-    options = {'enable-local-file-access': None,
-            'footer-right': '[page]'}
-    pdfkit.from_string(output_text, filename, configuration=config, options=options, css=css_path)
 
-    print("Printout created. Filename is", filename)
-    return filename
+    options = {
+        'enable-local-file-access': True,
+        'footer-right': '[page]'
+        }
+    
+    pdfkit.from_string(html_string, out_file, options=options, configuration=config, css=css_path, verbose=True)
+
+    print("Printout created. Filename is", out_file)
+
+    # Also try one of the screenshots
+    #pdfkit.from_file("/Users/Soph/research/evidence-project/ips-evidence-collector/webstatic/images/screenshots/HSN_1db594fa7f4b6f487b0f650a92209e0e43b077390bd7ff4f4b41c57b888d78d1/com.google.android.apps.pixelmigrate/27-06-2025_09-59-39.png", "reports/screenshot.pdf", options=options, configuration=config, css=css_path, verbose=True)
+
+    return out_file
 
 
 def create_overall_summary(context, second_person=False):
