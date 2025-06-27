@@ -13,8 +13,12 @@ from web import app
 
 # all in all, this particular section has a terrible code smell...
 def get_device(k):
-    return {"android": AndroidScan(), "ios": IosScan(), "test": TestScan()}.get(k)
-
+    if k == "android":
+        return AndroidScan()
+    if k == "ios":
+        return IosScan()
+    if k == "test":
+        return TestScan()
 
 @app.route("/", methods=["GET"])
 def index():

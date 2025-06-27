@@ -28,7 +28,6 @@ function delete_app(appid, e) {
 }
 
 function getScreenshot(buttonId, device, ser) { // ButtonId is the context which the screenshot was taken
-    console.log("getScreenshot called for " + buttonId + " on device " + device + " with serial " + ser);
     var imageDiv = document.createElement('div');
     imageDiv.classList.add("form-screenshot");
     var loading = document.createElement('img')
