@@ -41,8 +41,6 @@ from flask import url_for
 import config
 
 adb = config.ADB_PATH
-print(f">>>>>>>>>>>>>>> {adb} <<<<<<<<<<<<<<<<<<<<")
-
 
 def run_command(cmd, **kwargs):
     _cmd = cmd.format(**kwargs)

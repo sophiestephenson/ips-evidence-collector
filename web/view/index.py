@@ -6,14 +6,14 @@ from phone_scanner.db import get_client_devices_from_db, new_client_id
 from web import app
 
 # FIXME: why are we scanning devices before people clicked on scan now?
-android = AndroidScan()
-ios = IosScan()
-test = TestScan()
+#android = AndroidScan()
+#ios = IosScan()
+#test = TestScan()
 
 
 # all in all, this particular section has a terrible code smell...
 def get_device(k):
-    return {"android": android, "ios": ios, "test": test}.get(k)
+    return {"android": AndroidScan(), "ios": IosScan(), "test": TestScan()}.get(k)
 
 
 @app.route("/", methods=["GET"])
