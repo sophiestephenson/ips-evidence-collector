@@ -49,6 +49,7 @@ from evidence_collection import (  # create_account_summary,; create_app_summary
     get_scan_data,
     get_scan_obj,
     get_screenshots,
+    get_ser_from_scan_obj,
     get_serial,
     load_json_data,
     load_object_from_json,
@@ -56,7 +57,9 @@ from evidence_collection import (  # create_account_summary,; create_app_summary
     save_data_as_json,
     update_scan_by_ser,
 )
+from phone_scanner import AndroidScan, IosScan
 from web import app
+from web.view.index import get_device
 
 bootstrap = Bootstrap(app)
 
@@ -466,7 +469,7 @@ def evidence_scan_investigate(ser):
             clean_data = remove_unwanted_data(form.data)
 
             # update the current scan data and save it
-            current_scan.selected_apps = [AppInfo(**app) for app in clean_data["selected_apps"]]
+            current_scan.selected_apps = [AppInfo(**app, device_hmac_serial=ser) for app in clean_data["selected_apps"]]
             all_scan_data = update_scan_by_ser(current_scan, all_scan_data)
 
             #  save this updated data
@@ -505,6 +508,21 @@ def evidence_account(id):
 
     form = AccountCompromiseForm()
 
+    ios_scan_obj = IosScan()
+    android_scan_obj = AndroidScan()
+    ios_ser = None
+    android_ser = None
+
+    try: 
+        ios_ser = get_ser_from_scan_obj(ios_scan_obj)
+    except:
+        pass
+
+    try: 
+        android_ser = get_ser_from_scan_obj(android_scan_obj)
+    except:
+        pass
+
     if request.method == 'GET':
         form.process(data=current_account.to_dict())
 
@@ -512,6 +530,8 @@ def evidence_account(id):
             task = "evidence-account",
             form = form,
             title=config.TITLE,
+            android_ser = android_ser,
+            ios_ser = ios_ser,
             sessiondata = current_account.to_dict()
             # for now, don't load anything
         )
@@ -554,9 +574,10 @@ def evidence_printout():
         screenshot_dir = config.SCREENSHOT_LOCATION
     )
 
-    pprint([account.to_dict() for account in consult_data.accounts])
+    context = consult_data.to_dict()
+    context["url_root"] = request.url_root
 
     # create the printout document
-    filename = create_printout(consult_data.to_dict())
+    filename = create_printout(context)
     workingdir = os.path.abspath(os.getcwd())
     return send_from_directory(workingdir, filename)
