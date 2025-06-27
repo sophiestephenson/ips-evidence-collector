@@ -577,6 +577,8 @@ def evidence_printout():
     context = consult_data.to_dict()
     context["url_root"] = request.url_root
 
+    pprint(context["accounts"])
+
     # create the printout document
     filename = create_printout(context)
     workingdir = os.path.abspath(os.getcwd())

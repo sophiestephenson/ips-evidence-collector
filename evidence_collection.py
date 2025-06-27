@@ -93,6 +93,8 @@ class Dictable:
 # Base class for nested classes where we'll input data as dict (for ease)
 class DictInitClass (Dictable):
     attrs = []
+    screenshot_label = ""
+    get_screenshots = False
 
     def __init__(self, datadict=dict()):
         for k in self.attrs:
@@ -101,6 +103,42 @@ class DictInitClass (Dictable):
             else:
                 setattr(self, k, "")
 
+        if self.get_screenshots:
+            self.screenshot_files = self._get_screenshot_files(datadict.get('account_id', 0))
+
+    def _get_screenshot_files(self, account_id):
+        """
+        Returns a list of screenshot filenames for this aspect of an account.
+        Screenshot files will be under webstatic/images/screenshots/<some device>/account<id>_<attrname>/
+        """
+
+        pprint(self.screenshot_label)
+
+        # check if there are any screenshots at all
+        screenshot_dir = os.path.join("webstatic", "images", "screenshots")
+        if os.path.exists(screenshot_dir):
+            screenshot_files = []
+
+            # all subdirectories are device serials
+            all_children = [f for f in os.scandir(screenshot_dir)]
+            all_children_full = [os.path.join(screenshot_dir, f) for f in all_children]
+            subdirs_full = [f for f in all_children_full if os.path.isdir(f)]
+            for dev_dir in subdirs_full:
+
+                # all subdirectories of the device directory are either apps or accounts
+                subdirs = [f for f in os.scandir(dev_dir)]
+                pprint(subdirs)
+                for subdir in subdirs:
+                    if subdir == "account{}_{}".format(account_id, self.screenshot_label):
+                        # add all files in that subdir
+                        files = os.listdir(screenshot_dir, dev_dir, subdir)
+                        full_fnames = [os.path.join(screenshot_dir, f) for f in files] 
+                        full_fnames.sort()
+                        screenshot_files.extend(full_fnames)
+
+            return screenshot_files
+        return []
+
 class SuspiciousLogins(DictInitClass):
     attrs = ['recognize',
              'describe_logins',
@@ -108,6 +146,8 @@ class SuspiciousLogins(DictInitClass):
              'activity_log',
              'describe_activity',
              'activity_screenshot']
+    screenshot_label = "suspicious_logins"
+    get_screenshots = True
 
 class PasswordCheck(DictInitClass):
     attrs = ['know', 'guess']
@@ -121,6 +161,8 @@ class RecoverySettings(DictInitClass):
              'email',
              'email_access',
              'email_screenshot']
+    screenshot_label = "recovery_settings"
+    get_screenshots = True
 
 class TwoFactorSettings(DictInitClass):
     attrs = ['enabled',
@@ -128,6 +170,8 @@ class TwoFactorSettings(DictInitClass):
              'describe',
              'second_factor_access',
              'screenshot']
+    screenshot_label = "two_factor"
+    get_screenshots = True
 
 
 class SecurityQuestions(DictInitClass):
@@ -135,6 +179,8 @@ class SecurityQuestions(DictInitClass):
              'questions',
              'know',
              'screenshot']
+    screenshot_label = "security_questions"
+    get_screenshots = True
 
 class InstallInfo(DictInitClass):
     attrs = ['knew_installed',
@@ -385,6 +431,10 @@ class AccountInvestigation(Dictable):
         self.account_nickname = account_nickname
         if self.account_nickname.strip() == "":
             self.account_nickname = platform
+
+        # insert account id where needed to get screenshots
+        for dict in [suspicious_logins, recovery_settings, two_factor_settings, security_questions]:
+            dict['account_id'] = account_id
         self.suspicious_logins = SuspiciousLogins(suspicious_logins)
         self.password_check = PasswordCheck(password_check)
         self.recovery_settings = RecoverySettings(recovery_settings)
