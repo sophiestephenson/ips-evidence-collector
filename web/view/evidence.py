@@ -593,7 +593,7 @@ def evidence_screenshots():
                 account_screenshot_info.append({
                     "fname": fname,
                     "type": "account",
-                    "account_name": account.account_nickname,
+                    "account_nickname": account.account_nickname,
                     "section": section.screenshot_label
                 })
                 # Would be good to capture the phone that took the screenshot
@@ -616,16 +616,13 @@ def evidence_screenshots():
 
         return render_template('main.html', **context)
 
-    if request.method == 'POST':
+    if request.method == 'POST' and form.is_submitted():
+        # Delete all screenshots that were selected for deletion
+        for app in form.data["app_screenshots"] + form.data["acct_screenshots"]:
+            if app["delete"] == True and os.path.exists(app["fname"]):
+                os.remove(app["fname"])
 
-        if form.is_submitted():
-            for app in form.data["app_screenshots"] + form.data["acct_screenshots"]:
-                if app["delete"] == True:
-                    pprint("would delete {}".format(app["fname"]))
-                    if os.path.exists(app["fname"]):
-                        os.remove(app["fname"])
-            pprint(form.data)
-
+        # Reload the screenshot page
         return redirect(url_for('evidence_screenshots'))
 
 @app.route("/evidence/printout", methods=["GET"])
