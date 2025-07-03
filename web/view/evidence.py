@@ -35,9 +35,11 @@ from evidence_collection import (  # create_account_summary,; create_app_summary
     ConsultSetupData,
     DualUseForm,
     ManualAddPageForm,
+    MultScreenshotEditForm,
     Pages,
     ScanData,
     ScanForm,
+    ScreenshotEditForm,
     SetupForm,
     SpywareForm,
     StartForm,
@@ -562,25 +564,69 @@ def evidence_account(id):
             flash("Form validation error - are you missing required fields?", 'error')
             pprint(form.errors)
 
-@app.route("/evidence/screenshots", methods=['GET'])
+@app.route("/evidence/screenshots", methods=['GET', 'POST'])
 def evidence_screenshots():
 
     # compile all screenshot filenames
-    # send them to the template
+    app_screenshot_info = []
+    scans=load_object_from_json(ConsultDataTypes.SCANS.value)
+    for scan in scans:
+        for app in scan.all_apps:
+            for fname in app.screenshot_files:
+                app_screenshot_info.append({
+                    "fname": fname,
+                    "type": "app",
+                    "app_id": app.appId,
+                    "app_name": app.app_name,
+                    "device_serial": scan.serial,
+                    "device_nickname": scan.device_nickname
+                })
 
+    account_screenshot_info = []
+    accounts = load_object_from_json(ConsultDataTypes.ACCOUNTS.value)
+    for account in accounts:
+        for section in [account.suspicious_logins, 
+                        account.recovery_settings, 
+                        account.two_factor_settings, 
+                        account.security_questions]:
+            for fname in section.screenshot_files:
+                account_screenshot_info.append({
+                    "fname": fname,
+                    "type": "account",
+                    "account_name": account.account_nickname,
+                    "section": section.screenshot_label
+                })
+                # Would be good to capture the phone that took the screenshot
+
+    form = MultScreenshotEditForm(app_screenshots=app_screenshot_info, 
+                                  acct_screenshots=account_screenshot_info)
+    
+    url_root = request.url_root
+    
     if request.method == 'GET':
-
-        # compile all screenshot filenames
-        # send them to the template
         
         context = dict(
             task = "evidence-screenshots",
             title=config.TITLE,
-            screenshot_files = []
+            app_screenshot_info = app_screenshot_info,
+            account_screenshot_info = account_screenshot_info,
+            form = form,
+            url_root = url_root
         )
 
         return render_template('main.html', **context)
 
+    if request.method == 'POST':
+
+        if form.is_submitted():
+            for app in form.data["app_screenshots"] + form.data["acct_screenshots"]:
+                if app["delete"] == True:
+                    pprint("would delete {}".format(app["fname"]))
+                    if os.path.exists(app["fname"]):
+                        os.remove(app["fname"])
+            pprint(form.data)
+
+        return redirect(url_for('evidence_screenshots'))
 
 @app.route("/evidence/printout", methods=["GET"])
 def evidence_printout():

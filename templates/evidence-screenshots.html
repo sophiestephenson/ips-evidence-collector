@@ -22,8 +22,62 @@
             <h2>Screenshots</h2>
             <hr>
 
+            <form action method="post" class="form" role="form">
+            {{ form.hidden_tag() }}
+            {{ wtf.form_errors(form) }}
+
             {# Will contain a form with ability to delete screenshots #}
-            <p>Screenshots!</p>
+            <h3>App Investigation Screenshots</h3>
+            <table>
+                <tbody>
+                    {% for subform in form.app_screenshots %}
+                    {% set app = app_screenshot_info[loop.index0] %}
+                        {{ subform.hidden_tag() }}
+                        <tr>
+                            <th><img height='200px' src="{{url_root}}{{app.fname}}"/></th>
+                            <td>
+                                <ul>
+                                    <li><i>Filename:</i> {{app.fname}}</li>
+                                    <li><i>App ID:</i> {{app.app_id}}</li>
+                                    <li><i>App name:</i> {{app.app_name}}</li>
+                                    <li><i>Device nickname:</i> {{app.device_nickname}}</li>
+                                    <li><i>Device serial:</i> {{app.device_serial}}</li>
+                                </ul>
+                            </td>
+                            <td>
+                                <div>{{subform.delete.label}} {{subform.delete}}</div>
+                            </td>
+                        </tr>
+                        <br/>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h3>Account Investigation Screenshots</h3>
+            <table>
+                <tbody>
+                {% for subform in form.acct_screenshots %}
+                    {% set acct = account_screenshot_info[loop.index0] %}
+                            {{ subform.hidden_tag() }}
+                            <tr>
+                                <th><img height='200px' src="{{url_root}}{{acct.fname}}"/></th>
+                                <td>
+                                    <ul>
+                                        <li><i>Filename:</i> {{acct.fname}}</li>
+                                        <li><i>Account nickname:</i> {{acct.account_nickname}}</li>
+                                        <li><i>Section:</i> {{acct.app_name}}</li>
+                                    </ul>
+                                </td>
+                                <td>
+                                    <div>{{subform.delete.label}} {{subform.delete}}</div>
+                                </td>
+                            </tr>
+                            <br/>
+                {% endfor %}
+                </tbody>
+            </table>
+            <div><span class="primarybutton">{{form.submit}}</span></div>
+            </form>
         </div>
     </div>
 </div>

@@ -105,7 +105,6 @@ class DictInitClass (Dictable):
 
         if self.get_screenshots:
             self.screenshot_files = self._get_screenshot_files(datadict.get('account_id', 0))
-            pprint(self.screenshot_files)
 
     def _get_screenshot_files(self, account_id):
         """
@@ -125,7 +124,6 @@ class DictInitClass (Dictable):
 
                 # all subdirectories of the device directory are either apps or accounts
                 subdirs = [f for f in os.scandir(dev_dir)]
-                pprint(subdirs)
                 for subdir in subdirs:
                     if subdir.name == "account{}_{}".format(account_id, self.screenshot_label):
                         # add all files in that subdir
@@ -1012,6 +1010,16 @@ class ManualAddPageForm(FlaskForm):
         # reload the form from the modified data
         self.__init__(formdata=None, **read_form_data)
         self.validate()  # the errors on validation are cancelled in the line above
+
+class ScreenshotEditForm(FlaskForm):
+    fname = StringField("Filename")
+    delete = BooleanField("Delete screenshot?")
+
+class MultScreenshotEditForm(FlaskForm):
+    title = "Screenshot Edit Form"
+    app_screenshots = FieldList(FormField(ScreenshotEditForm))
+    acct_screenshots = FieldList(FormField(ScreenshotEditForm))
+    submit = SubmitField("Delete Selected Screenshots")
 
 ### TAQ Forms
 class TAQDeviceCompForm(FlaskForm):
