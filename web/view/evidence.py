@@ -562,6 +562,25 @@ def evidence_account(id):
             flash("Form validation error - are you missing required fields?", 'error')
             pprint(form.errors)
 
+@app.route("/evidence/screenshots", methods=['GET'])
+def evidence_screenshots():
+
+    # compile all screenshot filenames
+    # send them to the template
+
+    if request.method == 'GET':
+
+        # compile all screenshot filenames
+        # send them to the template
+        
+        context = dict(
+            task = "evidence-screenshots",
+            title=config.TITLE,
+            screenshot_files = []
+        )
+
+        return render_template('main.html', **context)
+
 
 @app.route("/evidence/printout", methods=["GET"])
 def evidence_printout():
