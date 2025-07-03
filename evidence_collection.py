@@ -105,14 +105,13 @@ class DictInitClass (Dictable):
 
         if self.get_screenshots:
             self.screenshot_files = self._get_screenshot_files(datadict.get('account_id', 0))
+            pprint(self.screenshot_files)
 
     def _get_screenshot_files(self, account_id):
         """
         Returns a list of screenshot filenames for this aspect of an account.
         Screenshot files will be under webstatic/images/screenshots/<some device>/account<id>_<attrname>/
         """
-
-        pprint(self.screenshot_label)
 
         # check if there are any screenshots at all
         screenshot_dir = os.path.join("webstatic", "images", "screenshots")
@@ -121,18 +120,17 @@ class DictInitClass (Dictable):
 
             # all subdirectories are device serials
             all_children = [f for f in os.scandir(screenshot_dir)]
-            all_children_full = [os.path.join(screenshot_dir, f) for f in all_children]
-            subdirs_full = [f for f in all_children_full if os.path.isdir(f)]
+            subdirs_full = [f for f in all_children if os.path.isdir(f)]
             for dev_dir in subdirs_full:
 
                 # all subdirectories of the device directory are either apps or accounts
                 subdirs = [f for f in os.scandir(dev_dir)]
                 pprint(subdirs)
                 for subdir in subdirs:
-                    if subdir == "account{}_{}".format(account_id, self.screenshot_label):
+                    if subdir.name == "account{}_{}".format(account_id, self.screenshot_label):
                         # add all files in that subdir
-                        files = os.listdir(screenshot_dir, dev_dir, subdir)
-                        full_fnames = [os.path.join(screenshot_dir, f) for f in files] 
+                        files = os.listdir(subdir.path)
+                        full_fnames = [os.path.join(subdir, f) for f in files] 
                         full_fnames.sort()
                         screenshot_files.extend(full_fnames)
 
@@ -170,7 +168,7 @@ class TwoFactorSettings(DictInitClass):
              'describe',
              'second_factor_access',
              'screenshot']
-    screenshot_label = "two_factor"
+    screenshot_label = "two_factor_settings"
     get_screenshots = True
 
 
