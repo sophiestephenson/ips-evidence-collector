@@ -87,7 +87,9 @@ def catch_err(
 
 
 def run_command(cmd, **kwargs):
-    _cmd = cmd.format(cli="adb", **kwargs)
+    if "cli" not in kwargs:
+        kwargs["cli"] = "adb"
+    _cmd = cmd.format(**kwargs)
     print(_cmd)
     p = subprocess.Popen(
             _cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True

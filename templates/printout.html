@@ -285,14 +285,15 @@
                 </tr>
             </tbody>
         </table>
+        {% for fname in app.screenshot_files %}
+            <div class="form-screenshot">
+                <img height='400px' src="{{url_root}}{{fname}}"/>
+            </div>
+        </div>
+        {% endfor %}
+
 
         <h3>Client Questionnaire</h3>
-                {% set screenshots = [] %}
-                {% for filename in app.screenshots %}
-                {% if app.app_name.replace(' ', '') in filename and "dualuse_" in filename %}
-                {% set _ = screenshots.append(filename) %}
-                {% endif %}
-                {% endfor %}
         <table class="printout-columns">
             <tbody>
                 <tr valign="top">
@@ -320,18 +321,11 @@
                         </tbody>
                     </table>
                 </td>
-                <td class="screenshot">
-                    {% if screenshots|length > 0 %}
-                    <div class="image-container">
-                        <img src="{{screenshot_dir}}{{screenshots|first}}" />
-                    </div>
-                    {% endif %}
-                </td>
             </tr>
             {% if screenshots|length > 0 %}
             {% for filename in screenshots[1::] %}
             <tr valign="top">
-                <td />
+            </td>
                 <td class="screenshot">
                     <div class="image-container">
                         <img src="{{screenshot_dir}}{{filename}}" />
@@ -445,13 +439,6 @@
             <tr valign="top">
               <th><h3>Login activity questionnaire</h3></th>
             </tr>
-    
-            {% set screenshots = [] %}
-            {% for filename in account.screenshots %}
-            {% if account.account_nickname.replace(' ', '') in filename and "accounts_" in filename %}
-              {% set _ = screenshots.append(filename) %}
-            {% endif %}
-            {% endfor %}
             <tr>
                 <td>
                     <table>
@@ -482,24 +469,16 @@
                     </table>
                 </td>
                 <td class="screenshot">
-                  {% if screenshots|length > 0 %}
-                  <div class="image-container">
-                     <img src="{{screenshot_dir}}{{screenshots|first}}" />
-                  </div>
-                  {% endif %}
-    
+                {% for fname in account.suspicious_logins.screenshot_files %}
+                    <div class="form-screenshot">
+                        <img height='400px' src="{{url_root}}{{fname}}"/>
+                    </div>
+                {% endfor %}
                 </td>
             </tr>
             <tr>
               <th><h3>Password questionnaire</h3></th>
             </tr>
-    
-            {% set screenshots = [] %}
-            {% for filename in account.screenshots %}
-            {% if account.account_nickname.replace(' ', '') in filename and "accounts_" in filename %}
-              {% set _ = screenshots.append(filename) %}
-            {% endif %}
-            {% endfor %}
             <tr>
                 <td>
                     <table>
@@ -518,26 +497,10 @@
                         </tbody>
                     </table>
                 </td>
-    
-                <td class="screenshot">
-                  {% if screenshots|length > 0 %}
-                  <div class="image-container">
-                     <img src="{{screenshot_dir}}{{screenshots|first}}" />
-                  </div>
-                  {% endif %}
-    
-                </td>
             </tr>
             <tr>
                   <th><h3>Recovery settings questionnaire</h3></th>
             </tr>
-    
-            {% set screenshots = [] %}
-            {% for filename in account.screenshots %}
-            {% if account.account_nickname.replace(' ', '') in filename and "accounts_" in filename %}
-              {% set _ = screenshots.append(filename) %}
-            {% endif %}
-            {% endfor %}
             <tr>
                 <td>
                     <table>
@@ -577,24 +540,18 @@
                 </td>
     
                 <td class="screenshot">
-                  {% if screenshots|length > 0 %}
-                  <div class="image-container">
-                     <img src="{{screenshot_dir}}{{screenshots|first}}" />
-                  </div>
-                  {% endif %}
+                  
+                {% for fname in account.recovery_settings.screenshot_files %}
+                    <div class="form-screenshot">
+                        <img height='400px' src="{{url_root}}{{fname}}"/>
+                    </div>
+                {% endfor %}
     
                 </td>
             </tr>
             <tr>
               <th><h3>Two-factor authentication questionnaire</h3></th>
             </tr>
-    
-            {% set screenshots = [] %}
-            {% for filename in account.screenshots %}
-            {% if account.account_nickname.replace(' ', '') in filename and "accounts_" in filename %}
-              {% set _ = screenshots.append(filename) %}
-            {% endif %}
-            {% endfor %}
             <tr>
                 <td>
                     <table>
@@ -625,12 +582,11 @@
                 </td>
     
                 <td class="screenshot">
-                  {% if screenshots|length > 0 %}
-                  <div class="image-container">
-                     <img src="{{screenshot_dir}}{{screenshots|first}}" />
-                  </div>
-                  {% endif %}
-    
+                {% for fname in account.two_factor_settings.screenshot_files %}
+                    <div class="form-screenshot">
+                        <img height='400px' src="{{url_root}}{{fname}}"/>
+                    </div>
+                {% endfor %}
                 </td>
             </tr>
             <tr>
@@ -666,12 +622,11 @@
                     </table>
                 </td>
                 <td class="screenshot">
-                  {% if screenshots|length > 0 %}
-                  <div class="image-container">
-                     <img src="{{screenshot_dir}}{{screenshots|first}}" />
-                  </div>
-                  {% endif %}
-    
+                {% for fname in account.security_questions.screenshot_files %}
+                    <div class="form-screenshot">
+                        <img height='400px' src="{{url_root}}{{fname}}"/>
+                    </div>
+                {% endfor %}
                 </td>
             </tr>
                     {% if account.notes.client_notes %}
