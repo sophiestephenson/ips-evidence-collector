@@ -236,7 +236,7 @@ div.account-buttons {
 
 input[type='checkbox'] {
     accent-color: green;
-    transform: scale(2);
+    transform: scale(1.5);
     margin: 20px;
 }
 
@@ -499,4 +499,43 @@ td > label {
     margin-bottom: 5px;
     margin-top: 5px;
     vertical-align: top;
+}
+
+div.scroll-screenshots {
+    overflow-y: scroll;
+    height: 500px;
+    width: 100%;
+    padding: 10px;
+    border:#777 1px solid;
+}
+
+table.screenshots > tbody > tr > td {
+    vertical-align: top;
+    overflow: visible;
+}
+
+table.screenshots > tbody > tr > th {
+    padding-bottom: 40px;
+    vertical-align: middle;
+    text-align: center;
+}
+
+table.screenshots > tbody > tr > th > label {
+    align-content: center;
+}
+
+li.nobullet {
+    list-style-type: none;
+}
+
+table.screenshots > tbody > tr > th {
+    text-align: center;
+    align-self: center;
+    align-content: center;
+    align-items: center;
+    min-width: 70px;
+}
+
+table.screenshots > tbody > tr > th > label {
+   padding-left: 10px;
 }

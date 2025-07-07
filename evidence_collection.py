@@ -1012,7 +1012,7 @@ class ManualAddPageForm(FlaskForm):
 
 class ScreenshotEditForm(FlaskForm):
     fname = StringField("Filename")
-    delete = BooleanField("Delete screenshot?")
+    delete = BooleanField("Delete")
 
 class MultScreenshotEditForm(FlaskForm):
     title = "Screenshot Edit Form"
