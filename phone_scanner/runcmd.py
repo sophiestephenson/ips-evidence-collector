@@ -27,7 +27,7 @@ def error():
 # application level errors. They should go to particular application specific
 # handling.
 def catch_err(
-    p: subprocess.Popen[bytes], cmd="", msg="", time=1, large_output=False
+    p: subprocess.Popen[bytes], cmd="", msg="", time=5, large_output=False
 ) -> str:
     """TODO: Therer are two different types. homogenize them"""
     try:
