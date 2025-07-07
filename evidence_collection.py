@@ -215,8 +215,7 @@ class AppInfo(Dictable):
         self.app_name = app_name
         if self.app_name.strip() == "":
             self.app_name = title
-        if self.app_name.strip() == "":
-            # both are empty, so use appId
+        if self.app_name.strip() == "" or self.app_name.strip() == "App":
             self.app_name = appId
             self.title = appId
         self.appId = appId
