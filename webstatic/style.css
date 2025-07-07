@@ -539,3 +539,7 @@ table.screenshots > tbody > tr > th {
 table.screenshots > tbody > tr > th > label {
    padding-left: 10px;
 }
+
+div.screenshotfail {
+    background-color: goldenrod;
+}

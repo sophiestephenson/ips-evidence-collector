@@ -39,7 +39,6 @@ def privacy():
 def privacy_scan(device, cmd, context, ser):
     print(ser)
     if(device == "ios"):
-        print("Taking a IOS screenhsot")
         res = iosScreenshot(ser, context, nocache=True)
     else:
         res = do_privacy_check(ser, cmd, context)
@@ -66,7 +65,16 @@ def iosScreenshot(ser, context, nocache = False):
             rsdPort = lineSplit[1][1:]
         i += 1
     command = "pymobiledevice3 developer dvt screenshot " + fname + " --rsd " + rsdAddress + " " + rsdPort
-    subprocess.run(shlex.split(command))
+
+    try:
+        subprocess.run(shlex.split(command), check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Command failed with exit code {e.returncode}: {e.output}")
+        return "<div class='screenshotfail'>Screenshot failed with exit code {}</div>".format(e.returncode)
+    except Exception as e:
+        print(e)
+        return "<div class='screenshotfail'>Screenshot failed with exception {}</div>".format(e)
+
     return add_image(fname.replace("webstatic/", ""), nocache=True)
 def add_image(img, nocache=False):
         return "<img height='400px' src='" + \

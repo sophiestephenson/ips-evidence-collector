@@ -32,9 +32,11 @@ Finally screen capture.
 import os
 import random
 import re
+import shlex
+import subprocess
 import time
 from datetime import datetime
-from subprocess import PIPE, Popen
+from subprocess import PIPE, Popen, TimeoutExpired
 
 from flask import url_for
 
@@ -45,9 +47,18 @@ adb = config.ADB_PATH
 def run_command(cmd, **kwargs):
     _cmd = cmd.format(**kwargs)
     print(_cmd)
-    p = Popen(_cmd, stdout=PIPE, stderr=PIPE, shell=True)
-    p.wait(4)
-    return p.stdout.read().decode("utf-8"), p.stderr.read().decode("utf-8")
+    try:
+        p = Popen(_cmd, stdout=PIPE, stderr=PIPE, shell=True)
+        p.wait(4)
+        return p.stdout.read().decode("utf-8"), p.stderr.read().decode("utf-8")
+    except FileNotFoundError as e:
+        return "", f"Command not found: {e}"
+    except TimeoutExpired:
+        p.kill()
+        return "", "Command timed out"
+    except Exception as e:
+        return "", f"Error: {e}"
+
 
 
 def thiscli(ser):
@@ -124,12 +135,24 @@ def take_screenshot(ser, fname=None):
     #     keycode(ser, 'power'); keycode(ser, 'menu') # Wakes the screen up
     if not fname:
         fname = "tmp_screencap.png"
-    cmd = "{cli} shell screencap -p | perl -pe 's/\\x0D\\x0A/\\x0A/g' > '{fname}'"
+    cli = thiscli(ser)
+    cmd = "{} shell screencap -p | perl -pe 's/\\x0D\\x0A/\\x0A/g' > '{}'".format(cli, fname)
 
     if os.name == 'posix': # Formatting for posix systems
-        cmd = "{cli} shell screencap -p > '{fname}'"
+        cmd = "{} shell screencap -p > '{}'".format(cli, fname)
 
-    run_command(cmd, cli=thiscli(ser), fname=fname)
+    
+    try:
+        subprocess.run(shlex.split(cmd), check=True)
+        return add_image(fname.replace("webstatic/", ""), nocache=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Command failed with exit code {e.returncode}: {e.output}")
+        return "<div class='screenshotfail'>Screenshot failed with exit code {}</div>".format(e.returncode)
+    except Exception as e:
+        print(e)
+        return "<div class='screenshotfail'>Screenshot failed with exception {}</div>".format(e)
+
+    
 
 
 def wait(t):
@@ -202,8 +225,7 @@ def do_privacy_check(ser, command, context):
 
     elif command == "screenshot":
         fname = config.create_screenshot_fname(context, ser)
-        take_screenshot(ser, fname=fname)
-        return add_image(fname.replace("webstatic/", ""), nocache=True)
+        return take_screenshot(ser, fname=fname)
 
     else:
         return "Command not supported; should be one of ['account', 'backup', 'gmap', 'gphotos'] (case in-sensitive)"
