@@ -1188,7 +1188,6 @@ def get_app_details(device, ser, appid):
             if d[item].strip() == "":
                 d[item] = ""
         except KeyError as e:
-            print(f"Key {item} not found in app details for {appid}: {e}")
             d[item] = ""
 
     #d = d.fillna('')

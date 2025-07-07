@@ -458,7 +458,6 @@ class IosDump(PhoneDump):
     def load_file(self):
         # d = pd.read_json(self.fname)[self.COLS].set_index(self.INDEX)
         try:
-            print("fname is: {}".format(self.fname))
             apps_list = []
             with open(self.fname, "r") as app_data:
                 apps_json = json.load(app_data)
@@ -527,9 +526,6 @@ class IosDump(PhoneDump):
         self.check_unseen_permissions(
             list(system_permissions) + list(adjustable_system_permissions)
         )
-
-        pprint("SYSTEM PERMISSIONS")
-        pprint(system_permissions)
 
         # (permission used, developer reason for requesting the permission)
         all_permissions = list(

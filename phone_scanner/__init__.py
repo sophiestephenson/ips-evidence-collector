@@ -532,7 +532,6 @@ class IosScan(AppScan):
 
     def __init__(self):
         super(IosScan, self).__init__("ios", cli=config.LIBIMOBILEDEVICE_PATH)
-        print("iOS Scan initialized with super.__init__()")
         self.installed_apps = None
         self.serialno = None
         self.parse_dump = None
