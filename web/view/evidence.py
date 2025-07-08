@@ -179,9 +179,12 @@ def evidence_taq():
 
 
 
-@app.route("/evidence/scan", methods={'GET', 'POST'}, defaults={'device_type': '', 'device_nickname': ''})
-@app.route("/evidence/scan/<device_type>/<device_nickname>", methods={'GET', 'POST'})
-def evidence_scan_start(device_type, device_nickname):
+@app.route("/evidence/scan", methods={'GET', 'POST'}, 
+           defaults={'device_type': '', 'device_nickname': '', 'force_rescan': False})
+@app.route("/evidence/scan/<device_type>/<device_nickname>", methods={'GET', 'POST'},
+           defaults={'force_rescan': False})
+@app.route("/evidence/scan/<device_type>/<device_nickname>/force-rescan-<force_rescan>", methods={'GET', 'POST'})
+def evidence_scan_start(device_type, device_nickname, force_rescan):
 
     # always assume we are starting with a fresh scan
     all_scan_data = load_object_from_json(ConsultDataTypes.SCANS.value)
@@ -237,10 +240,11 @@ def evidence_scan_start(device_type, device_nickname):
                 ser = get_serial(clean_data["device_type"], clean_data["device_nickname"])
                 hmac_ser = config.hmac_serial(ser)
                 print("SERIAL NUMBER: " + hmac_ser)
-                for scan in all_scan_data:
-                    if scan.serial == hmac_ser:
-                        flash("This device was already scanned.")
-                        return redirect(url_for('evidence_scan_select', ser=hmac_ser))
+                if not force_rescan:
+                    for scan in all_scan_data:
+                        if scan.serial == hmac_ser:
+                            flash("This device was already scanned.")
+                            return redirect(url_for('evidence_scan_select', ser=hmac_ser, show_rescan=True))
                     
                 # Perform the scan
                 scan_data, suspicious_apps_dict, other_apps_dict = get_scan_data(clean_data["device_type"], clean_data["device_nickname"])
@@ -281,8 +285,9 @@ def evidence_scan_start(device_type, device_nickname):
 
 
 
-@app.route("/evidence/scan/select/<string:ser>", methods={'GET', 'POST'})
-def evidence_scan_select(ser):
+@app.route("/evidence/scan/select/<string:ser>", methods={'GET', 'POST'}, defaults={'show_rescan': False})
+@app.route("/evidence/scan/select/<string:ser>/show-rescan-<show_rescan>", methods={'GET', 'POST'})
+def evidence_scan_select(ser, show_rescan):
 
     # load all scans
     all_scan_data = load_object_from_json(ConsultDataTypes.SCANS.value)
@@ -311,6 +316,7 @@ def evidence_scan_select(ser):
             rooted_reasons = current_scan.rooted_reasons,
             step = 2,
             num_sys_apps = len([app for app in current_scan.all_apps if 'system-app' in app.flags]),
+            show_rescan = show_rescan
         )
         print("-"*80)
         print(context['device'])
@@ -329,18 +335,20 @@ def evidence_scan_select(ser):
             # get selected apps from the form data
             to_investigate_ids = [app["appId"] for app in form.data['apps'] if app['investigate']]
 
-            selected_apps = []
+            # remove apps we no longer want to investigate, 
+            # while maintaining info from previous investigations
+            current_scan.selected_apps = [app for app in current_scan.selected_apps 
+                                          if app.appId in to_investigate_ids]
+        
+            # Update "investigate" marker and add new apps to selected_apps
+            # TODO: Do we need the "investigate" marker?
             for app in current_scan.all_apps:
                 if app.appId in to_investigate_ids:
-                    selected_apps.append(app)
-                    app.investigate = True
+                    if not app.investigate:
+                        current_scan.selected_apps.append(app)
+                        app.investigate = True
                 else:
                     app.investigate = False
-
-            pprint(selected_apps)
-            pprint("SELECTED APPS")
-
-            current_scan.selected_apps = selected_apps
 
             # update the current scan data and save it as the most recent scan
             #current_scan.selected_apps = [AppInfo(**app) for app in selected_apps]
@@ -443,9 +451,10 @@ def evidence_scan_investigate(ser):
     current_scan = get_scan_by_ser(ser, all_scan_data)
     assert current_scan.serial == ser
 
-    pprint([app.to_dict() for app in current_scan.selected_apps])
-    pprint("INPUTTED INTO THE INVESTIGATION FORM")
-    # get apps to investigate from the scan data
+    for app in current_scan.selected_apps:
+        app = app.to_dict()
+        pprint("App: {}  Flags: {}".format(app["title"], app["flags"]))
+    pprint("INFO GIVEN TO INVESTIGATION FORM")
 
     form = AppInvestigationForm(selected_apps=[app.to_dict() for app in current_scan.selected_apps])
 
@@ -472,10 +481,15 @@ def evidence_scan_investigate(ser):
             # clean up the submitted data
             clean_data = remove_unwanted_data(form.data)
 
-            pprint(clean_data["selected_apps"])
+            # Update app info in selected_apps based on what was provided in the form
+            for app in current_scan.selected_apps:
+                for form_app in clean_data["selected_apps"]:
+                    if app.appId == form_app["appId"]:
+                        app.install_info = form_app["install_info"]
+                        app.permission_info.access = form_app["permission_info"]["access"]
+                        app.permission_info.describe = form_app["permission_info"]["describe"]
+                        app.notes = form_app["notes"]
 
-            # update the current scan data and save it
-            current_scan.selected_apps = [AppInfo(**app, device_hmac_serial=ser) for app in clean_data["selected_apps"]]
             all_scan_data = update_scan_by_ser(current_scan, all_scan_data)
 
             #  save this updated data
