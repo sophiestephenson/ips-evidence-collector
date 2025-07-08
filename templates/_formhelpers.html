@@ -34,8 +34,8 @@
 </tr>
 {% endmacro %}
 
-{% macro render_multiselect(field) %}
-<tr class="form-question">
+{% macro render_multiselect(field, ishidden) %}
+<tr class="form-question" id="wrapper-{{field.id}}" {% if ishidden %} style="display:none;" {% endif %}>
     <th>{{field.label}}</th>
     <td class="multiselect-box">{{field}}</td>
 </tr>

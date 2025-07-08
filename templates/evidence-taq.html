@@ -72,8 +72,9 @@
                             <table>
                                 <tbody>
                                     {{ render_text_field(form.accounts.pwd_mgmt) }}
-                                    {{ render_select(form.accounts.pwd_comp) }}
-                                    {{ render_text_field(form.accounts.pwd_comp_which) }}
+                                    {{ render_select(form.accounts.pwd_comp, 
+                                                     form.accounts.pwd_comp_which.id) }}
+                                    {{ render_text_field(form.accounts.pwd_comp_which, ishidden=True) }}
                                 </tbody>
                             </table>
                         </div>
@@ -91,10 +92,10 @@
                         <div class="subform">
                             <table>
                                 <tbody>
-                                    {{ render_select(form.sharing.share_phone_plan) }}
-                                    {{ render_multiselect(form.sharing.phone_plan_admin) }}
-                                    {{ render_select(form.sharing.share_accounts) }}
-                                    {{ render_text_field(form.sharing.share_which) }}
+                                    {{ render_select(form.sharing.share_phone_plan, form.sharing.phone_plan_admin.id) }}
+                                    {{ render_multiselect(form.sharing.phone_plan_admin, ishidden=True) }}
+                                    {{ render_select(form.sharing.share_accounts, form.sharing.share_which.id) }}
+                                    {{ render_text_field(form.sharing.share_which, ishidden=True) }}
                                 </tbody>
                             </table>
                         </div>
