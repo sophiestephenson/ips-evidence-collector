@@ -358,9 +358,10 @@ class TAQSharing(DictInitClass):
 
 class TAQSmarthome(DictInitClass):
     questions = {'smart_home': "Do you have any smart home devices?",
-             'smart_home_setup': "Who installed and set up your smart home devices?",
-             'smart_home_access': "Did the person of concern ever have physical access to the devices?",
-             'smart_home_account': "Do you share any smart home accounts with the person of concern?"}
+                 'smart_home_setup': "Who installed and set up your smart home devices?",
+                 'smart_home_access': "Did the person of concern ever have physical access to the devices?",
+                 'smart_home_acct_sharing': "Do you share any smart home accounts with the person of concern?",
+                 'smart_home_acct_linking': "Can the person of concern access any of the smart home devices via their own smart home account?"}
     attrs = list(questions.keys())
 
 class TAQKids(DictInitClass):
@@ -1054,8 +1055,10 @@ class TAQSmartHomeForm(FlaskForm):
         TAQSmarthome().questions['smart_home_setup'],   choices=PERSON_CHOICES, default=PERSON_DEFAULT)
     smart_home_access = RadioField(
         TAQSmarthome().questions['smart_home_access'],    choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    smart_home_account = RadioField(
-        TAQSmarthome().questions['smart_home_account'],    choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    smart_home_acct_sharing = RadioField(
+        TAQSmarthome().questions['smart_home_acct_sharing'],    choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    smart_home_acct_linking = RadioField(
+        TAQSmarthome().questions['smart_home_acct_linking'],    choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
 
 class TAQKidsForm(FlaskForm):
     title = "Children's Devices"
