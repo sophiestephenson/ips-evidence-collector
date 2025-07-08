@@ -316,7 +316,7 @@ class AppInfo(Dictable):
             if self.permission_info.access == 'yes':
                 any_issues = True
                 concern = True
-                sentences.append("Investigation indicates {} can use this app to access private information. Description: {}.".format(harmdoer, self.permission_info.description))
+                sentences.append("Investigation indicates {} can use this app to access private information. Description: {}.".format(harmdoer, self.permission_info.describe))
 
             if not any_issues:
                 sentences.append("There is no evidence that this app is being used maliciously against {}.".format(agent))
