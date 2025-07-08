@@ -18,6 +18,9 @@
             <div class="alert alert-warning">
                 <button type="button" class="close" data-dismiss="alert">&times;</button>
                 {{ message }}
+                {% if show_rescan %}
+                <a href="{{ url_for('evidence_scan_start', force_rescan=True, device_type=device, device_nickname=nickname) }}" class="btn btn-default">Go back and force a rescan</a>
+                {% endif %}
             </div>
             {% endfor %}
             <br>

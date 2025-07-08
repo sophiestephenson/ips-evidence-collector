@@ -179,9 +179,12 @@ def evidence_taq():
 
 
 
-@app.route("/evidence/scan", methods={'GET', 'POST'}, defaults={'device_type': '', 'device_nickname': ''})
-@app.route("/evidence/scan/<device_type>/<device_nickname>", methods={'GET', 'POST'})
-def evidence_scan_start(device_type, device_nickname):
+@app.route("/evidence/scan", methods={'GET', 'POST'}, 
+           defaults={'device_type': '', 'device_nickname': '', 'force_rescan': False})
+@app.route("/evidence/scan/<device_type>/<device_nickname>", methods={'GET', 'POST'},
+           defaults={'force_rescan': False})
+@app.route("/evidence/scan/<device_type>/<device_nickname>/force-rescan-<force_rescan>", methods={'GET', 'POST'})
+def evidence_scan_start(device_type, device_nickname, force_rescan):
 
     # always assume we are starting with a fresh scan
     all_scan_data = load_object_from_json(ConsultDataTypes.SCANS.value)
@@ -237,10 +240,11 @@ def evidence_scan_start(device_type, device_nickname):
                 ser = get_serial(clean_data["device_type"], clean_data["device_nickname"])
                 hmac_ser = config.hmac_serial(ser)
                 print("SERIAL NUMBER: " + hmac_ser)
-                for scan in all_scan_data:
-                    if scan.serial == hmac_ser:
-                        flash("This device was already scanned.")
-                        return redirect(url_for('evidence_scan_select', ser=hmac_ser))
+                if not force_rescan:
+                    for scan in all_scan_data:
+                        if scan.serial == hmac_ser:
+                            flash("This device was already scanned.")
+                            return redirect(url_for('evidence_scan_select', ser=hmac_ser, show_rescan=True))
                     
                 # Perform the scan
                 scan_data, suspicious_apps_dict, other_apps_dict = get_scan_data(clean_data["device_type"], clean_data["device_nickname"])
@@ -281,8 +285,9 @@ def evidence_scan_start(device_type, device_nickname):
 
 
 
-@app.route("/evidence/scan/select/<string:ser>", methods={'GET', 'POST'})
-def evidence_scan_select(ser):
+@app.route("/evidence/scan/select/<string:ser>", methods={'GET', 'POST'}, defaults={'show_rescan': False})
+@app.route("/evidence/scan/select/<string:ser>/show-rescan-<show_rescan>", methods={'GET', 'POST'})
+def evidence_scan_select(ser, show_rescan):
 
     # load all scans
     all_scan_data = load_object_from_json(ConsultDataTypes.SCANS.value)
@@ -311,6 +316,7 @@ def evidence_scan_select(ser):
             rooted_reasons = current_scan.rooted_reasons,
             step = 2,
             num_sys_apps = len([app for app in current_scan.all_apps if 'system-app' in app.flags]),
+            show_rescan = show_rescan
         )
         print("-"*80)
         print(context['device'])
