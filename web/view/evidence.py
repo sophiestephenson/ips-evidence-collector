@@ -327,13 +327,15 @@ def evidence_scan_select(ser):
             #clean_data = remove_unwanted_data(form.data)
 
             # get selected apps from the form data
-            to_investigate_titles = [app["title"] for app in form.data['apps'] if app['investigate']]
+            to_investigate_ids = [app["appId"] for app in form.data['apps'] if app['investigate']]
 
             selected_apps = []
             for app in current_scan.all_apps:
-                if app.title in to_investigate_titles:
+                if app.appId in to_investigate_ids:
                     selected_apps.append(app)
                     app.investigate = True
+                else:
+                    app.investigate = False
 
             pprint(selected_apps)
             pprint("SELECTED APPS")
@@ -469,6 +471,8 @@ def evidence_scan_investigate(ser):
 
             # clean up the submitted data
             clean_data = remove_unwanted_data(form.data)
+
+            pprint(clean_data["selected_apps"])
 
             # update the current scan data and save it
             current_scan.selected_apps = [AppInfo(**app, device_hmac_serial=ser) for app in clean_data["selected_apps"]]
