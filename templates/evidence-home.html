@@ -5,6 +5,8 @@
 <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
 <script src="{{ url_for('static', filename='myjscript.js') }}?3"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/3.6.2/fetch.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+
 
 {% block content %}
 
@@ -146,7 +148,8 @@
             </div>
             <br/>
             <br/>
-            <div><span class="primarybutton"><a href="{{ url_for('evidence_printout') }}" class="btn btn-default">Generate Summary</a></span></div>
+            <div><span class="primarybutton"><a onclick="$('#loading').show();" href="{{ url_for('evidence_printout') }}" class="btn btn-default">Generate Summary</a></span></div>
+            <div id="loading" style="display:none;"><img src="../../../webstatic/images/waiting.gif" alt="" /></div>
         </div>
     </div>
 </div>
