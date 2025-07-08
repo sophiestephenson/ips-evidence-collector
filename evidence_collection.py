@@ -345,21 +345,23 @@ class TAQDevices(DictInitClass):
 
 class TAQAccounts(DictInitClass):
     questions = {'pwd_mgmt': "How do you manage passwords?",
-             'pwd_comp': "Do you believe the person of concern knows, or could guess, any of your passwords?",
-             'pwd_comp_which': "Which ones?"}
+                 'pwd_comp': "Do you believe the person of concern knows, or could guess, any of your passwords?",
+                 'pwd_comp_which': "Which ones?"}
     attrs = list(questions.keys())
 
 class TAQSharing(DictInitClass):
     questions = {'share_phone_plan': "Do you share a phone plan with the person of concern?",
-             'phone_plan_admin': "If you share a phone plan, who is the family 'head' or plan administrator?",
-             'share_accounts': "Do you share any accounts with the person of concern?"}
+                 'phone_plan_admin': "If you share a phone plan, who is the family 'head' or plan administrator?",
+                 'share_accounts': "Do you share any accounts with the person of concern?",
+                 'share_which': "Which accounts are shared with the person of concern?"}
     attrs = list(questions.keys())
 
 class TAQSmarthome(DictInitClass):
     questions = {'smart_home': "Do you have any smart home devices?",
-             'smart_home_setup': "Who installed and set up your smart home devices?",
-             'smart_home_access': "Did the person of concern ever have physical access to the devices?",
-             'smart_home_account': "Do you share any smart home accounts with the person of concern?"}
+                 'smart_home_setup': "Who installed and set up your smart home devices?",
+                 'smart_home_access': "Did the person of concern ever have physical access to the devices?",
+                 'smart_home_acct_sharing': "Do you share any smart home accounts with the person of concern?",
+                 'smart_home_acct_linking': "Can the person of concern access any of the smart home devices via their own smart home account?"}
     attrs = list(questions.keys())
 
 class TAQKids(DictInitClass):
@@ -1043,6 +1045,7 @@ class TAQSharingForm(FlaskForm):
         TAQSharing().questions['phone_plan_admin'], choices=PERSON_CHOICES, default=PERSON_DEFAULT)
     share_accounts = RadioField(
         TAQSharing().questions['share_accounts'],  choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    share_which = StringField(TAQSharing().questions['share_which'])
 
 class TAQSmartHomeForm(FlaskForm):
     title = "Smart Home Devices"
@@ -1052,8 +1055,10 @@ class TAQSmartHomeForm(FlaskForm):
         TAQSmarthome().questions['smart_home_setup'],   choices=PERSON_CHOICES, default=PERSON_DEFAULT)
     smart_home_access = RadioField(
         TAQSmarthome().questions['smart_home_access'],    choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    smart_home_account = RadioField(
-        TAQSmarthome().questions['smart_home_account'],    choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    smart_home_acct_sharing = RadioField(
+        TAQSmarthome().questions['smart_home_acct_sharing'],    choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    smart_home_acct_linking = RadioField(
+        TAQSmarthome().questions['smart_home_acct_linking'],    choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
 
 class TAQKidsForm(FlaskForm):
     title = "Children's Devices"

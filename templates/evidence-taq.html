@@ -94,6 +94,7 @@
                                     {{ render_select(form.sharing.share_phone_plan) }}
                                     {{ render_multiselect(form.sharing.phone_plan_admin) }}
                                     {{ render_select(form.sharing.share_accounts) }}
+                                    {{ render_text_field(form.sharing.share_which) }}
                                 </tbody>
                             </table>
                         </div>
@@ -114,7 +115,8 @@
                                     {{ render_select(form.smarthome.smart_home) }}
                                     {{ render_multiselect(form.smarthome.smart_home_setup) }}
                                     {{ render_select(form.smarthome.smart_home_access) }}
-                                    {{ render_select(form.smarthome.smart_home_account) }}
+                                    {{ render_select(form.smarthome.smart_home_acct_sharing) }}
+                                    {{ render_select(form.smarthome.smart_home_acct_linking) }}
                                 </tbody>
                             </table>
                         </div>
@@ -163,6 +165,10 @@
                 <br>
                 <br>
                 <br>
+                    
+                <div><span class="secondarybutton">
+                    <a href="{{ url_for('evidence_home') }}" class="btn btn-default">Go back</a>
+                </span></div>
                 <div><span class="primarybutton">{{form.submit}}</span></div>
                 </form>
         </div>
