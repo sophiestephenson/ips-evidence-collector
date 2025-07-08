@@ -27,23 +27,25 @@ function delete_app(appid, e) {
     })
 }
 
-function getScreenshot(buttonId, device) { // ButtonId is the context which the screenshot was taken
-    var imageDiv = document.createElement('div');
-    imageDiv.classList.add("form-screenshot");
-    var loading = document.createElement('img')
-    loading.src = "../../../webstatic/images/waiting.gif";
-    imageDiv.innerHTML = loading.outerHTML;
-    document.getElementById(buttonId).parentNode.insertBefore(imageDiv, document.getElementById(buttonId).nextSibling);
-      fetch('/privacy/' + device + '/screenshot/' + buttonId)
-      .then(response => response.text())
-      .then(data => {
-          imageDiv.innerHTML = data;
-          document.getElementById(buttonId).parentNode.insertBefore(imageDiv, document.getElementById(buttonId).nextSibling);
-      })
-      .catch(error => {
-          imageDiv.innerHTML = "Error loading screenshot: " + error;
-      });
-    console.log("done")
+function getScreenshot(buttonId, device, ser) { // ButtonId is the context which the screenshot was taken
+    if (ser != "None" && ser != null) {
+        var imageDiv = document.createElement('div');
+        imageDiv.classList.add("form-screenshot");
+        var loading = document.createElement('img')
+        loading.src = "../../../webstatic/images/waiting.gif";
+        imageDiv.innerHTML = loading.outerHTML;
+        document.getElementById(buttonId).parentNode.insertBefore(imageDiv, document.getElementById(buttonId).nextSibling);
+        fetch('/privacy/' + device + '/screenshot/' + buttonId + '/' + ser)
+        .then(response => response.text())
+        .then(data => {
+            imageDiv.innerHTML = data;
+            document.getElementById(buttonId).parentNode.insertBefore(imageDiv, document.getElementById(buttonId).nextSibling);
+        })
+        .catch(error => {
+            imageDiv.innerHTML = "Error loading screenshot: " + error;
+        });
+        console.log("done")
+    }
 }
 
 var start = null;

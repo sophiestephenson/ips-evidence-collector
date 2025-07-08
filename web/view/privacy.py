@@ -1,4 +1,17 @@
-from flask import render_template, request
+import hashlib
+import hmac
+import os
+import random
+import re
+import shlex
+import sqlite3
+import subprocess
+import sys
+import time
+from collections import defaultdict
+from datetime import datetime
+
+from flask import render_template, request, url_for
 
 import config
 
@@ -7,19 +20,6 @@ from phone_scanner.privacy_scan_android import do_privacy_check, take_screenshot
 from web import app
 from web.view.index import get_device
 
-import hashlib
-import hmac
-import os
-import re
-import shlex
-import sqlite3
-from flask import url_for
-import sys
-from collections import defaultdict
-from datetime import datetime
-import subprocess
-import time
-import random
 
 @app.route("/privacy", methods=["GET"])
 def privacy():
@@ -35,28 +35,18 @@ def privacy():
     )
 
 
-@app.route("/privacy/<device>/<cmd>/<context>", methods=["GET"])
-def privacy_scan(device, cmd, context):
-    print(cmd)
-    print(device)
-    sc = get_device(device)
+@app.route("/privacy/<device>/<cmd>/<context>/<ser>", methods=["GET"])
+def privacy_scan(device, cmd, context, ser):
+    print(ser)
     if(device == "ios"):
-        print("Taking a IOS screenhsot")
-        res = iosScreenshot(sc.serialno, context, nocache=True)
+        res = iosScreenshot(ser, context, nocache=True)
     else:
-        res = do_privacy_check(sc.serialno, cmd, context)
+        res = do_privacy_check(ser, cmd, context)
     print("Screenshot Taken")
     return res
 
-def iosScreenshot(serialNumber, context, nocache = False):
-    curr_time = datetime.now().strftime('%d_%m_%Y_%H_%M_%S')
-    homePro = subprocess.run(["pwd"], stdout=subprocess.PIPE)
-    homeDir = str(homePro.stdout.decode('utf-8')).strip()
-
-    # Verify the directory exists and create it if not
-    dir_path = os.path.join(homeDir, "webstatic/images/screenshots")
-    os.makedirs(dir_path, exist_ok=True)
-    fname = 'images/screenshots/' + context + '_' + curr_time + '.png'
+def iosScreenshot(ser, context, nocache = False):
+    fname = config.create_screenshot_fname(context, ser)
     linkPro = subprocess.Popen(["pymobiledevice3", "lockdown", "start-tunnel"], stdout= subprocess.PIPE)
     time.sleep(2)
     output = linkPro.stdout
@@ -74,11 +64,18 @@ def iosScreenshot(serialNumber, context, nocache = False):
             lineSplit = line.split(":")
             rsdPort = lineSplit[1][1:]
         i += 1
-    tempFname = 'webstatic/' + fname
-    command = "pymobiledevice3 developer dvt screenshot " + tempFname + " --rsd " + rsdAddress + " " + rsdPort
-    subprocess.run(shlex.split(command))
-    return add_image(fname, nocache=True)
+    command = "pymobiledevice3 developer dvt screenshot " + fname + " --rsd " + rsdAddress + " " + rsdPort
+
+    try:
+        subprocess.run(shlex.split(command), check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Command failed with exit code {e.returncode}: {e.output}")
+        return "<div class='screenshotfail'>Screenshot failed with exit code {}</div>".format(e.returncode)
+    except Exception as e:
+        print(e)
+        return "<div class='screenshotfail'>Screenshot failed with exception {}</div>".format(e)
+
+    return add_image(fname.replace("webstatic/", ""), nocache=True)
 def add_image(img, nocache=False):
-        rand = random.randint(0, 10000)
         return "<img height='400px' src='" + \
-            url_for('static', filename=img) + "?{}'/>".format(rand if nocache else '')
+            url_for('static', filename=img) + "'/>"

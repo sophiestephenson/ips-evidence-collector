@@ -19,7 +19,7 @@ from time import sleep
 import jinja2
 import pdfkit
 from filelock import FileLock
-from flask import session
+from flask import session, url_for
 from flask_wtf import FlaskForm
 from wtforms import (
     BooleanField,
@@ -93,6 +93,8 @@ class Dictable:
 # Base class for nested classes where we'll input data as dict (for ease)
 class DictInitClass (Dictable):
     attrs = []
+    screenshot_label = ""
+    get_screenshots = False
 
     def __init__(self, datadict=dict()):
         for k in self.attrs:
@@ -101,6 +103,38 @@ class DictInitClass (Dictable):
             else:
                 setattr(self, k, "")
 
+        if self.get_screenshots:
+            self.screenshot_files = self._get_screenshot_files(datadict.get('account_id', 0))
+
+    def _get_screenshot_files(self, account_id):
+        """
+        Returns a list of screenshot filenames for this aspect of an account.
+        Screenshot files will be under webstatic/images/screenshots/<some device>/account<id>_<attrname>/
+        """
+
+        # check if there are any screenshots at all
+        screenshot_dir = os.path.join("webstatic", "images", "screenshots")
+        if os.path.exists(screenshot_dir):
+            screenshot_files = []
+
+            # all subdirectories are device serials
+            all_children = [f for f in os.scandir(screenshot_dir)]
+            subdirs_full = [f for f in all_children if os.path.isdir(f)]
+            for dev_dir in subdirs_full:
+
+                # all subdirectories of the device directory are either apps or accounts
+                subdirs = [f for f in os.scandir(dev_dir)]
+                for subdir in subdirs:
+                    if subdir.name == "account{}_{}".format(account_id, self.screenshot_label):
+                        # add all files in that subdir
+                        files = os.listdir(subdir.path)
+                        full_fnames = [os.path.join(subdir, f) for f in files] 
+                        full_fnames.sort()
+                        screenshot_files.extend(full_fnames)
+
+            return screenshot_files
+        return []
+
 class SuspiciousLogins(DictInitClass):
     attrs = ['recognize',
              'describe_logins',
@@ -108,6 +142,8 @@ class SuspiciousLogins(DictInitClass):
              'activity_log',
              'describe_activity',
              'activity_screenshot']
+    screenshot_label = "suspicious_logins"
+    get_screenshots = True
 
 class PasswordCheck(DictInitClass):
     attrs = ['know', 'guess']
@@ -121,6 +157,8 @@ class RecoverySettings(DictInitClass):
              'email',
              'email_access',
              'email_screenshot']
+    screenshot_label = "recovery_settings"
+    get_screenshots = True
 
 class TwoFactorSettings(DictInitClass):
     attrs = ['enabled',
@@ -128,6 +166,8 @@ class TwoFactorSettings(DictInitClass):
              'describe',
              'second_factor_access',
              'screenshot']
+    screenshot_label = "two_factor_settings"
+    get_screenshots = True
 
 
 class SecurityQuestions(DictInitClass):
@@ -135,6 +175,8 @@ class SecurityQuestions(DictInitClass):
              'questions',
              'know',
              'screenshot']
+    screenshot_label = "security_questions"
+    get_screenshots = True
 
 class InstallInfo(DictInitClass):
     attrs = ['knew_installed',
@@ -166,14 +208,14 @@ class AppInfo(Dictable):
                  permissions=[],
                  install_info=dict(),
                  notes=dict(),
+                 device_hmac_serial="",
                  **kwargs):
 
         self.title = title
         self.app_name = app_name
         if self.app_name.strip() == "":
             self.app_name = title
-        if self.app_name.strip() == "":
-            # both are empty, so use appId
+        if self.app_name.strip() == "" or self.app_name.strip() == "App":
             self.app_name = appId
             self.title = appId
         self.appId = appId
@@ -207,7 +249,23 @@ class AppInfo(Dictable):
         self.install_info = InstallInfo(install_info)
         self.notes = Notes(notes)
 
+        self.screenshot_files = self._get_screenshot_files(device_hmac_serial)
+
         self.report, self.is_concerning = self.generate_app_report()
+
+    def _get_screenshot_files(self, device_hmac_serial):
+        """
+        Returns a list of screenshot filenames for this app.
+        They will be under webstatic/images/screenshots/<device_hmac_serial>/<appId>/
+        """
+        screenshot_dir = os.path.join("webstatic", "images", "screenshots", device_hmac_serial, self.appId)
+        if os.path.exists(screenshot_dir):
+            # get full filepaths
+            files = os.listdir(screenshot_dir)
+            full_fnames = [os.path.join(screenshot_dir, f) for f in files] 
+            full_fnames.sort()
+            return full_fnames
+        return []
 
     def generate_app_report(self, second_person=True, harmdoer="the person of concern"):
         agent = "you"
@@ -258,7 +316,7 @@ class AppInfo(Dictable):
             if self.permission_info.access == 'yes':
                 any_issues = True
                 concern = True
-                sentences.append("Investigation indicates {} can use this app to access private information. Description: {}.".format(harmdoer, self.permission_info.description))
+                sentences.append("Investigation indicates {} can use this app to access private information. Description: {}.".format(harmdoer, self.permission_info.describe))
 
             if not any_issues:
                 sentences.append("There is no evidence that this app is being used maliciously against {}.".format(agent))
@@ -368,6 +426,10 @@ class AccountInvestigation(Dictable):
         self.account_nickname = account_nickname
         if self.account_nickname.strip() == "":
             self.account_nickname = platform
+
+        # insert account id where needed to get screenshots
+        for dict in [suspicious_logins, recovery_settings, two_factor_settings, security_questions]:
+            dict['account_id'] = account_id
         self.suspicious_logins = SuspiciousLogins(suspicious_logins)
         self.password_check = PasswordCheck(password_check)
         self.recovery_settings = RecoverySettings(recovery_settings)
@@ -471,6 +533,7 @@ class ScanData(Dictable):
                  device_type="",
                  device_nickname="",
                  serial="",
+                 adb_serial="",
                  device_model="",
                  device_version="",
                  device_manufacturer="",
@@ -485,13 +548,14 @@ class ScanData(Dictable):
         self.device_type = device_type
         self.device_nickname = device_nickname
         self.serial = serial
+        self.adb_serial = adb_serial
         self.device_model = device_model
         self.device_version = device_version
         self.device_manufacturer = device_manufacturer
         self.is_rooted = is_rooted
         self.rooted_reasons = rooted_reasons
-        self.all_apps = [AppInfo(**app) for app in all_apps]
-        self.selected_apps = [AppInfo(**app) for app in selected_apps]
+        self.all_apps = [AppInfo(**app, device_hmac_serial=serial) for app in all_apps]
+        self.selected_apps = [AppInfo(**app, device_hmac_serial=serial) for app in selected_apps]
         self.concerning_apps = [app for app in self.selected_apps if app.is_concerning]
 
         self.report = self.generate_report()
@@ -946,6 +1010,16 @@ class ManualAddPageForm(FlaskForm):
         self.__init__(formdata=None, **read_form_data)
         self.validate()  # the errors on validation are cancelled in the line above
 
+class ScreenshotEditForm(FlaskForm):
+    fname = StringField("Filename")
+    delete = BooleanField("Delete")
+
+class MultScreenshotEditForm(FlaskForm):
+    title = "Screenshot Edit Form"
+    app_screenshots = FieldList(FormField(ScreenshotEditForm))
+    acct_screenshots = FieldList(FormField(ScreenshotEditForm))
+    submit = SubmitField("Delete Selected Screenshots")
+
 ### TAQ Forms
 class TAQDeviceCompForm(FlaskForm):
     title = "Device Compromise Indicators"
@@ -1007,25 +1081,30 @@ class TAQForm(FlaskForm):
     submit = SubmitField("Save TAQ")
 
 def create_printout(context):
-
-    pprint(context)
-
-    filename = os.path.join('reports', 'test_report.pdf')
+    out_file = os.path.join('reports', 'test_report.pdf')
     template = os.path.join('templates', 'printout.html')
     css_path = os.path.join('webstatic', 'style.css')
 
     template_loader = jinja2.FileSystemLoader("./")
     template_env = jinja2.Environment(loader=template_loader)
     template = template_env.get_template(template)
-    output_text = template.render(context)
+    html_string = template.render(context)
 
     config = pdfkit.configuration(wkhtmltopdf='/usr/local/bin/wkhtmltopdf')
-    options = {'enable-local-file-access': None,
-            'footer-right': '[page]'}
-    pdfkit.from_string(output_text, filename, configuration=config, options=options, css=css_path)
 
-    print("Printout created. Filename is", filename)
-    return filename
+    options = {
+        'enable-local-file-access': True,
+        'footer-right': '[page]'
+        }
+    
+    pdfkit.from_string(html_string, out_file, options=options, configuration=config, css=css_path, verbose=True)
+
+    print("Printout created. Filename is", out_file)
+
+    # Also try one of the screenshots
+    #pdfkit.from_file("/Users/Soph/research/evidence-project/ips-evidence-collector/webstatic/images/screenshots/HSN_1db594fa7f4b6f487b0f650a92209e0e43b077390bd7ff4f4b41c57b888d78d1/com.google.android.apps.pixelmigrate/27-06-2025_09-59-39.png", "reports/screenshot.pdf", options=options, configuration=config, css=css_path, verbose=True)
+
+    return out_file
 
 
 def create_overall_summary(context, second_person=False):
@@ -1109,7 +1188,6 @@ def get_app_details(device, ser, appid):
             if d[item].strip() == "":
                 d[item] = ""
         except KeyError as e:
-            print(f"Key {item} not found in app details for {appid}: {e}")
             d[item] = ""
 
     #d = d.fillna('')
@@ -1200,6 +1278,7 @@ def get_scan_data(device, device_owner):
         scan_d = {
             'clientid': clientid,
             'serial': config.hmac_serial(ser),
+            'adb_serial': ser,
             'device': device,
             'device_model': device_name_map.get('model', '<Unknown>').strip(),
             'device_version': device_name_map.get('version', '<Unknown>').strip(),

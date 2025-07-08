@@ -27,7 +27,7 @@ def error():
 # application level errors. They should go to particular application specific
 # handling.
 def catch_err(
-    p: subprocess.Popen[bytes], cmd="", msg="", time=1, large_output=False
+    p: subprocess.Popen[bytes], cmd="", msg="", time=5, large_output=False
 ) -> str:
     """TODO: Therer are two different types. homogenize them"""
     try:
@@ -87,7 +87,9 @@ def catch_err(
 
 
 def run_command(cmd, **kwargs):
-    _cmd = cmd.format(cli="adb", **kwargs)
+    if "cli" not in kwargs:
+        kwargs["cli"] = "adb"
+    _cmd = cmd.format(**kwargs)
     print(_cmd)
     p = subprocess.Popen(
             _cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True

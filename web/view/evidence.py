@@ -35,9 +35,11 @@ from evidence_collection import (  # create_account_summary,; create_app_summary
     ConsultSetupData,
     DualUseForm,
     ManualAddPageForm,
+    MultScreenshotEditForm,
     Pages,
     ScanData,
     ScanForm,
+    ScreenshotEditForm,
     SetupForm,
     SpywareForm,
     StartForm,
@@ -49,6 +51,7 @@ from evidence_collection import (  # create_account_summary,; create_app_summary
     get_scan_data,
     get_scan_obj,
     get_screenshots,
+    get_ser_from_scan_obj,
     get_serial,
     load_json_data,
     load_object_from_json,
@@ -56,7 +59,9 @@ from evidence_collection import (  # create_account_summary,; create_app_summary
     save_data_as_json,
     update_scan_by_ser,
 )
+from phone_scanner import AndroidScan, IosScan
 from web import app
+from web.view.index import get_device
 
 bootstrap = Bootstrap(app)
 
@@ -322,13 +327,15 @@ def evidence_scan_select(ser):
             #clean_data = remove_unwanted_data(form.data)
 
             # get selected apps from the form data
-            to_investigate_titles = [app["title"] for app in form.data['apps'] if app['investigate']]
+            to_investigate_ids = [app["appId"] for app in form.data['apps'] if app['investigate']]
 
             selected_apps = []
             for app in current_scan.all_apps:
-                if app.title in to_investigate_titles:
+                if app.appId in to_investigate_ids:
                     selected_apps.append(app)
                     app.investigate = True
+                else:
+                    app.investigate = False
 
             pprint(selected_apps)
             pprint("SELECTED APPS")
@@ -465,8 +472,10 @@ def evidence_scan_investigate(ser):
             # clean up the submitted data
             clean_data = remove_unwanted_data(form.data)
 
+            pprint(clean_data["selected_apps"])
+
             # update the current scan data and save it
-            current_scan.selected_apps = [AppInfo(**app) for app in clean_data["selected_apps"]]
+            current_scan.selected_apps = [AppInfo(**app, device_hmac_serial=ser) for app in clean_data["selected_apps"]]
             all_scan_data = update_scan_by_ser(current_scan, all_scan_data)
 
             #  save this updated data
@@ -505,6 +514,21 @@ def evidence_account(id):
 
     form = AccountCompromiseForm()
 
+    ios_scan_obj = IosScan()
+    android_scan_obj = AndroidScan()
+    ios_ser = None
+    android_ser = None
+
+    try: 
+        ios_ser = get_ser_from_scan_obj(ios_scan_obj)
+    except:
+        pass
+
+    try: 
+        android_ser = get_ser_from_scan_obj(android_scan_obj)
+    except:
+        pass
+
     if request.method == 'GET':
         form.process(data=current_account.to_dict())
 
@@ -512,6 +536,8 @@ def evidence_account(id):
             task = "evidence-account",
             form = form,
             title=config.TITLE,
+            android_ser = android_ser,
+            ios_ser = ios_ser,
             sessiondata = current_account.to_dict()
             # for now, don't load anything
         )
@@ -542,6 +568,66 @@ def evidence_account(id):
             flash("Form validation error - are you missing required fields?", 'error')
             pprint(form.errors)
 
+@app.route("/evidence/screenshots", methods=['GET', 'POST'])
+def evidence_screenshots():
+
+    # compile all screenshot filenames
+    app_screenshot_info = []
+    scans=load_object_from_json(ConsultDataTypes.SCANS.value)
+    for scan in scans:
+        for app in scan.all_apps:
+            for fname in app.screenshot_files:
+                app_screenshot_info.append({
+                    "fname": fname,
+                    "type": "app",
+                    "app_id": app.appId,
+                    "app_name": app.app_name,
+                    "device_serial": scan.serial,
+                    "device_nickname": scan.device_nickname
+                })
+
+    account_screenshot_info = []
+    accounts = load_object_from_json(ConsultDataTypes.ACCOUNTS.value)
+    for account in accounts:
+        for section in [account.suspicious_logins, 
+                        account.recovery_settings, 
+                        account.two_factor_settings, 
+                        account.security_questions]:
+            for fname in section.screenshot_files:
+                account_screenshot_info.append({
+                    "fname": fname,
+                    "type": "account",
+                    "account_nickname": account.account_nickname,
+                    "section": section.screenshot_label
+                })
+                # Would be good to capture the phone that took the screenshot
+
+    form = MultScreenshotEditForm(app_screenshots=app_screenshot_info, 
+                                  acct_screenshots=account_screenshot_info)
+    
+    url_root = request.url_root
+    
+    if request.method == 'GET':
+        
+        context = dict(
+            task = "evidence-screenshots",
+            title=config.TITLE,
+            app_screenshot_info = app_screenshot_info,
+            account_screenshot_info = account_screenshot_info,
+            form = form,
+            url_root = url_root
+        )
+
+        return render_template('main.html', **context)
+
+    if request.method == 'POST' and form.is_submitted():
+        # Delete all screenshots that were selected for deletion
+        for app in form.data["app_screenshots"] + form.data["acct_screenshots"]:
+            if app["delete"] == True and os.path.exists(app["fname"]):
+                os.remove(app["fname"])
+
+        # Reload the screenshot page
+        return redirect(url_for('evidence_screenshots'))
 
 @app.route("/evidence/printout", methods=["GET"])
 def evidence_printout():
@@ -554,9 +640,12 @@ def evidence_printout():
         screenshot_dir = config.SCREENSHOT_LOCATION
     )
 
-    pprint([account.to_dict() for account in consult_data.accounts])
+    context = consult_data.to_dict()
+    context["url_root"] = request.url_root
+
+    pprint(context["accounts"])
 
     # create the printout document
-    filename = create_printout(consult_data.to_dict())
+    filename = create_printout(context)
     workingdir = os.path.abspath(os.getcwd())
     return send_from_directory(workingdir, filename)
