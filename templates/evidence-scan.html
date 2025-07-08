@@ -6,6 +6,7 @@
 <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
 <script src="{{ url_for('static', filename='myjscript.js') }}?3"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/3.6.2/fetch.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
 
 {% block content %}
 
@@ -40,6 +41,8 @@
                     </tbody>
                 </table>
                 <br>
+
+                <div id="loading" style="display:none;"><img src="../../../webstatic/images/waiting.gif" alt="" /></div>
 
             {% elif step == 2 %}
             <p><b>Evidence of jailbreaking?</b> {{"Yes" if is_rooted else "No"}}. <b>Explanation:</b> {{rooted_reasons}}</p>
@@ -247,7 +250,7 @@
                 <div><span class="secondarybutton">{{form.manualadd}}</span></div>
                 {% endif %}
 
-                <div><span class="primarybutton">{{form.submit}}</span></div>
+                <div><span class="primarybutton" onclick="$('#loading').show();">{{form.submit}}</span></div>
                 </form>
         </div>
     </div>
