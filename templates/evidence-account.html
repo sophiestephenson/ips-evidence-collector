@@ -6,6 +6,7 @@
 <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
 <script src="{{ url_for('static', filename='myjscript.js') }}?3"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/3.6.2/fetch.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
 
 {% block content %}
 
@@ -47,14 +48,16 @@
                             <div class="subform">
                                 <table>
                                     <tbody>
-                                    {{ render_select(form.suspicious_logins.recognize) }}
-                                    {{ render_text_field(form.suspicious_logins.describe_logins) }}
-                                    {{ render_select(form.suspicious_logins.activity_log) }}
-                                    {{ render_text_field(form.suspicious_logins.describe_activity) }}
+                                    {{ render_select(form.suspicious_logins.recognize, form.suspicious_logins.describe_logins.id) }}
+                                    {{ render_text_field(form.suspicious_logins.describe_logins, ishidden=True) }}
+                                    {{ render_select(form.suspicious_logins.activity_log, 
+                                                    form.suspicious_logins.describe_activity.id) }}
+                                    {{ render_text_field(form.suspicious_logins.describe_activity, ishidden=True) }}
                                     <tr>
                                         <button id="account{{sessiondata.account_id}}_suspicious_logins" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot">Android Screenshot</button>
                                         <button id="account{{sessiondata.account_id}}_suspicious_logins" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot">iOS Screenshot</button>
                                     </tr>
+                                    <tr><div id="loading" style="display:none;"><img src="../../../webstatic/images/waiting.gif" alt="" /></div></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -90,14 +93,14 @@
                             <div class="subform">
                                 <table>
                                     <tbody>
-                                    {% for subform in [form.recovery_settings.phone_present, form.recovery_settings.phone_access] %}
-                                    {{ render_select(subform) }}
-                                    {% endfor %}
-                                    {{ render_text_field(form.recovery_settings.phone) }}
-                                    {% for subform in [form.recovery_settings.email_present, form.recovery_settings.email_access] %}
-                                    {{ render_select(subform) }}
-                                    {% endfor %}
-                                    {{ render_text_field(form.recovery_settings.email) }}
+                                    {{ render_select(form.recovery_settings.phone_present) }}
+                                    {{ render_select(form.recovery_settings.phone_access, 
+                                                     form.recovery_settings.phone.id) }}
+                                    {{ render_text_field(form.recovery_settings.phone, ishidden=True) }}
+                                    {{ render_select(form.recovery_settings.email_present) }}
+                                    {{ render_select(form.recovery_settings.email_access, 
+                                                     form.recovery_settings.email.id) }}
+                                    {{ render_text_field(form.recovery_settings.email, ishidden=True) }}
                                     <tr>
                                         <button id="account{{sessiondata.account_id}}_recovery_settings" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot">Android Screenshot</button>
                                         <button id="account{{sessiondata.account_id}}_recovery_settings" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot">iOS Screenshot</button>
@@ -121,8 +124,9 @@
                                     {% for subform in [form.two_factor_settings.enabled, form.two_factor_settings.second_factor_type] %}
                                     {{ render_select(subform) }}
                                     {% endfor %}
-                                    {{ render_select(form.two_factor_settings.second_factor_access) }}
-                                    {{ render_text_field(form.two_factor_settings.describe) }}
+                                    {{ render_select(form.two_factor_settings.second_factor_access, 
+                                                     form.two_factor_settings.describe.id) }}
+                                    {{ render_text_field(form.two_factor_settings.describe, ishidden=True) }}
                                     <tr>
                                         <button id="account{{sessiondata.account_id}}_two_factor_settings" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot">Android Screenshot</button>
                                         <button id="account{{sessiondata.account_id}}_two_factor_settings" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot">iOS Screenshot</button>
@@ -144,8 +148,9 @@
                                 <table>
                                     <tbody>
                                     {{ render_select(form.security_questions.present) }}
-                                    {{ render_select(form.security_questions.know) }}
-                                    {{ render_text_field(form.security_questions.questions) }}
+                                    {{ render_select(form.security_questions.know, 
+                                                     form.security_questions.questions.id) }}
+                                    {{ render_text_field(form.security_questions.questions, ishidden=True) }}
                                     <tr>
                                         <button id="account{{sessiondata.account_id}}_security_questions" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot">Android Screenshot</button>
                                         <button id="account{{sessiondata.account_id}}_security_questions" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot">iOS Screenshot</button>

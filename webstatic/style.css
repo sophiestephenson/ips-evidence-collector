@@ -485,6 +485,7 @@ tr.form-question > th {
     width: 50%;
     vertical-align: top;
     padding-top: 5px;
+    font-weight: normal;
 }
 
 tr.form-question > td > select {

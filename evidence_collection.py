@@ -874,18 +874,18 @@ class PasswordForm(FlaskForm):
 
 class RecoveryForm(FlaskForm):
     phone_present = RadioField("Is there a recovery phone number set for this account?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
-    phone = TextAreaField("If so, what is the recovery phone number?")
+    phone = TextAreaField("What is the recovery phone number?")
     phone_access = RadioField("Do you believe the person of concern has access to the recovery phone number?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     phone_screenshot = MultipleFileField('Add screenshot(s)')
     email_present = RadioField("Is there a recovery email address set for this account?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
-    email = TextAreaField("If so, what is the recovery email address?")
+    email = TextAreaField("What is the recovery email address?")
     email_access = RadioField("Do you believe the person of concern has access to this recovery email address?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     email_screenshot = MultipleFileField('Add screenshot(s)')
 
 class TwoFactorForm(FlaskForm):
     enabled = RadioField("Is two-factor authentication enabled for this account?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
     second_factor_type = RadioField("What type of two-factor authentication is it?", choices=TWO_FACTOR_CHOICES, default=TWO_FACTOR_DEFAULT)
-    describe = TextAreaField("If so, which phone/email/app is set as the second factor?")
+    describe = TextAreaField("Which phone/email/app is set as the second factor?")
     second_factor_access = RadioField("Do you believe the person of concern has access to this second factor?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     screenshot = MultipleFileField('Add screenshot(s)')
 
