@@ -329,18 +329,20 @@ def evidence_scan_select(ser):
             # get selected apps from the form data
             to_investigate_ids = [app["appId"] for app in form.data['apps'] if app['investigate']]
 
-            selected_apps = []
+            # remove apps we no longer want to investigate, 
+            # while maintaining info from previous investigations
+            current_scan.selected_apps = [app for app in current_scan.selected_apps 
+                                          if app.appId in to_investigate_ids]
+        
+            # Update "investigate" marker and add new apps to selected_apps
+            # TODO: Do we need the "investigate" marker?
             for app in current_scan.all_apps:
                 if app.appId in to_investigate_ids:
-                    selected_apps.append(app)
-                    app.investigate = True
+                    if not app.investigate:
+                        current_scan.selected_apps.append(app)
+                        app.investigate = True
                 else:
                     app.investigate = False
-
-            pprint(selected_apps)
-            pprint("SELECTED APPS")
-
-            current_scan.selected_apps = selected_apps
 
             # update the current scan data and save it as the most recent scan
             #current_scan.selected_apps = [AppInfo(**app) for app in selected_apps]
