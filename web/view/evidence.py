@@ -443,9 +443,10 @@ def evidence_scan_investigate(ser):
     current_scan = get_scan_by_ser(ser, all_scan_data)
     assert current_scan.serial == ser
 
-    pprint([app.to_dict() for app in current_scan.selected_apps])
-    pprint("INPUTTED INTO THE INVESTIGATION FORM")
-    # get apps to investigate from the scan data
+    for app in current_scan.selected_apps:
+        app = app.to_dict()
+        pprint("App: {}  Flags: {}".format(app["title"], app["flags"]))
+    pprint("INFO GIVEN TO INVESTIGATION FORM")
 
     form = AppInvestigationForm(selected_apps=[app.to_dict() for app in current_scan.selected_apps])
 
@@ -472,10 +473,15 @@ def evidence_scan_investigate(ser):
             # clean up the submitted data
             clean_data = remove_unwanted_data(form.data)
 
-            pprint(clean_data["selected_apps"])
+            # Update app info in selected_apps based on what was provided in the form
+            for app in current_scan.selected_apps:
+                for form_app in clean_data["selected_apps"]:
+                    if app.appId == form_app["appId"]:
+                        app.install_info = form_app["install_info"]
+                        app.permission_info.access = form_app["permission_info"]["access"]
+                        app.permission_info.describe = form_app["permission_info"]["describe"]
+                        app.notes = form_app["notes"]
 
-            # update the current scan data and save it
-            current_scan.selected_apps = [AppInfo(**app, device_hmac_serial=ser) for app in clean_data["selected_apps"]]
             all_scan_data = update_scan_by_ser(current_scan, all_scan_data)
 
             #  save this updated data
