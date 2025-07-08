@@ -528,6 +528,7 @@ def evidence_account(id):
 
     form = AccountCompromiseForm()
 
+    # This is so that we can take screenshots if needed
     ios_scan_obj = IosScan()
     android_scan_obj = AndroidScan()
     ios_ser = None

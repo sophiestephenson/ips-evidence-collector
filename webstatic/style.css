@@ -543,3 +543,7 @@ table.screenshots > tbody > tr > th > label {
 div.screenshotfail {
     background-color: goldenrod;
 }
+
+table.accountinfo > tbody > tr > th > h4 {
+    padding-right: 10px;
+}
