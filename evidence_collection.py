@@ -395,13 +395,12 @@ class ConsultationData(Dictable):
          return "TODO: WRITE CODE TO GENERATE AN OVERALL SUMMARY"
 
     def __init__(self,
-                 setup,
-                 taq,
-                 accounts,
-                 scans,
-                 screenshot_dir,
-                 consultant_notes="BEEEB",
-                 client_notes="IIIII",
+                 setup = dict(),
+                 taq = dict(),
+                 accounts = [],
+                 scans = [],
+                 screenshot_dir = "",
+                 notes = dict(),
                  **kwargs):
         self.setup = ConsultSetupData(**setup)
         self.taq = TAQData(**taq)
@@ -409,8 +408,7 @@ class ConsultationData(Dictable):
         self.concerning_accounts = [acct for acct in self.accounts if acct.is_concerning]
         self.scans = [ScanData(**scan) for scan in scans]
         self.screenshot_dir = screenshot_dir
-        self.consultant_notes = consultant_notes
-        self.client_notes = client_notes
+        self.notes = ConsultNotesData(**notes)
 
         self.overall_summary = self.generate_overall_summary()
 
@@ -763,6 +761,14 @@ class ConsultSetupData(Dictable):
         self.client = client
         self.date = date
 
+class ConsultNotesData(Dictable):
+    def __init__(self,
+                 consultant_notes="",
+                 client_notes="",
+                 **kwargs):
+        self.consultant_notes = consultant_notes
+        self.client_notes = client_notes
+
 
 def get_scan_by_ser(ser, all_scan_data: list[ScanData]):
 
@@ -794,6 +800,7 @@ class ConsultDataTypes(Enum):
     SCANS = 2
     ACCOUNTS = 3
     SETUP = 4
+    NOTES = 5
 
 def get_data_filename(datatype: ConsultDataTypes):
 
@@ -803,8 +810,10 @@ def get_data_filename(datatype: ConsultDataTypes):
         return "taq.json"
     elif datatype == ConsultDataTypes.SCANS.value:
         return "scans.json"
-    else:
+    elif datatype == ConsultDataTypes.ACCOUNTS.value:
         return "accounts.json"
+    else:
+        return "notes.json"
 
 ########################
 ###### FORMS ###########
@@ -1088,6 +1097,12 @@ class TAQForm(FlaskForm):
     kids = FormField(TAQKidsForm)
     legal = FormField(TAQLegalForm)
     submit = SubmitField("Save TAQ")
+
+class HomepageNoteForm(FlaskForm):
+    title = "Overall Consultation Notes"
+    consultant_notes = StringField("Consultant Notes")
+    client_notes = StringField("Client Notes")
+    submit = SubmitField("Save Notes")
 
 def create_printout(context):
     out_file = os.path.join('reports', 'test_report.pdf')
@@ -1374,23 +1389,6 @@ def get_scan_data(device, device_owner):
         template_d["error"] = str(e)
         raise e
 
-class ConsultDataTypes(Enum):
-    TAQ = 1
-    SCANS = 2
-    ACCOUNTS = 3
-    SETUP = 4
-
-def get_data_filename(datatype: ConsultDataTypes):
-
-    if datatype == ConsultDataTypes.SETUP.value:
-        return "setup.json"
-    elif datatype == ConsultDataTypes.TAQ.value:
-        return "taq.json"
-    elif datatype == ConsultDataTypes.SCANS.value:
-        return "scans.json"
-    else:
-        return "accounts.json"
-
 
 # Save data to the right tmp file as JSON
 # Overwrites it always, assume any previous data has been incorporated
@@ -1405,7 +1403,6 @@ def save_data_as_json(data, datatype: ConsultDataTypes):
         with open(fname, 'w') as outfile:
             outfile.write(json_object)
 
-
     print("DATA SAVED:", type(data))
 
     return
@@ -1417,68 +1414,33 @@ def load_json_data(datatype: ConsultDataTypes):
     lock = FileLock(fname + ".lock")
     with lock:
         if not os.path.exists(fname):
-            None
+           if datatype in [ConsultDataTypes.SETUP.value, ConsultDataTypes.NOTES.value, ConsultDataTypes.TAQ.value]:
+               return dict()
+           else:
+               return list()
 
         with open(fname, 'r') as openfile:
             json_object = json.load(openfile)
-
-    return json_object
-
-
-
-
-
-
-# Save data to the right tmp file as JSON
-# Overwrites it always, assume any previous data has been incorporated
-def save_data_as_json(data, datatype: ConsultDataTypes):
-
-    json_object = json.dumps(data, cls=EvidenceDataEncoder)
-
-    fname = os.path.join(TMP_CONSULT_DATA_DIR, get_data_filename(datatype))
-
-    with open(fname, 'w') as outfile:
-        outfile.write(json_object)
-
-    return
-
-def load_json_data(datatype: ConsultDataTypes):
-
-    fname = os.path.join(TMP_CONSULT_DATA_DIR, get_data_filename(datatype))
-    if not os.path.exists(fname):
-        return dict()
-        # if datatype in [ConsultDataTypes.TAQ, ConsultDataTypes.SETUP] :
-        #     return dict()
-        # else:
-        #     return dict()
-
-    with open(fname, 'r') as openfile:
-        json_object = json.load(openfile)
-
-    return json_object
+            return json_object
+        
 
 def load_object_from_json(datatype: ConsultDataTypes):
     json_data = load_json_data(datatype)
     if datatype == ConsultDataTypes.SETUP.value:
-        if json_data:
-            return ConsultSetupData(**json_data)
-        return ConsultSetupData()
+        return ConsultSetupData(**json_data)
 
     if datatype == ConsultDataTypes.TAQ.value:
-        if json_data:
-            return TAQData(**json_data)
-        return TAQData()
-
+        return TAQData(**json_data)
+    
     if datatype == ConsultDataTypes.ACCOUNTS.value:
-        if json_data:
-            assert type(json_data) == list
-            return [AccountInvestigation(**acct) for acct in json_data]
-        return list()
+        assert type(json_data) == list
+        return [AccountInvestigation(**acct) for acct in json_data]
 
     if datatype == ConsultDataTypes.SCANS.value:
-        if json_data:
-            assert type(json_data) == list
-            return [ScanData(**scan) for scan in json_data]
-        return list()
-
+        assert type(json_data) == list
+        return [ScanData(**scan) for scan in json_data]
+    
+    if datatype == ConsultDataTypes.NOTES.value:
+        return ConsultNotesData(**json_data)
+    
     return None
