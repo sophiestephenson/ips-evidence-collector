@@ -23,6 +23,11 @@
             {{ option.label.text }}
             {{ option }}
         </label>
+        {% elif option.label.text == "No" %}
+        <label class="btn btn-light" {% if renderonyes %} onclick="$('#wrapper-{{renderonyes}}').hide();" {% endif %}> 
+            {{ option.label.text }}
+            {{ option }}
+        </label>
         {% elif option.label.text != "Nothing selected" %}
         <label class="btn btn-light">
             {{ option.label.text }}

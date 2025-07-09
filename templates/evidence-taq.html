@@ -113,7 +113,11 @@
                         <div class="subform">
                             <table>
                                 <tbody>
-                                    {{ render_select(form.smarthome.smart_home) }}
+                                    {{ render_select(form.smarthome.smart_home, "smarthomequestions") }}
+                                </tbody>
+                            </table>
+                            <table id="wrapper-smarthomequestions" style="display:none;">
+                                <tbody>
                                     {{ render_multiselect(form.smarthome.smart_home_setup) }}
                                     {{ render_select(form.smarthome.smart_home_access) }}
                                     {{ render_select(form.smarthome.smart_home_acct_sharing) }}
@@ -135,7 +139,11 @@
                         <div class="subform">
                             <table>
                                 <tbody>
-                                    {{ render_select(form.kids.custody) }}
+                                    {{ render_select(form.kids.custody, "childquestions") }}
+                                </tbody>
+                            </table>
+                            <table id="wrapper-childquestions" style="display:none;">
+                                <tbody>
                                     {{ render_select(form.kids.child_phys_access) }}
                                     {{ render_select(form.kids.child_phone_plan) }}
                                 </tbody>

@@ -93,18 +93,33 @@
                             <div class="subform">
                                 <table>
                                     <tbody>
-                                    {{ render_select(form.recovery_settings.phone_present) }}
-                                    {{ render_select(form.recovery_settings.phone_access, 
-                                                     form.recovery_settings.phone.id) }}
-                                    {{ render_text_field(form.recovery_settings.phone, ishidden=True) }}
-                                    {{ render_select(form.recovery_settings.email_present) }}
-                                    {{ render_select(form.recovery_settings.email_access, 
-                                                     form.recovery_settings.email.id) }}
-                                    {{ render_text_field(form.recovery_settings.email, ishidden=True) }}
                                     <tr>
                                         <button id="account{{sessiondata.account_id}}_recovery_settings" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot">Android Screenshot</button>
                                         <button id="account{{sessiondata.account_id}}_recovery_settings" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot">iOS Screenshot</button>
                                     </tr>
+                                    {{ render_select(form.recovery_settings.phone_present, "phonerecovery") }}
+                                    </tbody>
+                                </table>
+                                <table id="wrapper-phonerecovery" style="display:none;">
+                                    <tbody>
+                                    {{ render_select(form.recovery_settings.phone_access, 
+                                                     form.recovery_settings.phone.id) }}
+                                    {{ render_text_field(form.recovery_settings.phone, ishidden=True) }}
+                                    </tbody>
+                                </table>
+
+                                <table>
+                                    <tbody>
+                                    {{ render_select(form.recovery_settings.email_present, "emailrecovery") }}
+                                    </tbody>
+                                </table>
+                                <table id="wrapper-emailrecovery" style="display:none;">
+                                    <tbody>
+                                    {{ render_select(form.recovery_settings.email_access, 
+                                                     form.recovery_settings.email.id) }}
+                                    {{ render_text_field(form.recovery_settings.email, ishidden=True) }}
+                                    </tbody>
+                                </table>
                                     </tbody>
                                 </table>
                             </div>
@@ -121,9 +136,12 @@
                             <div class="subform">
                                 <table>
                                     <tbody>
-                                    {% for subform in [form.two_factor_settings.enabled, form.two_factor_settings.second_factor_type] %}
-                                    {{ render_select(subform) }}
-                                    {% endfor %}
+                                    {{ render_select(form.two_factor_settings.enabled, "twofactorquestions") }}
+                                    </tbody>
+                                </table>
+                                <table id="wrapper-twofactorquestions" style="display:none;">
+                                    <tbody>
+                                    {{ render_select(form.two_factor_settings.second_factor_type) }}
                                     {{ render_select(form.two_factor_settings.second_factor_access, 
                                                      form.two_factor_settings.describe.id) }}
                                     {{ render_text_field(form.two_factor_settings.describe, ishidden=True) }}
@@ -147,7 +165,11 @@
                             <div class="subform">
                                 <table>
                                     <tbody>
-                                    {{ render_select(form.security_questions.present) }}
+                                    {{ render_select(form.security_questions.present, "securityquestions") }}
+                                    </tbody>
+                                </table>
+                                <table id="wrapper-securityquestions" style="display:none;">
+                                    <tbody>
                                     {{ render_select(form.security_questions.know, 
                                                      form.security_questions.questions.id) }}
                                     {{ render_text_field(form.security_questions.questions, ishidden=True) }}
@@ -155,7 +177,7 @@
                                         <button id="account{{sessiondata.account_id}}_security_questions" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot">Android Screenshot</button>
                                         <button id="account{{sessiondata.account_id}}_security_questions" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot">iOS Screenshot</button>
                                     </tr>
-                                    </tbody>
+                                     </tbody>
                                 </table>
                             </div>
                         </div>

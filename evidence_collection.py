@@ -861,7 +861,7 @@ class DualUseAppForm(FlaskForm):
 
 ## HELPER FORMS FOR ACCOUNTS
 class SuspiciousLoginsForm(FlaskForm):
-    recognize = RadioField("Do you recognize all devices logged into this account?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    recognize = RadioField("Do you see any unrecognized devices that have logged into this account?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     describe_logins = TextAreaField("Which devices do you not recognize?")
     login_screenshot = MultipleFileField('Add screenshot(s)')
     activity_log = RadioField("In the login history, do you see any suspicious logins?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
