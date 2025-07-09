@@ -100,7 +100,11 @@
                                     {{ render_select(form.recovery_settings.phone_present, "phonerecovery") }}
                                     </tbody>
                                 </table>
-                                <table id="wrapper-phonerecovery" style="display:none;">
+                                <table id="wrapper-phonerecovery" 
+                                       {% if form.recovery_settings.phone_present.data  != "yes"  %} 
+                                       style="display:none;" 
+                                       {%endif%}
+                                        >
                                     <tbody>
                                     {{ render_select(form.recovery_settings.phone_access, 
                                                      form.recovery_settings.phone.id) }}
@@ -113,7 +117,11 @@
                                     {{ render_select(form.recovery_settings.email_present, "emailrecovery") }}
                                     </tbody>
                                 </table>
-                                <table id="wrapper-emailrecovery" style="display:none;">
+                                <table id="wrapper-emailrecovery" 
+                                       {% if form.recovery_settings.email_present.data != "yes" %} 
+                                       style="display:none;"
+                                       {%endif%}
+                                       >
                                     <tbody>
                                     {{ render_select(form.recovery_settings.email_access, 
                                                      form.recovery_settings.email.id) }}
@@ -139,7 +147,11 @@
                                     {{ render_select(form.two_factor_settings.enabled, "twofactorquestions") }}
                                     </tbody>
                                 </table>
-                                <table id="wrapper-twofactorquestions" style="display:none;">
+                                <table id="wrapper-twofactorquestions" 
+                                    {% if form.two_factor_settings.enabled.data != "yes" %} 
+                                    style="display:none;"
+                                    {% endif %}
+                                    >
                                     <tbody>
                                     {{ render_select(form.two_factor_settings.second_factor_type) }}
                                     {{ render_select(form.two_factor_settings.second_factor_access, 
@@ -168,7 +180,11 @@
                                     {{ render_select(form.security_questions.present, "securityquestions") }}
                                     </tbody>
                                 </table>
-                                <table id="wrapper-securityquestions" style="display:none;">
+                                <table id="wrapper-securityquestions" 
+                                    {% if form.security_questions.present.data != "yes" %} 
+                                    style="display:none;"
+                                    {% endif %}
+                                    >
                                     <tbody>
                                     {{ render_select(form.security_questions.know, 
                                                      form.security_questions.questions.id) }}

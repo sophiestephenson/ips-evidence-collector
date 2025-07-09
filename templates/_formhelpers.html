@@ -40,19 +40,22 @@
 {% endmacro %}
 
 {% macro render_multiselect(field, ishidden) %}
-<tr class="form-question" id="wrapper-{{field.id}}" {% if ishidden %} style="display:none;" {% endif %}>
+<tr class="form-question" id="wrapper-{{field.id}}" 
+    {% if ishidden and field.data|length == 0 %} style="display:none;" {% endif %}>
     <th>{{field.label}}</th>
-    <td class="multiselect-box">{{field}}</td>
+    <td class="multiselect-box">{{field}} </td>
 </tr>
 {% endmacro %}
 
 {% macro render_text_field(field, ishidden) %}
-<tr class="form-question" id="wrapper-{{field.id}}" {% if ishidden %} style="display:none;" {% endif %}>
+<tr class="form-question" id="wrapper-{{field.id}}" 
+    {% if ishidden and field.data == "" %} style="display:none;" {% endif %}>
     <th>
         <div>
         {{ field.label }}
         </div>
     </th>
     <td> {{ field }}</td>
+    
 </tr>
 {% endmacro %}
