@@ -674,28 +674,12 @@ def evidence_printout():
 
     context = consult_data.to_dict()
 
-    # Change to dict and grab lists of questions, for easier iteration
-    # TODO: make more streamlined? / account for new things added to TAQ
+    # Change to dict to enable iteration with questions
     context["taq"] = consult_data.taq.to_dict()
-    context["taq"]["devices"]["questions"] = TAQDevices().questions
-    context["taq"]["accounts"]["questions"] = TAQAccounts().questions
-    context["taq"]["sharing"]["questions"] = TAQSharing().questions
-    context["taq"]["smarthome"]["questions"] = TAQSmarthome().questions
-    context["taq"]["kids"]["questions"] = TAQKids().questions
-    context["taq"]["legal"]["questions"] = TAQLegal().questions
-
-    # Same for accounts
     context["accounts"] = [acct.to_dict() for acct in consult_data.accounts]
-    context["accountquestions"] = dict()
-    context["accountquestions"]["suspicious_logins"] = SuspiciousLogins().questions
-    context["accountquestions"]["password_check"] = PasswordCheck().questions
-    context["accountquestions"]["recovery_settings"] = RecoverySettings().questions
-    context["accountquestions"]["two_factor_settings"] = TwoFactorSettings().questions
-    context["accountquestions"]["security_questions"] = SecurityQuestions().questions
 
+    # Need url_root to load screenshots
     context["url_root"] = request.url_root
-
-    pprint(context["accounts"])
 
     # create the printout document
     filename = create_printout(context)

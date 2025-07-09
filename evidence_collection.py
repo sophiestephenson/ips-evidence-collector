@@ -426,6 +426,25 @@ class ConsultationData(Dictable):
         self.screenshot_dir = screenshot_dir
         self.notes = ConsultNotesData(**notes)
 
+        # Grab questions that we will use to generate the printout
+        # TODO: streamline
+        self.formquestions = dict()
+        self.formquestions["accounts"] = dict(
+            suspicious_logins = SuspiciousLogins().questions,
+            password_check = PasswordCheck().questions,
+            recovery_settings = RecoverySettings().questions,
+            two_factor_settings = TwoFactorSettings().questions,
+            security_questions = SecurityQuestions().questions
+        )
+        self.formquestions["taq"] = dict(
+            devices = TAQDevices().questions,
+            accounts = TAQAccounts().questions,
+            sharing = TAQSharing().questions,
+            smarthome  = TAQSmarthome().questions,
+            kids = TAQKids().questions,
+            legal = TAQLegal().questions
+        )
+
         self.overall_summary = self.generate_overall_summary()
 
 

@@ -104,9 +104,9 @@
     <h3>Risk of Device Compromise</h3>
     <table>
         <tbody>
-            {% for q in taq["devices"]["questions"] %}
+            {% for q in formquestions["taq"]["devices"] %}
             <tr>
-                <th>{{taq["devices"]["questions"][q]}}</th>
+                <th>{{formquestions["taq"]["devices"][q]}}</th>
                 <td>{{taq["devices"][q]|capitalize}}</td>
             </tr>
             {% endfor %}
@@ -116,15 +116,15 @@
     <h3>Risk of Account Compromise</h3>
     <table>
         <tbody>
-            {% for q in taq["accounts"]["questions"] %}
+            {% for q in formquestions["taq"]["accounts"] %}
             <tr>
-                <th>{{taq["accounts"]["questions"][q]}}</th>
+                <th>{{formquestions["taq"]["accounts"][q]}}</th>
                 <td>{{taq["accounts"][q]}}</td>
             </tr>
             {% endfor %}
-            {% for q in taq["sharing"]["questions"] %}
+            {% for q in formquestions["taq"]["sharing"] %}
             <tr>
-                <th>{{taq["sharing"]["questions"][q]}}</th>
+                <th>{{formquestions["taq"]["sharing"][q]}}</th>
                 <td>{{taq["sharing"][q]}}</td>
             </tr>
             {% endfor %}
@@ -134,9 +134,9 @@
     <h3>Risks from Smart Home Devices</h3>
     <table>
         <tbody>
-            {% for q in taq["smarthome"]["questions"] %}
+            {% for q in formquestions["taq"]["smarthome"] %}
             <tr>
-                <th>{{taq["smarthome"]["questions"][q]}}</th>
+                <th>{{formquestions["taq"]["smarthome"][q]}}</th>
                 <td>{{taq["smarthome"][q]}}</td>
             </tr>
             {% endfor %}
@@ -146,9 +146,9 @@
     <h3>Risks from Children's Devices</h3>
     <table>
         <tbody>
-            {% for q in taq["kids"]["questions"] %}
+            {% for q in formquestions["taq"]["kids"] %}
             <tr>
-                <th>{{taq["kids"]["questions"][q]}}</th>
+                <th>{{formquestions["taq"]["kids"][q]}}</th>
                 <td>{{taq["kids"][q]}}</td>
             </tr>
             {% endfor %}
@@ -318,13 +318,6 @@
 
                 {% for permission in [] %}
 
-                    {% set screenshots = [] %}
-                    {% for filename in app.screenshots %}
-                    {% if app.app_name.replace(' ', '') in filename and permission.replace(' ', '') in filename %}
-                    {% set _ = screenshots.append(filename) %}
-                    {% endif %}
-                    {% endfor %}
-
                     <tr valign="top">
                         <td>
                             <table>
@@ -368,18 +361,14 @@
 
                 <tr valign="top">
                     <td>
-                        {% if app.notes.client_notes %}
                         <h3>Client comments</h3>
                         <p>
                             <p>&gt; {{app.notes.client_notes}} </p>
                         </p>
-                        {% endif %}
-                        {% if app.notes.consultant_notes %}
                         <h3>Consultant comments</h3>
                         <p>
                             <p>&gt; {{app.notes.consultant_notes}} </p>
                         </p>
-                        {% endif %}
                     </td>
                 </tr>
             </tbody>
@@ -424,9 +413,9 @@
                 <td>
                     <table>
                         <tbody>
-                            {% for q in accountquestions["suspicious_logins"] %}
+                            {% for q in formquestions["accounts"]["suspicious_logins"] %}
                             <tr>
-                                <th>{{accountquestions["suspicious_logins"][q]}}</th>
+                                <th>{{formquestions["accounts"]["suspicious_logins"][q]}}</th>
                                 <td>{{account["suspicious_logins"][q]|capitalize}}</td>
                             </tr>
                             {% endfor %}
@@ -448,9 +437,9 @@
                 <td>
                     <table>
                         <tbody>
-                            {% for q in accountquestions["password_check"] %}
+                            {% for q in formquestions["accounts"]["password_check"] %}
                             <tr>
-                                <th>{{accountquestions["password_check"][q]}}</th>
+                                <th>{{formquestions["accounts"]["password_check"][q]}}</th>
                                 <td>{{account["password_check"][q]|capitalize}}</td>
                             </tr>
                             {% endfor %}
@@ -465,9 +454,9 @@
                 <td>
                     <table>
                         <tbody>
-                            {% for q in accountquestions["recovery_settings"] %}
+                            {% for q in formquestions["accounts"]["recovery_settings"] %}
                             <tr>
-                                <th>{{accountquestions["recovery_settings"][q]}}</th>
+                                <th>{{formquestions["accounts"]["recovery_settings"][q]}}</th>
                                 <td>{{account["recovery_settings"][q]|capitalize}}</td>
                             </tr>
                             {% endfor %}
@@ -492,9 +481,9 @@
                 <td>
                     <table>
                         <tbody>
-                            {% for q in accountquestions["two_factor_settings"] %}
+                            {% for q in formquestions["accounts"]["two_factor_settings"] %}
                             <tr>
-                                <th>{{accountquestions["two_factor_settings"][q]}}</th>
+                                <th>{{formquestions["accounts"]["two_factor_settings"][q]}}</th>
                                 <td>{{account["two_factor_settings"][q]|capitalize}}</td>
                             </tr>
                             {% endfor %}
@@ -518,9 +507,9 @@
                 <td>
                     <table>
                         <tbody>
-                            {% for q in accountquestions["security_questions"] %}
+                            {% for q in formquestions["accounts"]["security_questions"] %}
                             <tr>
-                                <th>{{accountquestions["security_questions"][q]}}</th>
+                                <th>{{formquestions["accounts"]["security_questions"][q]}}</th>
                                 <td>{{account["security_questions"][q]|capitalize}}</td>
                             </tr>
                             {% endfor %}
