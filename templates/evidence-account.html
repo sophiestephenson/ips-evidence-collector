@@ -6,6 +6,7 @@
 <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
 <script src="{{ url_for('static', filename='myjscript.js') }}?3"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/3.6.2/fetch.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
 
 {% block content %}
 
@@ -27,87 +28,183 @@
 
             <h2>{{ form.title }}</h2>
             <br>
+            <table class="accountinfo">
+                <tbody>
                     <tr><th><h4>{{form.platform.label}}</h4></th><td>{{form.platform}}</td></tr>
-                    <tr><th><h4>{{form.account_nickname.label}}</h4></th><td>{{form.account_nickname}}</td></tr>
+                    <tr><th><h4>{{form.account_nickname.label}} (optional)</h4></th><td>{{form.account_nickname}}</td></tr>
+                </tbody>
+            </table>
                     <br/><br/>
                     {{ form.hidden_tag() }}
                     <div class="content">
-                        <h5>{{ form.suspicious_logins.label }}</h5>
-                        <div class="subform">
-                            {{form.suspicious_logins.hidden_tag()}}
-                            <button id="account{{sessiondata.account_id}}_suspicious_logins" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot">Android Screenshot</button>
-                            <button id="account{{sessiondata.account_id}}_suspicious_logins" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot">iOS Screenshot</button>
-                            <table>
-                                <tbody>
-                                    {{ render_select(form.suspicious_logins.recognize) }}
-                                    {{ render_text_field(form.suspicious_logins.describe_logins) }}
-                                    {{ render_select(form.suspicious_logins.activity_log) }}
-                                    {{ render_text_field(form.suspicious_logins.describe_activity) }}
-                                </tbody>
-                            </table>
+
+                    <details>
+                        <summary>
+                        <span class="icon">▼</span>
+                        <b>{{ form.suspicious_logins.label  }}</b>
+                        </summary>
+                        {{form.suspicious_logins.hidden_tag()}}
+                        <div class="content">
+                            <div class="subform">
+                                <table>
+                                    <tbody>
+                                    {{ render_select(form.suspicious_logins.recognize, form.suspicious_logins.describe_logins.id) }}
+                                    {{ render_text_field(form.suspicious_logins.describe_logins, ishidden=True) }}
+                                    {{ render_select(form.suspicious_logins.activity_log, 
+                                                    form.suspicious_logins.describe_activity.id) }}
+                                    {{ render_text_field(form.suspicious_logins.describe_activity, ishidden=True) }}
+                                    <tr>
+                                        <button id="account{{sessiondata.account_id}}_suspicious_logins" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot">Android Screenshot</button>
+                                        <button id="account{{sessiondata.account_id}}_suspicious_logins" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot">iOS Screenshot</button>
+                                    </tr>
+                                    <tr><div id="loading" style="display:none;"><img src="../../../webstatic/images/waiting.gif" alt="" /></div></tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <h5>{{ form.password_check.label }}</h5>
-                        <div class="subform">
-                            {{ form.password_check.hidden_tag() }}
-                            <table>
-                                <tbody>
+                    </details>
+
+                    <details>
+                        <summary>
+                        <span class="icon">▼</span>
+                        <b>{{ form.password_check.label  }}</b>
+                        </summary>
+                        {{form.password_check.hidden_tag()}}
+                        <div class="content">
+                            <div class="subform">
+                                <table>
+                                    <tbody>
                                     {% for subform in [form.password_check.know, form.password_check.guess] %}
                                     {{ render_select(subform) }}
                                     {% endfor %}
-                                </tbody>
-                            </table>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <h5>{{ form.recovery_settings.label }}</h5>
-                        <div class="subform">
-                            {{ form.recovery_settings.hidden_tag() }}
-                            <button id="account{{sessiondata.account_id}}_recovery_settings" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot">Android Screenshot</button>
-                            <button id="account{{sessiondata.account_id}}_recovery_settings" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot">iOS Screenshot</button>
-                            <table>
-                                <tbody>
-                                    {% for subform in [form.recovery_settings.phone_present, form.recovery_settings.phone_access] %}
-                                    {{ render_select(subform) }}
-                                    {% endfor %}
-                                    {{ render_text_field(form.recovery_settings.phone) }}
-                                    {% for subform in [form.recovery_settings.email_present, form.recovery_settings.email_access] %}
-                                    {{ render_select(subform) }}
-                                    {% endfor %}
-                                    {{ render_text_field(form.recovery_settings.email) }}
-                                </tbody>
-                            </table>
-                        </div>
-                        <h5>{{ form.two_factor_settings.label }}</h5>
-                        <div class="subform">
-                            {{ form.two_factor_settings.hidden_tag() }}
-                            <button id="account{{sessiondata.account_id}}_two_factor_settings" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot">Android Screenshot</button>
-                            <button id="account{{sessiondata.account_id}}_two_factor_settings" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot">iOS Screenshot</button>
-                            <table>
-                                <tbody>
-                                    {% for subform in [form.two_factor_settings.enabled, form.two_factor_settings.second_factor_type] %}
-                                    {{ render_select(subform) }}
-                                    {% endfor %}
-                                    {{ render_text_field(form.two_factor_settings.describe) }}
-                                    {% with subform = form.two_factor_settings.second_factor_access %}
-                                    {{ render_select(subform) }}
-                                    {% endwith %}
+                    </details>
 
-                                </tbody>
-                            </table>
+                    <details>
+                        <summary>
+                        <span class="icon">▼</span>
+                        <b>{{ form.recovery_settings.label  }}</b>
+                        </summary>
+                        {{form.recovery_settings.hidden_tag()}}
+                        <div class="content">
+                            <div class="subform">
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                        <button id="account{{sessiondata.account_id}}_recovery_settings" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot">Android Screenshot</button>
+                                        <button id="account{{sessiondata.account_id}}_recovery_settings" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot">iOS Screenshot</button>
+                                    </tr>
+                                    {{ render_select(form.recovery_settings.phone_present, "phonerecovery") }}
+                                    </tbody>
+                                </table>
+                                <table id="wrapper-phonerecovery" 
+                                       {% if form.recovery_settings.phone_present.data  != "yes"  %} 
+                                       style="display:none;" 
+                                       {%endif%}
+                                        >
+                                    <tbody>
+                                    {{ render_select(form.recovery_settings.phone_access, 
+                                                     form.recovery_settings.phone.id) }}
+                                    {{ render_text_field(form.recovery_settings.phone, ishidden=True) }}
+                                    </tbody>
+                                </table>
+
+                                <table>
+                                    <tbody>
+                                    {{ render_select(form.recovery_settings.email_present, "emailrecovery") }}
+                                    </tbody>
+                                </table>
+                                <table id="wrapper-emailrecovery" 
+                                       {% if form.recovery_settings.email_present.data != "yes" %} 
+                                       style="display:none;"
+                                       {%endif%}
+                                       >
+                                    <tbody>
+                                    {{ render_select(form.recovery_settings.email_access, 
+                                                     form.recovery_settings.email.id) }}
+                                    {{ render_text_field(form.recovery_settings.email, ishidden=True) }}
+                                    </tbody>
+                                </table>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <h5>{{ form.security_questions.label }}</h5>
-                        <div class="subform">
-                            {{ form.security_questions.hidden_tag() }}
-                                <button id="account{{sessiondata.account_id}}_security_questions" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot">Android Screenshot</button>
-                                <button id="account{{sessiondata.account_id}}_security_questions" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot">iOS Screenshot</button>
-                            <table>
-                                <tbody>
-                                    {{ render_select(form.security_questions.present) }}
-                                    {{ render_text_field(form.security_questions.questions) }}
-                                    {{ render_select(form.security_questions.know) }}
-                                </tbody>
-                            </table>
+                    </details>
+
+                    <details>
+                        <summary>
+                        <span class="icon">▼</span>
+                        <b>{{ form.two_factor_settings.label  }}</b>
+                        </summary>
+                        {{form.two_factor_settings.hidden_tag()}}
+                        <div class="content">
+                            <div class="subform">
+                                <table>
+                                    <tbody>
+                                    {{ render_select(form.two_factor_settings.enabled, "twofactorquestions") }}
+                                    </tbody>
+                                </table>
+                                <table id="wrapper-twofactorquestions" 
+                                    {% if form.two_factor_settings.enabled.data != "yes" %} 
+                                    style="display:none;"
+                                    {% endif %}
+                                    >
+                                    <tbody>
+                                    {{ render_select(form.two_factor_settings.second_factor_type) }}
+                                    {{ render_select(form.two_factor_settings.second_factor_access, 
+                                                     form.two_factor_settings.describe.id) }}
+                                    {{ render_text_field(form.two_factor_settings.describe, ishidden=True) }}
+                                    <tr>
+                                        <button id="account{{sessiondata.account_id}}_two_factor_settings" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot">Android Screenshot</button>
+                                        <button id="account{{sessiondata.account_id}}_two_factor_settings" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot">iOS Screenshot</button>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <h5>{{form.notes.label}}</h5>
-                        <div class="subform notes">{{ form.notes }}</div>
+                    </details>
+
+                    <details>
+                        <summary>
+                        <span class="icon">▼</span>
+                        <b>{{ form.security_questions.label  }}</b>
+                        </summary>
+                        {{form.security_questions.hidden_tag()}}
+                        <div class="content">
+                            <div class="subform">
+                                <table>
+                                    <tbody>
+                                    {{ render_select(form.security_questions.present, "securityquestions") }}
+                                    </tbody>
+                                </table>
+                                <table id="wrapper-securityquestions" 
+                                    {% if form.security_questions.present.data != "yes" %} 
+                                    style="display:none;"
+                                    {% endif %}
+                                    >
+                                    <tbody>
+                                    {{ render_select(form.security_questions.know, 
+                                                     form.security_questions.questions.id) }}
+                                    {{ render_text_field(form.security_questions.questions, ishidden=True) }}
+                                    <tr>
+                                        <button id="account{{sessiondata.account_id}}_security_questions" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot">Android Screenshot</button>
+                                        <button id="account{{sessiondata.account_id}}_security_questions" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot">iOS Screenshot</button>
+                                    </tr>
+                                     </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </details>
+
+
+                        <h3>{{form.notes.label}}</h3>
+                        {{form.notes.hidden_tag()}}
+                        <div class="content">
+                            <div class="subform notes">{{ form.notes }}</div>
+                        </div>
                     </div>
             <br>
             <div><span class="primarybutton">{{form.submit}}</span></div>

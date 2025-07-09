@@ -485,6 +485,7 @@ tr.form-question > th {
     width: 50%;
     vertical-align: top;
     padding-top: 5px;
+    font-weight: normal;
 }
 
 tr.form-question > td > select {
@@ -542,4 +543,8 @@ table.screenshots > tbody > tr > th > label {
 
 div.screenshotfail {
     background-color: goldenrod;
+}
+
+table.accountinfo > tbody > tr > th > h4 {
+    padding-right: 10px;
 }
