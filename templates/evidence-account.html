@@ -187,8 +187,8 @@
                                     >
                                     <tbody>
                                     {{ render_select(form.security_questions.know, 
-                                                     form.security_questions.questions.id) }}
-                                    {{ render_text_field(form.security_questions.questions, ishidden=True) }}
+                                                     form.security_questions.which.id) }}
+                                    {{ render_text_field(form.security_questions.which, ishidden=True) }}
                                     <tr>
                                         <button id="account{{sessiondata.account_id}}_security_questions" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot">Android Screenshot</button>
                                         <button id="account{{sessiondata.account_id}}_security_questions" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot">iOS Screenshot</button>

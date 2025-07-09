@@ -548,3 +548,23 @@ div.screenshotfail {
 table.accountinfo > tbody > tr > th > h4 {
     padding-right: 10px;
 }
+
+#taqsection table > tbody > tr > th,
+#taqsection table > tbody > tr > td {
+    font-weight: normal;
+    text-align: left;
+    width: 500px;
+    padding: 10px;
+    margin: 0px;
+    background-color: lightgray;
+    border: 1px lightgray solid;
+}
+
+#taqsection table > tbody > tr > td {
+    width: 250px;
+    background-color: white;
+}
+
+#taqsection table > tbody > tr {
+    margin: 0px;
+}

@@ -26,11 +26,22 @@ from evidence_collection import (
     HomepageNoteForm,
     ManualAddPageForm,
     MultScreenshotEditForm,
+    PasswordCheck,
+    RecoverySettings,
     ScanData,
+    SecurityQuestions,
     SetupForm,
     StartForm,
+    SuspiciousLogins,
+    TAQAccounts,
     TAQData,
+    TAQDevices,
     TAQForm,
+    TAQKids,
+    TAQLegal,
+    TAQSharing,
+    TAQSmarthome,
+    TwoFactorSettings,
     create_printout,
     get_scan_by_ser,
     get_scan_data,
@@ -662,9 +673,13 @@ def evidence_printout():
     )
 
     context = consult_data.to_dict()
-    context["url_root"] = request.url_root
 
-    pprint(context["accounts"])
+    # Change to dict to enable iteration with questions
+    context["taq"] = consult_data.taq.to_dict()
+    context["accounts"] = [acct.to_dict() for acct in consult_data.accounts]
+
+    # Need url_root to load screenshots
+    context["url_root"] = request.url_root
 
     # create the printout document
     filename = create_printout(context)
