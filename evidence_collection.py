@@ -400,8 +400,8 @@ class ConsultationData(Dictable):
                  accounts,
                  scans,
                  screenshot_dir,
-                 consultant_notes="",
-                 client_notes="",
+                 consultant_notes="BEEEB",
+                 client_notes="IIIII",
                  **kwargs):
         self.setup = ConsultSetupData(**setup)
         self.taq = TAQData(**taq)

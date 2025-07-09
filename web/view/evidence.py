@@ -1,56 +1,37 @@
-import json
 import os
-import pickle
 import traceback
 from datetime import datetime
-from enum import Enum
-from operator import itemgetter
 from pprint import pprint
-from time import sleep
 
 from flask import (
     flash,
-    jsonify,
     redirect,
     render_template,
     request,
     send_from_directory,
-    session,
     url_for,
 )
 from flask_bootstrap import Bootstrap
-from wtforms import ValidationError
 
 import config
-from evidence_collection import (  # create_account_summary,; create_app_summary,
-    CONTEXT_PKL_FNAME,
+from evidence_collection import (
     AccountCompromiseForm,
     AccountInvestigation,
-    AppInfo,
     AppInvestigationForm,
     AppSelectPageForm,
-    CheckApps,
     ConsultationData,
     ConsultDataTypes,
     ConsultSetupData,
-    DualUseForm,
     ManualAddPageForm,
     MultScreenshotEditForm,
-    Pages,
     ScanData,
-    ScanForm,
-    ScreenshotEditForm,
     SetupForm,
-    SpywareForm,
     StartForm,
     TAQData,
     TAQForm,
-    create_overall_summary,
     create_printout,
     get_scan_by_ser,
     get_scan_data,
-    get_scan_obj,
-    get_screenshots,
     get_ser_from_scan_obj,
     get_serial,
     load_json_data,
@@ -61,7 +42,6 @@ from evidence_collection import (  # create_account_summary,; create_app_summary
 )
 from phone_scanner import AndroidScan, IosScan
 from web import app
-from web.view.index import get_device
 
 bootstrap = Bootstrap(app)
 
@@ -117,17 +97,18 @@ def evidence_setup():
 @app.route("/evidence/home", methods={'GET'})
 def evidence_home():
 
-    consult_data = {
-        "setup": load_json_data(ConsultDataTypes.SETUP.value),
-        "taq": load_json_data(ConsultDataTypes.TAQ.value),
-        "scans": load_json_data(ConsultDataTypes.SCANS.value),
-        "accounts": load_json_data(ConsultDataTypes.ACCOUNTS.value)
-    }
+    consult_data = ConsultationData(
+        setup=load_json_data(ConsultDataTypes.SETUP.value),
+        taq=load_json_data(ConsultDataTypes.TAQ.value),
+        accounts=load_json_data(ConsultDataTypes.ACCOUNTS.value),
+        scans=load_json_data(ConsultDataTypes.SCANS.value),
+        screenshot_dir = config.SCREENSHOT_LOCATION
+    )
 
     context = dict(
         task = "evidence-home",
         title=config.TITLE,
-        consultdata=consult_data,
+        consultdata=consult_data.to_dict(),
     )
 
     return render_template('main.html', **context)
