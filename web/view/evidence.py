@@ -29,8 +29,14 @@ from evidence_collection import (
     ScanData,
     SetupForm,
     StartForm,
+    TAQAccounts,
     TAQData,
+    TAQDevices,
     TAQForm,
+    TAQKids,
+    TAQLegal,
+    TAQSharing,
+    TAQSmarthome,
     create_printout,
     get_scan_by_ser,
     get_scan_data,
@@ -662,6 +668,19 @@ def evidence_printout():
     )
 
     context = consult_data.to_dict()
+
+    # Change to dict and grab lists of questions, for easier iteration
+    # TODO: make more streamlined? / account for new things added to TAQ
+    context["taq"] = consult_data.taq.to_dict()
+    context["taq"]["devices"]["questions"] = TAQDevices().questions
+    context["taq"]["accounts"]["questions"] = TAQAccounts().questions
+    context["taq"]["sharing"]["questions"] = TAQSharing().questions
+    context["taq"]["smarthome"]["questions"] = TAQSmarthome().questions
+    context["taq"]["kids"]["questions"] = TAQKids().questions
+    context["taq"]["legal"]["questions"] = TAQLegal().questions
+
+    pprint(context["taq"])
+
     context["url_root"] = request.url_root
 
     pprint(context["accounts"])
