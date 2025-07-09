@@ -34,7 +34,7 @@
         <h1>Summary of Findings</h1>
         <hr />
         <div class="overallsummary">
-            <p><i>This is an automated summary generated based on the detailed content of the report.</i></p>
+            <p><i>The following are automated summaries generated from the detailed content of the report.</i></p>
 
             <h2>Technology Assessment Questionnaire</h2> 
             {% if taq.risk_factors|length == 0 %}
@@ -83,6 +83,17 @@
             </ul>
             {%endif%}
         </div>
+        <hr />
+
+        <h2>Notes on the Consultation</h2>
+        <ul>
+            <li>
+                <i>Consultant notes:</i> {{notes.consultant_notes}}
+            </li>
+            <li>
+                <i>Client notes:</i> {{notes.client_notes}}
+            </li>
+        </ul>
     </div>
 
 <div class="new-page">

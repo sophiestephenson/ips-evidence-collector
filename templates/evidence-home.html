@@ -1,5 +1,6 @@
 {% extends 'bootstrap/base.html' %}
 {% import "bootstrap/wtf.html" as wtf %}
+{% from "_formhelpers.html" import render_text_field %}
 
 <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
 <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
@@ -145,6 +146,22 @@
                 {% else %}
                 <p><b>Accounts</b>: None</p>
                 {% endif %}
+
+                 <h3>Overall Consultation Notes</h3>
+                <form action method="post" class="form" role="form">
+                    {{ form.hidden_tag() }}
+                    {{ wtf.form_errors(form) }}
+
+                    <table>
+                        <tbody>
+                            {{render_text_field(form.consultant_notes)}}
+                            {{render_text_field(form.client_notes)}}
+                        </tbody>
+                    </table>
+
+                <div><span class="primarybutton">{{form.submit}}</span></div>
+                </form>
+
             </div>
             <br/>
             <br/>
