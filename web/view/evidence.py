@@ -657,7 +657,8 @@ def evidence_printout():
         taq=load_json_data(ConsultDataTypes.TAQ.value),
         accounts=load_json_data(ConsultDataTypes.ACCOUNTS.value),
         scans=load_json_data(ConsultDataTypes.SCANS.value),
-        screenshot_dir = config.SCREENSHOT_LOCATION
+        screenshot_dir = config.SCREENSHOT_LOCATION,
+        notes=load_json_data(ConsultDataTypes.NOTES.value)
     )
 
     context = consult_data.to_dict()
