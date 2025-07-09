@@ -26,9 +26,13 @@ from evidence_collection import (
     HomepageNoteForm,
     ManualAddPageForm,
     MultScreenshotEditForm,
+    PasswordCheck,
+    RecoverySettings,
     ScanData,
+    SecurityQuestions,
     SetupForm,
     StartForm,
+    SuspiciousLogins,
     TAQAccounts,
     TAQData,
     TAQDevices,
@@ -37,6 +41,7 @@ from evidence_collection import (
     TAQLegal,
     TAQSharing,
     TAQSmarthome,
+    TwoFactorSettings,
     create_printout,
     get_scan_by_ser,
     get_scan_data,
@@ -679,7 +684,14 @@ def evidence_printout():
     context["taq"]["kids"]["questions"] = TAQKids().questions
     context["taq"]["legal"]["questions"] = TAQLegal().questions
 
-    pprint(context["taq"])
+    # Same for accounts
+    context["accounts"] = [acct.to_dict() for acct in consult_data.accounts]
+    context["accountquestions"] = dict()
+    context["accountquestions"]["suspicious_logins"] = SuspiciousLogins().questions
+    context["accountquestions"]["password_check"] = PasswordCheck().questions
+    context["accountquestions"]["recovery_settings"] = RecoverySettings().questions
+    context["accountquestions"]["two_factor_settings"] = TwoFactorSettings().questions
+    context["accountquestions"]["security_questions"] = SecurityQuestions().questions
 
     context["url_root"] = request.url_root
 

@@ -136,55 +136,71 @@ class DictInitClass (Dictable):
         return []
 
 class SuspiciousLogins(DictInitClass):
-    attrs = ['recognize',
-             'describe_logins',
-             'login_screenshot',
-             'activity_log',
-             'describe_activity',
-             'activity_screenshot']
+    questions = {
+        'recognize': "Do you see any unrecognized devices that have logged into this account?",
+        'describe_logins': "Which devices do you not recognize?",
+        'activity_log': "In the login history, do you see any suspicious logins?",
+        'describe_activity': "Which logins are suspicious, and why?"
+    }
+    attrs = list(questions.keys())
     screenshot_label = "suspicious_logins"
     get_screenshots = True
 
 class PasswordCheck(DictInitClass):
-    attrs = ['know', 'guess']
+    questions = {
+        "know": "Does the person of concern know the password for this account?",
+        "guess": "Do you believe the person of concern could guess the password?",
+    }
+    attrs = list(questions.keys())
 
 class RecoverySettings(DictInitClass):
-    attrs = ['phone_present',
-             'phone',
-             'phone_access',
-             'phone_screenshot',
-             'email_present',
-             'email',
-             'email_access',
-             'email_screenshot']
+    questions = {
+        'phone_present': "Is there a recovery phone number set for this account?",
+        'phone': "What is the recovery phone number?",
+        'phone_access': "Do you believe the person of concern has access to the recovery phone number?",
+        'email_present': "Is there a recovery email address set for this account?",
+        'email': "What is the recovery email address?",
+        'email_access': "Do you believe the person of concern has access to this recovery email address?"
+        }
+    attrs = list(questions.keys())
     screenshot_label = "recovery_settings"
     get_screenshots = True
 
 class TwoFactorSettings(DictInitClass):
-    attrs = ['enabled',
-             'second_factor_type',
-             'describe',
-             'second_factor_access',
-             'screenshot']
+    questions = {
+        'enabled': "Is two-factor authentication enabled for this account?",
+        'second_factor_type': "What type of two-factor authentication is it?",
+        'describe': "Which phone/email/app is set as the second factor?",
+        'second_factor_access': "Do you believe the person of concern has access to this second factor?",
+        }
+    attrs = list(questions.keys())
     screenshot_label = "two_factor_settings"
     get_screenshots = True
 
 
 class SecurityQuestions(DictInitClass):
-    attrs = ['present',
-             'questions',
-             'know',
-             'screenshot']
+    questions = {
+        'present': "Does the account use security questions?",
+        'know': "Do you believe the person of concern knows the answer to any of these questions?",
+        'which': "Which questions might they be able to answer?",
+        }
+    attrs = list(questions.keys())
     screenshot_label = "security_questions"
     get_screenshots = True
 
 class InstallInfo(DictInitClass):
-    attrs = ['knew_installed',
-             'installed',
-             'coerced',
-             'screenshot']
+    questions = {
+        'knew_installed': 'Did you know this app was installed?',
+        'installed': 'Did you install this app?',
+        'coerced': 'Did the person of concern coerce you into installing this app?'
+    }
+    attrs = list(questions.keys())
 
 class PermissionInfo(DictInitClass):
+    questions = {
+        "access": "Review the permissions used. Can any of this information be accessed by the person of concern using this app?",
+        "describe": "If yes, please describe."
+    }
     attrs = ['permissions',
              'access',
              'describe']
@@ -827,18 +843,16 @@ class NotesForm(FlaskForm):
 ## HELPER FORMS FOR APPS
 class PermissionForm(FlaskForm):
     permissions = HiddenField("Permissions")
-    access = RadioField("Review the permissions used. Can any of this information be accessed by the person of concern using this app?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    describe = TextAreaField("If yes, please describe.")
-    screenshot = MultipleFileField('Add screenshot(s)')
+    access = RadioField(PermissionInfo().questions["access"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    describe = TextAreaField(PermissionInfo().questions["describe"])
 
 # HELPER FORM FOR SCREENSHOTS
 
 class InstallForm(FlaskForm):
-    knew_installed = RadioField('Did you know this app was installed?', choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    installed = RadioField('Did you install this app?', choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    coerced = RadioField('Did the person of concern coerce you into installing this app?', choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    knew_installed = RadioField(InstallInfo().questions["knew_installed"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    installed = RadioField(InstallInfo().questions["installed"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    coerced = RadioField(InstallInfo().questions["coerced"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     #who = TextAreaField("If you were coerced, who coerced you?")
-    screenshot = MultipleFileField('Add screenshot(s)')
 
 class SpywareAppForm(FlaskForm):
     title = HiddenField("App Name")
@@ -874,39 +888,33 @@ class DualUseAppForm(FlaskForm):
 
 ## HELPER FORMS FOR ACCOUNTS
 class SuspiciousLoginsForm(FlaskForm):
-    recognize = RadioField("Do you see any unrecognized devices that have logged into this account?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    describe_logins = TextAreaField("Which devices do you not recognize?")
-    login_screenshot = MultipleFileField('Add screenshot(s)')
-    activity_log = RadioField("In the login history, do you see any suspicious logins?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    describe_activity = TextAreaField("Which logins are suspicious, and why?")
-    activity_screenshot = MultipleFileField('Add screenshot(s)')
+    recognize = RadioField(SuspiciousLogins().questions["recognize"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    describe_logins = TextAreaField(SuspiciousLogins().questions["describe_logins"])
+    activity_log = RadioField(SuspiciousLogins().questions["activity_log"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    describe_activity = TextAreaField(SuspiciousLogins().questions["describe_activity"])
 
 class PasswordForm(FlaskForm):
-    know = RadioField("Does the person of concern know the password for this account?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    guess = RadioField("Do you believe the person of concern could guess the password?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    know = RadioField(PasswordCheck().questions["know"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    guess = RadioField(PasswordCheck().questions["guess"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
 
 class RecoveryForm(FlaskForm):
-    phone_present = RadioField("Is there a recovery phone number set for this account?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
-    phone = TextAreaField("What is the recovery phone number?")
-    phone_access = RadioField("Do you believe the person of concern has access to the recovery phone number?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    phone_screenshot = MultipleFileField('Add screenshot(s)')
-    email_present = RadioField("Is there a recovery email address set for this account?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
-    email = TextAreaField("What is the recovery email address?")
-    email_access = RadioField("Do you believe the person of concern has access to this recovery email address?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    email_screenshot = MultipleFileField('Add screenshot(s)')
+    phone_present = RadioField(RecoverySettings().questions["phone_present"], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+    phone = TextAreaField(RecoverySettings().questions["phone"])
+    phone_access = RadioField(RecoverySettings().questions["phone_access"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    email_present = RadioField(RecoverySettings().questions["email_present"], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+    email = TextAreaField(RecoverySettings().questions["email"])
+    email_access = RadioField(RecoverySettings().questions["email_access"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
 
 class TwoFactorForm(FlaskForm):
-    enabled = RadioField("Is two-factor authentication enabled for this account?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
-    second_factor_type = RadioField("What type of two-factor authentication is it?", choices=TWO_FACTOR_CHOICES, default=TWO_FACTOR_DEFAULT)
-    describe = TextAreaField("Which phone/email/app is set as the second factor?")
-    second_factor_access = RadioField("Do you believe the person of concern has access to this second factor?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    screenshot = MultipleFileField('Add screenshot(s)')
+    enabled = RadioField(TwoFactorSettings().questions["enabled"], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+    second_factor_type = RadioField(TwoFactorSettings().questions["second_factor_type"], choices=TWO_FACTOR_CHOICES, default=TWO_FACTOR_DEFAULT)
+    describe = TextAreaField(TwoFactorSettings().questions["describe"])
+    second_factor_access = RadioField(TwoFactorSettings().questions["second_factor_access"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
 
 class SecurityQForm(FlaskForm):
-    present = RadioField("Does the account use security questions?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
-    questions = TextAreaField("Which questions might they be able to answer?")
-    know = RadioField("Do you believe the person of concern knows the answer to any of these questions?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    screenshot = MultipleFileField('Add screenshot(s)')
+    present = RadioField(SecurityQuestions().questions["present"], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+    know = RadioField(SecurityQuestions().questions["know"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    which = TextAreaField(SecurityQuestions().questions["which"])
 
 class AccountInfoForm(FlaskForm):
     account_nickname = TextAreaField("Account Nickname")

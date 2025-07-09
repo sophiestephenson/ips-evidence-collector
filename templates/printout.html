@@ -403,7 +403,7 @@
     {% if accounts|length > 0 %}
     {% for account in accounts %}
     <div class="account-check">
-    <h2 {% if loop.index > 1 %}class="app-padding-top"{%endif%}>{{loop.index}}. {{account.account_nickname}} ({{account.platform}})</h2>
+    <h2 {% if loop.index > 1 %}class="app-padding-top"{%endif%}>{{loop.index}}. {{account["account_nickname"]}} ({{account["platform"]}})</h2>
     <table class="printout_columns">
         <tbody>
             <tr valign="top">
@@ -411,8 +411,8 @@
                     <div class="appsummary">
                         <p><b>Investigation summary (automated):</b>
                         <ul>
-                            <li><i>Evidence of access</i>: {{account.access_report}}</li>
-                            <li><i>Potential for access</i>: {{account.ability_report}}</li>
+                            <li><i>Evidence of access</i>: {{account["access_report"]}}</li>
+                            <li><i>Potential for access</i>: {{account["ability_report"]}}</li>
                         </ul>
                     </div>
                 </td>
@@ -424,33 +424,17 @@
                 <td>
                     <table>
                         <tbody>
-                            {% with form = account.suspicious_logins %}
+                            {% for q in accountquestions["suspicious_logins"] %}
                             <tr>
-                                <th>Do you recognize all devices logged into this account?</th>
-                                <td>{{form.recognize | capitalize}}</td>
+                                <th>{{accountquestions["suspicious_logins"][q]}}</th>
+                                <td>{{account["suspicious_logins"][q]|capitalize}}</td>
                             </tr>
-                            {% if form.describe_logins %}
-                            <tr>
-                                <th>&emsp;-> Which devices do you not recognize?</th>
-                                <td>{{form.describe_logins}}</td>
-                            </tr>
-                            {% endif %}
-                            <tr>
-                                <th>In the login history, do you see any suspicious logins?</th>
-                                <td>{{form.activity_log | capitalize}}</td>
-                            </tr>
-                            {% if form.describe_activity %}
-                            <tr>
-                                <th>&emsp;-> Which logins are suspicious, and why?</th>
-                                <td>{{form.describe_activity}}</td>
-                            </tr>
-                            {% endif %}
-                            {% endwith %}
+                            {% endfor %}
                         </tbody>
                     </table>
                 </td>
                 <td class="screenshot">
-                {% for fname in account.suspicious_logins.screenshot_files %}
+                {% for fname in account["suspicious_logins"]["screenshot_files"] %}
                     <div class="form-screenshot">
                         <img height='400px' src="{{url_root}}{{fname}}"/>
                     </div>
@@ -464,17 +448,12 @@
                 <td>
                     <table>
                         <tbody>
-                            {% with form = account.password_check %}
+                            {% for q in accountquestions["password_check"] %}
                             <tr>
-                                <th>Does your [ex-]partner know the password to this
-                                    account?</th>
-                                <td>{{form.know | capitalize}}</td>
+                                <th>{{accountquestions["password_check"][q]}}</th>
+                                <td>{{account["password_check"][q]|capitalize}}</td>
                             </tr>
-                            <tr>
-                                <th>Do you believe your [ex-]partner could guess the password?</th>
-                                <td>{{form.guess | capitalize}}</td>
-                            </tr>
-                            {% endwith %}
+                            {% endfor %}
                         </tbody>
                     </table>
                 </td>
@@ -486,43 +465,19 @@
                 <td>
                     <table>
                         <tbody>
-                            {% with form = account.recovery_settings %}
+                            {% for q in accountquestions["recovery_settings"] %}
                             <tr>
-                                <th>Is there a recovery phone number set for this account?</th>
-                                <td>{{form.phone_present | capitalize}}</td>
+                                <th>{{accountquestions["recovery_settings"][q]}}</th>
+                                <td>{{account["recovery_settings"][q]|capitalize}}</td>
                             </tr>
-                            {% if form.phone_present != 'no' %}
-                            <tr>
-                                <th>What is the recovery phone number?</th>
-                                <td>{{form.phone}}</td>
-                            </tr>
-                            <tr>
-                                <th>Do you believe your [ex-]partner has access to the recovery phone number?</th>
-                                <td>{{form.phone_access | capitalize}}</td>
-                            </tr>
-                            {% endif %}
-                            <tr>
-                                <th>Is there a recovery email address set for this account?</th>
-                                <td>{{form.email_present | capitalize}}</td>
-                            </tr>
-                            {% if form.email_present != 'no' %}
-                            <tr>
-                                <th>What is the recovery email address?</th>
-                                <td>{{form.email}}</td>
-                            </tr>
-                            <tr>
-                                <th>Do you believe your [ex-]partner has access to this recovery email address?</th>
-                                <td>{{form.email_access | capitalize}}</td>
-                            </tr>
-                            {% endif %}
-                            {% endwith %}
+                            {% endfor %}
                         </tbody>
                     </table>
                 </td>
     
                 <td class="screenshot">
                   
-                {% for fname in account.recovery_settings.screenshot_files %}
+                {% for fname in account["recovery_settings"]["screenshot_files"] %}
                     <div class="form-screenshot">
                         <img height='400px' src="{{url_root}}{{fname}}"/>
                     </div>
@@ -537,33 +492,18 @@
                 <td>
                     <table>
                         <tbody>
-                            {% with form = account.two_factor_settings %}
+                            {% for q in accountquestions["two_factor_settings"] %}
                             <tr>
-                                <th>Is two-factor authentication enabled for this account?</th>
-                                <td>{{form.enabled | capitalize}}</td>
+                                <th>{{accountquestions["two_factor_settings"][q]}}</th>
+                                <td>{{account["two_factor_settings"][q]|capitalize}}</td>
                             </tr>
-                            {% if form.enabled != 'no' %}
-                            <tr>
-                                <th>What type of two-factor authentication is it?</th>
-                                <td>{{form.second_factor_type |
-                                    capitalize}}</td>
-                            </tr>
-                            <tr>
-                                <th>Which phone/email/app is set as the second factor?</th>
-                                <td>{{form.describe}}</td>
-                            </tr>
-                            <tr>
-                                <th>Do you believe your [ex-]partner has access to this second factor?</th>
-                                <td>{{form.second_factor_access | capitalize}}</td>
-                            </tr>
-                            {% endif %}
-                            {% endwith %}
+                            {% endfor %}
                         </tbody>
                     </table>
                 </td>
     
                 <td class="screenshot">
-                {% for fname in account.two_factor_settings.screenshot_files %}
+                {% for fname in account["two_factor_settings"]["screenshot_files"] %}
                     <div class="form-screenshot">
                         <img height='400px' src="{{url_root}}{{fname}}"/>
                     </div>
@@ -574,54 +514,35 @@
               <th><h3>Security questions questionnaire</h3></th>
             </tr>
     
-            {% set screenshots = [] %}
-            {% for filename in account.screenshots %}
-            {% if account.account_nickname.replace(' ', '') in filename and "accounts_" in filename %}
-              {% set _ = screenshots.append(filename) %}
-            {% endif %}
-            {% endfor %}
             <tr>
                 <td>
                     <table>
-                        <tbody>{% with form = account.security_questions %}
+                        <tbody>
+                            {% for q in accountquestions["security_questions"] %}
                             <tr>
-                                <th>Does the account use security questions?</th>
-                                <td>{{form.present | capitalize}}</td>
+                                <th>{{accountquestions["security_questions"][q]}}</th>
+                                <td>{{account["security_questions"][q]|capitalize}}</td>
                             </tr>
-                            {% if form.present != 'no' %}
-                            <tr>
-                                <th>Which questions are set?</th>
-                                <td>{{form.questions | capitalize}}</td>
-                            </tr>
-                            <tr>
-                                <th>Do you believe your [ex-]partner knows the answers to any of these questions?</th>
-                                <td>{{form.know | capitalize}}</td>
-                            </tr>
-                            {% endif %}
-                            {% endwith %}
+                            {% endfor %}
                         </tbody>
                     </table>
                 </td>
                 <td class="screenshot">
-                {% for fname in account.security_questions.screenshot_files %}
+                {% for fname in account["security_questions"]["screenshot_files"] %}
                     <div class="form-screenshot">
                         <img height='400px' src="{{url_root}}{{fname}}"/>
                     </div>
                 {% endfor %}
                 </td>
             </tr>
-                    {% if account.notes.client_notes %}
                     <h3>Client comments</h3>
                     <p>
-                        <p>&gt; {{account.notes.client_notes}} </p>
+                        <p>&gt; {{account["notes"]["client_notes"]}} </p>
                     </p>
-                    {% endif %}
-                    {% if account.notes.consultant_notes %}
                     <h3>Consultant comments</h3>
                     <p>
-                        <p>&gt; {{account.notes.consultant_notes}} </p>
+                        <p>&gt; {{account["notes"]["consultant_notes"]}} </p>
                     </p>
-                    {% endif %}
                 </td>
             </tr>
         </tbody>
