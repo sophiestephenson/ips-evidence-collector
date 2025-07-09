@@ -400,6 +400,8 @@ class ConsultationData(Dictable):
                  accounts,
                  scans,
                  screenshot_dir,
+                 consultant_notes="",
+                 client_notes="",
                  **kwargs):
         self.setup = ConsultSetupData(**setup)
         self.taq = TAQData(**taq)
@@ -407,6 +409,8 @@ class ConsultationData(Dictable):
         self.concerning_accounts = [acct for acct in self.accounts if acct.is_concerning]
         self.scans = [ScanData(**scan) for scan in scans]
         self.screenshot_dir = screenshot_dir
+        self.consultant_notes = consultant_notes
+        self.client_notes = client_notes
 
         self.overall_summary = self.generate_overall_summary()
 
