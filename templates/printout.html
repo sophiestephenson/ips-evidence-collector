@@ -163,8 +163,11 @@
 <div class="new-page">
     <h1>Device Scan {{loop.index}} </h1>
     <hr />
+    {% if scan.manual %}
+    <p>*Note: This scan was done manually. Automated scan was not possible, so suspicious apps were identified by the consultant and added by hand.*</p>
+    {% endif %}
 
-    <h3>Device Scanned</h3>
+    <h3>Device Details</h3>
     <table class="data-table">
         <tbody>
             <tr>
