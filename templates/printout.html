@@ -3,10 +3,11 @@
 <head>
     <style>
         /* margins for printing */
-        body  { padding: 5mm; font-size: 11pt; }
+        body  { padding: 5mm; font-size: 10pt; }
         .new-page { padding-top: 5mm; }
 
-        h3 {font-size: 14pt; }
+        h2 {font-size: 15pt; }
+        h3 {font-size: 13pt; }
 
         .app-padding-top {padding-top: 12mm;}
 
@@ -18,23 +19,20 @@
     <div id="printout-header">
         <img id="printout-header" width="50px" src="https://pages.cs.wisc.edu/~srstephenso2/misc/uwlogo.png"/>
         <h1>Sherloc Investigation Report</h1>
-        <table class="data-table">
-            <tbody>
-                <tr>
-                    <th>Client Name</th>
-                    <td>{{setup.client}}</td>
-                </tr>
-                <tr>
-                    <th>Consultation Start Time:</th>
-                    <td>{{setup.date}}</td>
-                </tr>
-            </tbody>
-        </table>
+
+        <p class="report-explainer">This report describes a consultation performed by Madison Tech Clinic volunteers. Please see <a href>https://techclinic.cs.wisc.edu</a> for more information about the Madison Tech Clinic.</p>
+
+        <div>
+            <span><b>Client Name:</b> {{setup.client}}&emsp; <b>Start Time:</b> {{setup.date}}</span>
+        </div>
+        <br/>
+    <hr />
     </div>
+
 
     <div class="printout-summary">
         <h2>Summary of Findings</h2>
-        <hr />
+        <hr/>
         <div class="overallsummary">
             <p><i>The following are automated summaries generated from the detailed content of the report.</i></p>
 
@@ -219,7 +217,7 @@
 
     <h3>Summary of Applications Checked</h3>
     {% if scan.selected_apps|length > 0 %}
-    <ul>
+    <ol>
         {% for app in scan.selected_apps %}
         <li>
             {{app.appId}}
@@ -228,10 +226,11 @@
             {% endif %}
         </li>
         {% endfor %}
-    </ul>
+    </ol>
     {% else %}
     None.
     {% endif %}
+    <br/>
 
     {% if scan.selected_apps|length > 0 %}
         {% for app in scan.selected_apps %}
