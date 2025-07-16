@@ -37,13 +37,13 @@
             <p><i>The following are automated summaries generated from the detailed content of the report.</i></p>
 
             <h2>Technology Assessment Questionnaire</h2> 
-            {% if taq.risk_factors|length == 0 %}
+            {% if taq["risk factors"]|length == 0 %}
                 <b>No risk factors identified.</b>
             {% else%}
-                <b>{{taq.risk_factors|length}} risk factors identified.</b>
+                <b>{{taq["risk factors"]|length}} risk factors identified.</b>
                 <table class="data-table">
                     <tbody>
-                        {% for item in taq.risk_factors %}
+                        {% for item in taq["risk factors"] %}
                         <tr>
                             <th>{{item.risk}}</th>
                             <td>{{item.description}}</td>
@@ -224,49 +224,19 @@
             <table class="appinfo data-table">
             <tbody>
                 <tr>
-                    <th>App ID</th>
-                    <td>
-                        {{app.appId}}
-                    </td>
-                </tr>
-                <tr>
-                    <th>App URL</th>
-                    <td>
-                        {% if app.app_website %}
-                        <a href={{app.app_website}}>{{app.app_website}}</a>
-                        {% else %}
-                        <i>Not provided</i>
-                        {% endif %}
-                    </td>
-                </tr>
-                <tr>
                     <th>Automated App Flags</th>
                     <td>
                         {% if app.flags|length > 0 %}
                         {{app.flags}}
                         {% else %}
-                        <i>None</i>
+                        None
                         {% endif %}
                     </td>
                 </tr>
                 <tr>
-                    <th>Originating App Store</th>
+                    <th>App ID</th>
                     <td>
-                        {% if app.store %}
-                        {{app.store}}
-                        {% else %}
-                        <i>Unknown</i>
-                        {% endif %}
-                    </td>
-                </tr>
-                <tr>
-                    <th>Developer URL</th>
-                    <td>
-                        {% if app.developerwebsite %}
-                        <a href={{app.developerwebsite}}>{{app.developerwebsite}}</a>
-                        {% else %}
-                        <i>Unknown</i>
-                        {% endif %}
+                        {{app.appId}}
                     </td>
                 </tr>
                 <tr>
@@ -307,14 +277,18 @@
         </table>
 
         <h3>Screenshots</h3>
-        <div class="screenshot-container"><span>
-        {% for fname in app.screenshot_files %}
-            <div class="form-screenshot">
-                <img height='400px' src="{{url_root}}{{fname}}"/>
+        {% if app.screenshot_files|length > 0 %}
+            <div class="screenshot-container"><span>
+            {% for fname in app.screenshot_files %}
+                <div class="form-screenshot">
+                    <img height='400px' src="{{url_root}}{{fname}}"/>
+                </div>
+            {% endfor %}
+            </span>
             </div>
-        {% endfor %}
-        </span>
-        </div>
+        {% else %}
+        No screenshots taken.
+        {% endif %}
 
         <h3>Client Questionnaire</h3>
         <table class="printout-columns">

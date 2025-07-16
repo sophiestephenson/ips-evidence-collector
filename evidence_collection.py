@@ -1189,10 +1189,10 @@ def remove_unwanted_data(data):
     """Clean data from forms (e.g., remove CSRF tokens so they don't live in the session)"""
     unwanted_keys = ["csrf_token"]
 
-    if data is list:
+    if isinstance(data, list):
         return [remove_unwanted_data(d) for d in data]
 
-    elif data is dict:
+    elif isinstance(data, dict):
         new_data = {}
         for k in data.keys():
             if k not in unwanted_keys:
@@ -1453,11 +1453,11 @@ def load_object_from_json(datatype: ConsultDataTypes):
         return TAQData(**json_data)
 
     if datatype == ConsultDataTypes.ACCOUNTS.value:
-        assert json_data is list
+        assert isinstance(json_data, list)
         return [AccountInvestigation(**acct) for acct in json_data]
 
     if datatype == ConsultDataTypes.SCANS.value:
-        assert json_data is list
+        assert isinstance(json_data, list)
         return [ScanData(**scan) for scan in json_data]
 
     if datatype == ConsultDataTypes.NOTES.value:
