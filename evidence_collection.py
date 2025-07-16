@@ -11,22 +11,18 @@ Collect evidence of IPS. Basic version collects this data from the phone:
 """
 import json
 import os
-from collections import defaultdict
 from enum import Enum
 from pprint import pprint
-from time import sleep
 
 import jinja2
 import pdfkit
 from filelock import FileLock
-from flask import session, url_for
 from flask_wtf import FlaskForm
 from wtforms import (
     BooleanField,
     FieldList,
     FormField,
     HiddenField,
-    MultipleFileField,
     RadioField,
     SelectMultipleField,
     StringField,
@@ -60,9 +56,9 @@ YES_NO_CHOICES = EMPTY_CHOICE + [('yes', 'Yes'), ('no', 'No')]
 PERSON_CHOICES = [('me', 'Me'), ('poc', 'Person of concern'), ('other', 'Someone else'), ('unsure', 'Unsure')]
 
 LEGAL_CHOICES = [('ro', 'Restraining order'), ('div', 'Divorce or other family court'), ('cl', 'Criminal case'), ('other', 'Other')]
-DEVICE_TYPE_CHOICES =  EMPTY_CHOICE + [('android', 'Android'), ('ios', 'iOS')]
+DEVICE_TYPE_CHOICES = EMPTY_CHOICE + [('android', 'Android'), ('ios', 'iOS')]
 #two_factor_choices = [empty_choice] + [(x.lower(), x) for x in second_factors]
-TWO_FACTOR_CHOICES =  EMPTY_CHOICE + [(x.lower(), x) for x in SECOND_FACTORS] + [('none', 'None')]
+TWO_FACTOR_CHOICES = EMPTY_CHOICE + [(x.lower(), x) for x in SECOND_FACTORS] + [('none', 'None')]
 ACCOUNT_CHOICES = [(x, x) for x in ACCOUNTS]
 
 class Pages(Enum):
@@ -83,8 +79,8 @@ class Pages(Enum):
 
 # Helps create JSON encoding from nested classes
 class EvidenceDataEncoder(json.JSONEncoder):
-        def default(self, o):
-            return o.__dict__
+    def default(self, o):
+        return o.__dict__
 
 class Dictable:
     def to_dict(self):
@@ -128,7 +124,7 @@ class DictInitClass (Dictable):
                     if subdir.name == "account{}_{}".format(account_id, self.screenshot_label):
                         # add all files in that subdir
                         files = os.listdir(subdir.path)
-                        full_fnames = [os.path.join(subdir, f) for f in files] 
+                        full_fnames = [os.path.join(subdir, f) for f in files]
                         full_fnames.sort()
                         screenshot_files.extend(full_fnames)
 
@@ -161,7 +157,7 @@ class RecoverySettings(DictInitClass):
         'email_present': "Is there a recovery email address set for this account?",
         'email': "What is the recovery email address?",
         'email_access': "Do you believe the person of concern has access to this recovery email address?"
-        }
+    }
     attrs = list(questions.keys())
     screenshot_label = "recovery_settings"
     get_screenshots = True
@@ -172,7 +168,7 @@ class TwoFactorSettings(DictInitClass):
         'second_factor_type': "What type of two-factor authentication is it?",
         'describe': "Which phone/email/app is set as the second factor?",
         'second_factor_access': "Do you believe the person of concern has access to this second factor?",
-        }
+    }
     attrs = list(questions.keys())
     screenshot_label = "two_factor_settings"
     get_screenshots = True
@@ -183,7 +179,7 @@ class SecurityQuestions(DictInitClass):
         'present': "Does the account use security questions?",
         'know': "Do you believe the person of concern knows the answer to any of these questions?",
         'which': "Which questions might they be able to answer?",
-        }
+    }
     attrs = list(questions.keys())
     screenshot_label = "security_questions"
     get_screenshots = True
@@ -242,7 +238,7 @@ class AppInfo(Dictable):
 
         # Fill in flags, removing any flags == ""
         self.flags = list(filter(None, flags))
-        
+
         self.application_icon = application_icon
         self.app_website = app_website
         self.description = description
@@ -278,7 +274,7 @@ class AppInfo(Dictable):
         if os.path.exists(screenshot_dir):
             # get full filepaths
             files = os.listdir(screenshot_dir)
-            full_fnames = [os.path.join(screenshot_dir, f) for f in files] 
+            full_fnames = [os.path.join(screenshot_dir, f) for f in files]
             full_fnames.sort()
             return full_fnames
         return []
@@ -408,7 +404,7 @@ class RiskFactor():
 class ConsultationData(Dictable):
 
     def generate_overall_summary(self):
-         return "TODO: WRITE CODE TO GENERATE AN OVERALL SUMMARY"
+        return "TODO: WRITE CODE TO GENERATE AN OVERALL SUMMARY"
 
     def __init__(self,
                  setup = dict(),
@@ -440,7 +436,7 @@ class ConsultationData(Dictable):
             devices = TAQDevices().questions,
             accounts = TAQAccounts().questions,
             sharing = TAQSharing().questions,
-            smarthome  = TAQSmarthome().questions,
+            smarthome = TAQSmarthome().questions,
             kids = TAQKids().questions,
             legal = TAQLegal().questions
         )
@@ -483,12 +479,8 @@ class AccountInvestigation(Dictable):
 
     def generate_reports(self, second_person=True, harmdoer="the person of concern"):
         agent = "you"
-        pronoun = "you"
-        possessive = "your"
         if second_person:
             agent = "the client"
-            pronoun = "they"
-            possessive = "their"
 
         # generally, more high level because there is a lot going on.
         access_sentences = []
@@ -520,7 +512,7 @@ class AccountInvestigation(Dictable):
         if (self.recovery_settings.email_present == 'yes' and self.recovery_settings.email_access != 'no'
             ) or (
             self.recovery_settings.phone_present == 'yes' and self.recovery_settings.phone_access != 'no'
-            ):
+        ):
             recovery = True
 
         # Two-factor
@@ -531,7 +523,7 @@ class AccountInvestigation(Dictable):
         # Security questions
         questions = False
         if self.security_questions.present and self.security_questions.know != 'no':
-            questions= True
+            questions = True
 
         ability_sentences = []
         ability_concern = False
@@ -545,9 +537,12 @@ class AccountInvestigation(Dictable):
         else:
             ability_concern = True
             methods = []
-            if pwd: methods.append("the password")
-            if recovery: methods.append("the recovery contact information")
-            if questions: methods.append("the security questions")
+            if pwd:
+                methods.append("the password")
+            if recovery:
+                methods.append("the recovery contact information")
+            if questions:
+                methods.append("the security questions")
 
             also = ""
             if suspicious_logins:
@@ -678,10 +673,8 @@ class TAQData(Dictable):
 
     def get_risk_factors(self, second_person=True, harmdoer="the person of concern"):
         agent = "you"
-        pronoun = "you"
         if second_person:
             agent = "the client"
-            pronoun = "they"
 
         risk_factors = []
 
@@ -693,8 +686,7 @@ class TAQData(Dictable):
                             "This could allow {} access to {}'s accounts.".format(
                                 agent.capitalize(), harmdoer, self.accounts.pwd_comp_which, harmdoer, agent
                             )
-                )
-            )
+            ))
         # TODO: Should we ask if the abuser has accesss to pwd management methods?
 
         # devices
@@ -1084,30 +1076,30 @@ class TAQSharingForm(FlaskForm):
     phone_plan_admin = SelectMultipleField(
         TAQSharing().questions['phone_plan_admin'], choices=PERSON_CHOICES, default=PERSON_DEFAULT)
     share_accounts = RadioField(
-        TAQSharing().questions['share_accounts'],  choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+        TAQSharing().questions['share_accounts'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     share_which = StringField(TAQSharing().questions['share_which'])
 
 class TAQSmartHomeForm(FlaskForm):
     title = "Smart Home Devices"
     smart_home = RadioField(
-        TAQSmarthome().questions['smart_home'],   choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+        TAQSmarthome().questions['smart_home'], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
     smart_home_setup = SelectMultipleField(
-        TAQSmarthome().questions['smart_home_setup'],   choices=PERSON_CHOICES, default=PERSON_DEFAULT)
+        TAQSmarthome().questions['smart_home_setup'], choices=PERSON_CHOICES, default=PERSON_DEFAULT)
     smart_home_access = RadioField(
-        TAQSmarthome().questions['smart_home_access'],    choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+        TAQSmarthome().questions['smart_home_access'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     smart_home_acct_sharing = RadioField(
-        TAQSmarthome().questions['smart_home_acct_sharing'],    choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+        TAQSmarthome().questions['smart_home_acct_sharing'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     smart_home_acct_linking = RadioField(
-        TAQSmarthome().questions['smart_home_acct_linking'],    choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+        TAQSmarthome().questions['smart_home_acct_linking'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
 
 class TAQKidsForm(FlaskForm):
     title = "Children's Devices"
     custody = RadioField(
-        TAQKids().questions['custody'],   choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+        TAQKids().questions['custody'], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
     child_phys_access = RadioField(
-        TAQKids().questions['child_phys_access'],    choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+        TAQKids().questions['child_phys_access'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     child_phone_plan = RadioField(
-        TAQKids().questions['child_phone_plan'],    choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+        TAQKids().questions['child_phone_plan'], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
 
 class TAQLegalForm(FlaskForm):
     title = "Legal Proceedings"
@@ -1146,8 +1138,8 @@ def create_printout(context):
     options = {
         'enable-local-file-access': True,
         'footer-right': '[page]'
-        }
-    
+    }
+
     pdfkit.from_string(html_string, out_file, options=options, configuration=config, css=css_path, verbose=True)
 
     print("Printout created. Filename is", out_file)
@@ -1193,10 +1185,10 @@ def remove_unwanted_data(data):
     """Clean data from forms (e.g., remove CSRF tokens so they don't live in the session)"""
     unwanted_keys = ["csrf_token"]
 
-    if type(data) == list:
+    if data is list:
         return [remove_unwanted_data(d) for d in data]
 
-    elif type(data) == dict:
+    elif data is dict:
         new_data = {}
         for k in data.keys():
             if k not in unwanted_keys:
@@ -1238,7 +1230,7 @@ def get_app_details(device, ser, appid):
             d[item] = info[item]
             if d[item].strip() == "":
                 d[item] = ""
-        except KeyError as e:
+        except KeyError:
             d[item] = ""
 
     #d = d.fillna('')
@@ -1293,7 +1285,7 @@ def get_scan_data(device, device_owner):
     try:
         sc = get_scan_obj(device, device_owner)
         ser = get_ser_from_scan_obj(sc)
-        
+
         print(">>>scanning_device", device, ser, "<<<<<")
 
         if device == 'ios':
@@ -1323,8 +1315,6 @@ def get_scan_data(device, device_owner):
             raise Exception(error)
 
         clientid = "1"
-        if 'clientid' in session.keys():
-            clientid = session['clientid']
 
         scan_d = {
             'clientid': clientid,
@@ -1351,12 +1341,12 @@ def get_scan_data(device, device_owner):
 
         scanid = create_scan(scan_d)
 
-        if device == 'ios':
-            pii_fpath = sc.dump_path(ser, 'Device_Info')
-            print('Revelant info saved to db. Deleting {} now.'.format(pii_fpath))
-            cmd = os.unlink(pii_fpath)
-            # s = catch_err(run_command(cmd), msg="Delete pii failed", cmd=cmd)
-            print('iOS PII deleted.')
+        # if device == 'ios':
+        #    pii_fpath = sc.dump_path(ser, 'Device_Info')
+        #    print('Revelant info saved to db. Deleting {} now.'.format(pii_fpath))
+        #    cmd = os.unlink(pii_fpath)
+        #    s = catch_err(run_command(cmd), msg="Delete pii failed", cmd=cmd)
+        #    print('iOS PII deleted.')
 
         print("Creating appinfo...")
         create_mult_appinfo([(scanid, appid, json.dumps(
@@ -1393,12 +1383,12 @@ def get_scan_data(device, device_owner):
                 app["app_name"] = k
 
             # Check if any suspicious flags are present and add to the suspicious list
-            suspicious_flags = ['spyware', 
-                                'dual-use', 
-                                'regex-spy', 
-                                'offstore-spyware', 
-                                'co-occurrence', 
-                                'onstore-dual-use', 
+            suspicious_flags = ['spyware',
+                                'dual-use',
+                                'regex-spy',
+                                'offstore-spyware',
+                                'co-occurrence',
+                                'onstore-dual-use',
                                 'offstore-app']
             if len([x for x in app["flags"] if x in suspicious_flags]) > 0:
                 suspicious_apps.append(app)
@@ -1441,15 +1431,14 @@ def load_json_data(datatype: ConsultDataTypes):
     lock = FileLock(fname + ".lock")
     with lock:
         if not os.path.exists(fname):
-           if datatype in [ConsultDataTypes.SETUP.value, ConsultDataTypes.NOTES.value, ConsultDataTypes.TAQ.value]:
-               return dict()
-           else:
-               return list()
+            if datatype in [ConsultDataTypes.SETUP.value, ConsultDataTypes.NOTES.value, ConsultDataTypes.TAQ.value]:
+                return dict()
+            else:
+                return list()
 
         with open(fname, 'r') as openfile:
             json_object = json.load(openfile)
             return json_object
-        
 
 def load_object_from_json(datatype: ConsultDataTypes):
     json_data = load_json_data(datatype)
@@ -1458,16 +1447,16 @@ def load_object_from_json(datatype: ConsultDataTypes):
 
     if datatype == ConsultDataTypes.TAQ.value:
         return TAQData(**json_data)
-    
+
     if datatype == ConsultDataTypes.ACCOUNTS.value:
-        assert type(json_data) == list
+        assert json_data is list
         return [AccountInvestigation(**acct) for acct in json_data]
 
     if datatype == ConsultDataTypes.SCANS.value:
-        assert type(json_data) == list
+        assert json_data is list
         return [ScanData(**scan) for scan in json_data]
-    
+
     if datatype == ConsultDataTypes.NOTES.value:
         return ConsultNotesData(**json_data)
-    
+
     return None

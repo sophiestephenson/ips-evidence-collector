@@ -26,22 +26,11 @@ from evidence_collection import (
     HomepageNoteForm,
     ManualAddPageForm,
     MultScreenshotEditForm,
-    PasswordCheck,
-    RecoverySettings,
     ScanData,
-    SecurityQuestions,
     SetupForm,
     StartForm,
-    SuspiciousLogins,
-    TAQAccounts,
     TAQData,
-    TAQDevices,
     TAQForm,
-    TAQKids,
-    TAQLegal,
-    TAQSharing,
-    TAQSmarthome,
-    TwoFactorSettings,
     create_printout,
     get_scan_by_ser,
     get_scan_data,
@@ -134,7 +123,7 @@ def evidence_home():
     if request.method == 'GET':
 
         return render_template('main.html', **context)
-    
+
     if request.method == 'POST':
 
         pprint(form.data)
@@ -195,7 +184,7 @@ def evidence_taq():
 
 
 
-@app.route("/evidence/scan", methods={'GET', 'POST'}, 
+@app.route("/evidence/scan", methods={'GET', 'POST'},
            defaults={'device_type': '', 'device_nickname': '', 'force_rescan': False})
 @app.route("/evidence/scan/<device_type>/<device_nickname>", methods={'GET', 'POST'},
            defaults={'force_rescan': False})
@@ -243,7 +232,7 @@ def evidence_scan_start(device_type, device_nickname, force_rescan):
             # clean up the submitted data
             clean_data = remove_unwanted_data(form.data)
 
-            # Ensure any previous screenshots have been removed before scan 
+            # Ensure any previous screenshots have been removed before scan
             # print("Removing files:")
             # os.system("ls webstatic/images/screenshots/")
             # os.system("rm webstatic/images/screenshots/*")
@@ -261,7 +250,7 @@ def evidence_scan_start(device_type, device_nickname, force_rescan):
                         if scan.serial == hmac_ser:
                             flash("This device was already scanned.")
                             return redirect(url_for('evidence_scan_select', ser=hmac_ser, show_rescan=True))
-                    
+
                 # Perform the scan
                 scan_data, suspicious_apps_dict, other_apps_dict = get_scan_data(clean_data["device_type"], clean_data["device_nickname"])
 
@@ -276,10 +265,6 @@ def evidence_scan_start(device_type, device_nickname, force_rescan):
                                         **clean_data,
                                         **scan_data,
                                         all_apps=all_apps)
-
-                pprint(current_scan.__dict__)
-                for app in current_scan.all_apps:
-                    pprint(app.permission_info.__dict__)
 
                 current_scan.id = len(all_scan_data)
                 all_scan_data.append(current_scan)
@@ -351,10 +336,10 @@ def evidence_scan_select(ser, show_rescan):
             # get selected apps from the form data
             to_investigate_ids = [app["appId"] for app in form.data['apps'] if app['investigate']]
 
-            # remove apps we no longer want to investigate, 
+            # remove apps we no longer want to investigate,
             # while maintaining info from previous investigations
             current_scan.selected_apps = [app for app in current_scan.selected_apps if app.appId in to_investigate_ids]
-        
+
             # Update "investigate" marker and add new apps to selected_apps
             # TODO: Do we need the "investigate" marker?
             for a in current_scan.all_apps:
@@ -386,11 +371,10 @@ def evidence_scan_manualadd(ser):
     current_scan = get_scan_by_ser(ser, all_scan_data)
     assert current_scan.serial == ser
 
-    manual_add_apps = [{"app_name": app.title, "spyware": "spyware" in app.flags} 
-                        for app in current_scan.selected_apps]
+    manual_add_apps = [{"app_name": app.title, "spyware": "spyware" in app.flags} for app in current_scan.selected_apps]
 
-    form = ManualAddPageForm(apps = manual_add_apps, 
-                             device_nickname=current_scan.device_nickname, 
+    form = ManualAddPageForm(apps = manual_add_apps,
+                             device_nickname=current_scan.device_nickname,
                              device_type=current_scan.device_type)
 
     ### IF IT'S A GET:
@@ -425,20 +409,20 @@ def evidence_scan_manualadd(ser):
                 pprint(form.data)
 
                 selected_apps = []
-                for app in form.data['apps']:
+                for a in form.data['apps']:
                     flags = []
-                    if app['spyware']:
+                    if a['spyware']:
                         flags = ['spyware']
-                    if app['app_name'].strip() != "":
+                    if a['app_name'].strip() != "":
                         selected_apps.append({
-                            "title": app['app_name'],
+                            "title": a['app_name'],
                             "investigate": True,
                             "flags": flags
                         })
 
                 current_scan.all_apps = selected_apps
                 current_scan.selected_apps = selected_apps
-        
+
                 # load all scans
                 all_scan_data = load_object_from_json(ConsultDataTypes.SCANS.value)
 
@@ -466,12 +450,12 @@ def evidence_scan_investigate(ser):
     current_scan = get_scan_by_ser(ser, all_scan_data)
     assert current_scan.serial == ser
 
-    for app in current_scan.selected_apps:
-        app = app.to_dict()
-        pprint("App: {}  Flags: {}".format(app["title"], app["flags"]))
+    for a in current_scan.selected_apps:
+        a = a.to_dict()
+        pprint("App: {}  Flags: {}".format(a["title"], a["flags"]))
     pprint("INFO GIVEN TO INVESTIGATION FORM")
 
-    form = AppInvestigationForm(selected_apps=[app.to_dict() for app in current_scan.selected_apps])
+    form = AppInvestigationForm(selected_apps=[a.to_dict() for a in current_scan.selected_apps])
 
     ### IF IT'S A GET:
     if request.method == 'GET':
@@ -497,13 +481,13 @@ def evidence_scan_investigate(ser):
             clean_data = remove_unwanted_data(form.data)
 
             # Update app info in selected_apps based on what was provided in the form
-            for app in current_scan.selected_apps:
+            for a in current_scan.selected_apps:
                 for form_app in clean_data["selected_apps"]:
-                    if app.appId == form_app["appId"]:
-                        app.install_info = form_app["install_info"]
-                        app.permission_info.access = form_app["permission_info"]["access"]
-                        app.permission_info.describe = form_app["permission_info"]["describe"]
-                        app.notes = form_app["notes"]
+                    if a.appId == form_app["appId"]:
+                        a.install_info = form_app["install_info"]
+                        a.permission_info.access = form_app["permission_info"]["access"]
+                        a.permission_info.describe = form_app["permission_info"]["describe"]
+                        a.notes = form_app["notes"]
 
             all_scan_data = update_scan_by_ser(current_scan, all_scan_data)
 
@@ -525,7 +509,7 @@ def evidence_account_default():
 
     # consider adding a place to save the num scans later if it becomes a pain to load it
     accounts = load_json_data(ConsultDataTypes.ACCOUNTS.value)
-    if type(accounts) == list:
+    if accounts is list:
         new_id = len(accounts)
     else:
         new_id = 0
@@ -603,15 +587,15 @@ def evidence_screenshots():
 
     # compile all screenshot filenames
     app_screenshot_info = []
-    scans=load_object_from_json(ConsultDataTypes.SCANS.value)
+    scans = load_object_from_json(ConsultDataTypes.SCANS.value)
     for scan in scans:
-        for app in scan.all_apps:
-            for fname in app.screenshot_files:
+        for a in scan.all_apps:
+            for fname in a.screenshot_files:
                 app_screenshot_info.append({
                     "fname": fname,
                     "type": "app",
-                    "app_id": app.appId,
-                    "app_name": app.app_name,
+                    "app_id": a.appId,
+                    "app_name": a.app_name,
                     "device_serial": scan.serial,
                     "device_nickname": scan.device_nickname
                 })
@@ -619,9 +603,9 @@ def evidence_screenshots():
     account_screenshot_info = []
     accounts = load_object_from_json(ConsultDataTypes.ACCOUNTS.value)
     for account in accounts:
-        for section in [account.suspicious_logins, 
-                        account.recovery_settings, 
-                        account.two_factor_settings, 
+        for section in [account.suspicious_logins,
+                        account.recovery_settings,
+                        account.two_factor_settings,
                         account.security_questions]:
             for fname in section.screenshot_files:
                 account_screenshot_info.append({
@@ -632,13 +616,13 @@ def evidence_screenshots():
                 })
                 # Would be good to capture the phone that took the screenshot
 
-    form = MultScreenshotEditForm(app_screenshots=app_screenshot_info, 
+    form = MultScreenshotEditForm(app_screenshots=app_screenshot_info,
                                   acct_screenshots=account_screenshot_info)
-    
+
     url_root = request.url_root
-    
+
     if request.method == 'GET':
-        
+
         context = dict(
             task = "evidence-screenshots",
             title=config.TITLE,
@@ -652,9 +636,9 @@ def evidence_screenshots():
 
     if request.method == 'POST' and form.is_submitted():
         # Delete all screenshots that were selected for deletion
-        for app in form.data["app_screenshots"] + form.data["acct_screenshots"]:
-            if app["delete"] == True and os.path.exists(app["fname"]):
-                os.remove(app["fname"])
+        for a in form.data["app_screenshots"] + form.data["acct_screenshots"]:
+            if a["delete"] and os.path.exists(a["fname"]):
+                os.remove(a["fname"])
 
         # Reload the screenshot page
         return redirect(url_for('evidence_screenshots'))
