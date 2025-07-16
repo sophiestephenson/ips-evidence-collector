@@ -9,6 +9,8 @@
         h3 {font-size: 14pt; }
 
         .app-padding-top {padding-top: 12mm;}
+
+        body { font-family: Arial, Helvetica, sans-serif}
     </style>
 </head>
 
@@ -16,14 +18,14 @@
     <div id="printout-header">
         <img id="printout-header" width="50px" src="https://pages.cs.wisc.edu/~srstephenso2/misc/uwlogo.png"/>
         <h1>Sherloc Investigation Report</h1>
-        <table border="0" id="prelim-data">
+        <table class="data-table">
             <tbody>
                 <tr>
-                    <th align="left">Client Name:</th>
+                    <th>Client Name</th>
                     <td>{{setup.client}}</td>
                 </tr>
                 <tr>
-                    <th align="left">Consultation Start Time:</th>
+                    <th>Consultation Start Time:</th>
                     <td>{{setup.date}}</td>
                 </tr>
             </tbody>
@@ -31,14 +33,14 @@
     </div>
 
     <div class="printout-summary">
-        <h1>Summary of Findings</h1>
+        <h2>Summary of Findings</h2>
         <hr />
         <div class="overallsummary">
             <p><i>The following are automated summaries generated from the detailed content of the report.</i></p>
 
-            <h2>Technology Assessment Questionnaire</h2> 
+            <h3>Technology Assessment Questionnaire</h3> 
             {% if taq["risk factors"]|length == 0 %}
-                <b>No risk factors identified.</b>
+                <p>No risk factors identified.</p>
             {% else%}
                 <b>{{taq["risk factors"]|length}} risk factors identified.</b>
                 <table class="data-table">
@@ -53,47 +55,51 @@
                 </table>
             {%endif%}
     
-            {% for scan in scans%}
-            <h2>Device Scan: {{scan.device_nickname}}</h2>
-            <p><i>Serial Number: {{scan.serial}}</i></p>
-            <p>{{scan.report}}</p>
+            <h3>{{scans|length}} Devices Scanned</h3>
             <ol>
-                {% for app in scan.concerning_apps %}
-                <li>
-                <b>{{app.title}}</b>: {{app.report}}
-                </li>
-                {% endfor %}
-            </ol>
+            {% for scan in scans%}
+            <li><div><b>{{scan.device_manufacturer}} {{scan.device_model}}, Version {{scan.device_version}} (Nickname: {{scan.device_nickname}})</b></div>
+                <div><i>Serial Number:</i> {{scan.serial}}</div>
+                <div><i>Scan report:</i> {{scan.report}}</div>
+            </li>
             {%endfor%}
+            </ol>
     
-            <h2>Account Compromise Assessment</h2>
+            <h3>{{accounts|length}} Accounts Checked for Compromise</h3>
             {% if concerning_accounts|length == 0 %}
             No evidence of account compromise at this time.
             {% else %}
-            {{concerning_accounts|length}} accounts may be compromised:
-            <ul>
+            <ol>
                 {% for account in concerning_accounts %}
-                <li><b>Account {{loop.index}} ({{account.account_nickname}})</b>:
+                <li><b>{{account.platform}}{% if account.platform != account.account_nickname %} (Nickname: {{account.account_nickname}}){% endif %}</b>
+                    <div>
                     {% if account.access_concern %}
                     {{account.access_report}}
                     {% endif %}
                     {{account.ability_report}}
+                    </div>
                 </li>
                 {% endfor %}
-            </ul>
+            </ol>
             {%endif%}
         </div>
-        <hr />
 
-        <h2>Notes on the Consultation</h2>
-        <ul>
-            <li>
-                <i>Consultant notes:</i> <div class="comments">{{notes.consultant_notes}}</div>
-            </li>
-            <li>
-                <i>Client notes:</i> <div class="comments">{{notes.client_notes}}</div>
-            </li>
-        </ul>
+        <h3>Comments on the Consultation</h3>
+         <div class="form-responses">
+            <table>
+                <tbody>
+                    <tr>
+                        <th><i>Consultant Comments</i></th>
+                        <td>{{notes.consultant_notes}}</td>
+                    </tr>
+                    <tr>
+                        <th><i>Client Comments</i></th>
+                        <td>{{notes.client_notes}}</td>
+                    </tr>
+                </tbody>
+            </table>
+         </div>
+        
     </div>
 
 <div class="pagebreak"></div>
@@ -230,8 +236,6 @@
     {% if scan.selected_apps|length > 0 %}
         {% for app in scan.selected_apps %}
     <h2>Application Check {{loop.index}}: {{app.title}}</h3>
-    <table>
-        <tbody>
             <div class="appsummary">
                 <p><b>Investigation summary:</b> {{app.report}}</p>
             </div>
@@ -310,10 +314,7 @@
         {% endif %}
 
         <h3>Client Questionnaire</h3>
-        <table class="printout-columns">
-            <tbody>
-                <tr valign="top">
-                    <td valign="top">
+        
                         <div class="form-responses">
                         <table>
                             <tbody>
@@ -345,23 +346,21 @@
                         </tbody>
                     </table>
                     </div>
-                </td>
-            </tr>
-
-                <tr valign="top">
-                    <td>
-                        <h3>Client Comments</h3>
-                        <p>
-                            <div class="comments">{{app.notes.client_notes}} </div>
-                        </p>
-                        <h3>Consultant Comments</h3>
-                        <p>
-                            <div class="comments">{{app.notes.consultant_notes}} </div>
-                        </p>
-                    </td>
-                </tr>
-            </tbody>
+        <h3>Comments</h3>
+         <div class="form-responses">
+            <table>
+                <tbody>
+                    <tr>
+                        <th><i>Consultant Comments</i></th>
+                        <td>{{app.notes.consultant_notes}}</td>
+                    </tr>
+                    <tr>
+                        <th><i>Client Comments</i></th>
+                        <td>{{app.notes.client_notes}}</td>
+                    </tr>
+                </tbody>
             </table>
+         </div>
         {% endfor %}
     {% else %}
     <div style="page-break-after:always">
@@ -382,8 +381,7 @@
     {% for account in accounts %}
     <div class="account-check">
     <h2 {% if loop.index > 1 %}class="app-padding-top"{%endif%}>{{loop.index}}. {{account["account_nickname"]}} ({{account["platform"]}})</h2>
-    <table class="printout_columns">
-        <tbody>
+    
             <div class="form-responses">
             <tr valign="top">
                 <td>
@@ -417,14 +415,14 @@
             </tr>
             {% if account["suspicious_logins"]["screenshot_files"]|length > 0 %}
             <tr>
-                <td>
+                <td><div class="screenshot-container">
                 <span>
                 {% for fname in account["suspicious_logins"]["screenshot_files"] %}
                     <div class="form-screenshot">
                         <img height='400px' src="{{url_root}}{{fname}}"/>
                     </div>
                 {% endfor %}
-                </span></td>
+                </div></span></td>
             </tr>
             {% endif %}
 
@@ -468,13 +466,13 @@
             </tr>
             {% if account["recovery_settings"]["screenshot_files"]|length > 0 %}
             <tr>
-                <td><span>
+                <td><div class="screenshot-container"><span>
                 {% for fname in account["recovery_settings"]["screenshot_files"] %}
                     <div class="form-screenshot">
                         <img height='400px' src="{{url_root}}{{fname}}"/>
                     </div>
                 {% endfor %}
-                </span></td>
+                </div></span></td>
             </tr>
             {% endif %}
             <tr>
@@ -498,13 +496,13 @@
             </tr>
             {% if account["two_factor_settings"]["screenshot_files"]|length > 0 %}
             <tr>
-                <td><span>
+                <td><div class="screenshot-container"><span>
                 {% for fname in account["two_factor_settings"]["screenshot_files"] %}
                     <div class="form-screenshot">
                         <img height='400px' src="{{url_root}}{{fname}}"/>
                     </div>
                 {% endfor %}
-                </span></td>
+                </div></span></td>
             </tr>
             {% endif %}
             <tr>
@@ -530,29 +528,34 @@
             {% if account["security_questions"]["screenshot_files"]|length > 0 %}
             <tr>
                 <td>
+                    <div class="screenshot-container">
                     <span>{% for fname in account["security_questions"]["screenshot_files"] %}
                         <div class="form-screenshot">
                             <img height='400px' src="{{url_root}}{{fname}}"/>
                         </div>
                     {% endfor %}
-                    </span>
+                    </div></span>
                 </td>
             </tr>
             {% endif %}
         
         </div>
-                    <h3>Client Comments</h3>
-                    <p>
-                        <div class="comments">{{account["notes"]["client_notes"]}} </div>
-                    </p>
-                    <h3>Consultant Comments</h3>
-                    <p>
-                        <div class="comments">{{account["notes"]["consultant_notes"]}} </div>
-                    </p>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+                    
+        <h3>Comments</h3>
+         <div class="form-responses">
+            <table>
+                <tbody>
+                    <tr>
+                        <th><i>Consultant Comments</i></th>
+                        <td>{{account["notes"]["consultant_notes"]}}</td>
+                    </tr>
+                    <tr>
+                        <th><i>Client Comments</i></th>
+                        <td>{{account["notes"]["client_notes"]}}</td>
+                    </tr>
+                </tbody>
+            </table>
+         </div>
 </div>
 <div class="pagebreak"></div>
     {% endfor %}

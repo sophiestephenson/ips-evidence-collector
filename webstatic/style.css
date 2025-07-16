@@ -572,15 +572,18 @@ div.form-responses table > tbody > tr > th,
 div.form-responses table > tbody > tr > td {
     font-weight: normal;
     text-align: left;
-    width: 400px;
     padding: 10px;
     margin: 0px;
     background-color: lightgray;
     border: 1px lightgray solid;
 }
 
+div.form-responses table > tbody > tr > th {
+    width: 300px;
+}
+
 div.form-responses table > tbody > tr > td {
-    width: 400px;
+    width: 500px;
     background-color: white;
 }
 
@@ -592,7 +595,9 @@ table.data-table th {
     text-align: right;
     vertical-align: top;
     padding-right: 15px;
-    width: 200px;
+    max-width: 200px;
+    min-width: 100px;
+    width: auto;
     text-wrap-style: pretty;
     font-weight: normal;
     font-style: italic;
@@ -600,9 +605,12 @@ table.data-table th {
 
 table.data-table td {
     text-align: left;
+    max-width: 80%;
 }
 
 div.comments {
     border: 1px lightgray solid;
     padding: 10px;
+    margin: 5px;
+    width: 90%;
 }
