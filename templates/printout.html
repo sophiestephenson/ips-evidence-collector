@@ -96,6 +96,7 @@
         </ul>
     </div>
 
+<div class="pagebreak"></div>
 <div class="new-page form-responses">
     <h1>Technology Assessment Questionnaire</h1>
     <hr />
@@ -158,10 +159,12 @@
 </div>
 
 {% for scan in scans %}
+<div class="pagebreak"></div>
 <div class="new-page">
-    <h1>Device Scan ({{loop.index}} of {{scans|length}}) </h1>
+    <h1>Device Scan {{loop.index}} </h1>
     <hr />
 
+    <h3>Device Scanned</h3>
     <table class="data-table">
         <tbody>
             <tr>
@@ -170,7 +173,7 @@
             </tr>
             <tr>
                 <th>Device Specifications</th>
-                <td>{{scan.device_model}}, Version {{scan.device_version}}</td>
+                <td>{{scan.device_manufacturer}} {{scan.device_model}}, Version {{scan.device_version}}</td>
             </tr>
             <tr>
                 <th>Serial Number</th>
@@ -179,11 +182,11 @@
         </tbody>
     </table>
 
-    <h2>Jailbreak Assessment</h2>
+    <h3>Jailbreak Assessment</h3>
     <table class="data-table">
         <tbody>
             <tr>
-                <th>Evidence of jailbreaking?</th>
+                <th>Evidence of Jailbreaking?</th>
                 <td>{{"Yes" if scan.is_rooted else "No"}}</td>
             </tr>
             <tr>
@@ -192,12 +195,26 @@
             </tr>
         </tbody>
     </table>
-    
-    <h2>Applications Checked</h2>
+
+    <h3>Summary of Applications Checked</h3>
+    {% if scan.selected_apps|length > 0 %}
+    <ul>
+        {% for app in scan.selected_apps %}
+        <li>
+            {{app.appId}}
+            {% if app.title != app.appId %}
+             ({{app.title}})
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    None.
+    {% endif %}
 
     {% if scan.selected_apps|length > 0 %}
         {% for app in scan.selected_apps %}
-    <h3>{{app.title|capitalize}}</h3>
+    <h2>Application Check {{loop.index}}: {{app.title}}</h3>
     <table>
         <tbody>
             <div class="appsummary">
@@ -209,50 +226,72 @@
                 <tr>
                     <th>App ID</th>
                     <td>
-                        {% if app.appId %}
                         {{app.appId}}
+                    </td>
+                </tr>
+                <tr>
+                    <th>App URL</th>
+                    <td>
+                        {% if app.app_website %}
+                        <a href={{app.app_website}}>{{app.app_website}}</a>
                         {% else %}
-                        Unknown
+                        <i>Not provided</i>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Automated App Flags</th>
+                    <td>
+                        {% if app.flags|length > 0 %}
+                        {{app.flags}}
+                        {% else %}
+                        <i>None</i>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Originating App Store</th>
+                    <td>
+                        {% if app.store %}
+                        {{app.store}}
+                        {% else %}
+                        <i>Unknown</i>
                         {% endif %}
                     </td>
                 </tr>
                 <tr>
                     <th>Developer URL</th>
                     <td>
-                        {% if app.url %}
-                        <a href={{app.url}}>{{app.url}}</a>
+                        {% if app.developerwebsite %}
+                        <a href={{app.developerwebsite}}>{{app.developerwebsite}}</a>
                         {% else %}
-                        Unknown
+                        <i>Unknown</i>
                         {% endif %}
                     </td>
                 </tr>
                 <tr>
-                    <th>App store</th>
-                    <td>
-                        {% if app.store %}
-                        {{app.store}}
-                        {% else %}
-                        Unknown
-                        {% endif %}
-                    </td>
-                </tr>
-                <tr>
-                    <th>Install time</th>
+                    <th>Date Installed</th>
                     <td>
                         {% if app.install_time %}
                         {{app.install_time}}
                         {% else %}
-                        Unknown
+                        <i>Unknown</i>
                         {% endif %}
                     </td>
                 </tr>
                 <tr>
-                    <th>Permissions requested</th>
-                    <td>BROKEN</td>
-                </tr>
-                <tr>
-                    <th>Recent permissions used</th>
-                    <td>BROKEN</td>
+                    <th>Permissions Used</th>
+                    {% if app.permission_info.permissions | length > 0 %}
+                    <td>
+                        <ul>
+                            {% for p in app.permission_info.permissions %}
+                            <li>{{p[0]}} ({{p[1]}})</li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        None
+                        {% endif %}
+                    </td>
                 </tr>
                 <tr>
                     <th>App Description</th>
@@ -260,19 +299,22 @@
                         {% if app.description %}
                         {{app.description}}
                         {% else %}
-                        None
+                        <i>None provided</i>
                         {% endif %}
                     </td>
                 </tr>
             </tbody>
         </table>
+
+        <h3>Screenshots</h3>
+        <div class="screenshot-container"><span>
         {% for fname in app.screenshot_files %}
             <div class="form-screenshot">
                 <img height='400px' src="{{url_root}}{{fname}}"/>
             </div>
-        </div>
         {% endfor %}
-
+        </span>
+        </div>
 
         <h3>Client Questionnaire</h3>
         <table class="printout-columns">
@@ -283,91 +325,43 @@
                         <table>
                             <tbody>
                                 <tr valign="top">
-                                    {% with form = app.install_info %}
                                     <tr>
-                                        <th>Did you know this app was installed?</th>
-                                        <td>{{form.knew_installed |
+                                        <th>{{formquestions["apps"]["install_info"]["knew_installed"]}}</th>
+                                        <td>{{app.install_info.knew_installed |
                                         capitalize}}</td>
                                     </tr>
                                     <tr>
-                                        <th>Did you install this app?</th>
-                                        <td>{{form.installed | capitalize}}</td>
+                                        <th>{{formquestions["apps"]["install_info"]["installed"]}}</th>
+                                        <td>{{app.install_info.installed | capitalize}}</td>
                                     </tr>
                                     <tr>
-                                        <th>Did your [ex-]partner coerce you into installing this app?</th>
-                                        <td>{{form.coerced |
+                                        <th>{{formquestions["apps"]["install_info"]["coerced"]}}</th>
+                                        <td>{{app.install_info.coerced |
                                         capitalize}}</td>
                                     </tr>
-                                    {% endwith %}
+                                    <tr>
+                                        <th>{{formquestions["apps"]["permission_info"]["access"]}}</th>
+                                        <td>{{app.permission_info.access |
+                                        capitalize}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>{{formquestions["apps"]["permission_info"]["describe"]}}</th>
+                                        <td>{{app.permission_info.describe}}</td>
+                                    </tr>
                                 </tr>
                         </tbody>
                     </table>
                     </div>
                 </td>
             </tr>
-            {% if screenshots|length > 0 %}
-            {% for filename in screenshots[1::] %}
-            <tr valign="top">
-            </td>
-                <td class="screenshot">
-                    <div class="image-container">
-                        <img src="{{screenshot_dir}}{{filename}}" />
-                    </div>
-                </td>
-                </tr>
-                {% endfor %}
-                {% endif %}
-
-                {% for permission in [] %}
-
-                    <tr valign="top">
-                        <td>
-                            <table>
-                                <tbody>
-                                    <tr valign="top">
-                                        <th>Can your [ex-]partner access your
-                                            {{permission.lower()}} using this app?</th>
-                                        <td>{{permission.access | capitalize}}</td>
-                                    </tr>
-                                    {% if permission.describe %}
-                                    <tr>
-                                        <th>&emsp;-> How do you know?</th>
-                                        <td>{{permission.describe}}</td>
-                                    </tr>
-                                    {% endif %}
-                                </tbody>
-                            </table>
-                        </td>
-                        <td class="screenshot">
-                        {% if screenshots|length > 0 %}
-                        <div class="image-container">
-                            <img src="{{screenshot_dir}}{{screenshots|first}}" />
-                        </div>
-                        {% endif %}
-
-                        </td>
-                    </tr>
-                {% if screenshots|length > 0 %}
-                {% for filename in screenshots[1::] %}
-                <tr valign="top">
-                    <td />
-                    <td class="screenshot">
-                        <div class="image-container">
-                        <img src="{{screenshot_dir}}{{filename}}" />
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-                {% endif %}
-            {% endfor %}
 
                 <tr valign="top">
                     <td>
-                        <h3>Client comments</h3>
+                        <h3>Client Comments</h3>
                         <p>
                             <div class="comments">{{app.notes.client_notes}} </div>
                         </p>
-                        <h3>Consultant comments</h3>
+                        <h3>Consultant Comments</h3>
                         <p>
                             <div class="comments">{{app.notes.consultant_notes}} </div>
                         </p>
@@ -410,7 +404,7 @@
                 </td>
             </tr>
             <tr valign="top">
-              <th><h3>Login activity questionnaire</h3></th>
+              <th><h3>Login Activity Questionnaire</h3></th>
             </tr>
             <tr>
                 <td>
@@ -427,16 +421,18 @@
                     </table>
                     </div>
                 </td>
-                <td class="screenshot">
+            </tr>
+            <tr>
+                <td><span>
                 {% for fname in account["suspicious_logins"]["screenshot_files"] %}
                     <div class="form-screenshot">
                         <img height='400px' src="{{url_root}}{{fname}}"/>
                     </div>
                 {% endfor %}
-                </td>
+                </span></td>
             </tr>
             <tr>
-              <th><h3>Password questionnaire</h3></th>
+              <th><h3>Password Questionnaire</h3></th>
             </tr>
             <tr>
                 <td>
@@ -455,7 +451,7 @@
                 </td>
             </tr>
             <tr>
-                  <th><h3>Recovery settings questionnaire</h3></th>
+                  <th><h3>Recovery Settings Questionnaire</h3></th>
             </tr>
             <tr>
                 <td>
@@ -472,19 +468,18 @@
                     </table>
                     </div>
                 </td>
-    
-                <td class="screenshot">
-                  
+            </tr>
+            <tr>
+                <td><span>
                 {% for fname in account["recovery_settings"]["screenshot_files"] %}
                     <div class="form-screenshot">
                         <img height='400px' src="{{url_root}}{{fname}}"/>
                     </div>
                 {% endfor %}
-    
-                </td>
+                </span></td>
             </tr>
             <tr>
-              <th><h3>Two-factor authentication questionnaire</h3></th>
+              <th><h3>Two-Factor Authentication Questionnaire</h3></th>
             </tr>
             <tr>
                 <td>
@@ -501,17 +496,18 @@
                     </table>
                     </div>
                 </td>
-    
-                <td class="screenshot">
+            </tr>
+            <tr>
+                <td><span>
                 {% for fname in account["two_factor_settings"]["screenshot_files"] %}
                     <div class="form-screenshot">
                         <img height='400px' src="{{url_root}}{{fname}}"/>
                     </div>
                 {% endfor %}
-                </td>
+                </span></td>
             </tr>
             <tr>
-              <th><h3>Security questions questionnaire</h3></th>
+              <th><h3>Security Questions Questionnaire</h3></th>
             </tr>
     
             <tr>
@@ -529,19 +525,24 @@
                     </table>
                     </div>
                 </td>
-                <td class="screenshot">
-                {% for fname in account["security_questions"]["screenshot_files"] %}
-                    <div class="form-screenshot">
-                        <img height='400px' src="{{url_root}}{{fname}}"/>
-                    </div>
-                {% endfor %}
+            </tr>
+            <tr>
+                <td>
+                    <span>{% for fname in account["security_questions"]["screenshot_files"] %}
+                        <div class="form-screenshot">
+                            <img height='400px' src="{{url_root}}{{fname}}"/>
+                        </div>
+                    {% endfor %}
+                    </span>
                 </td>
-            </tr></div>
-                    <h3>Client comments</h3>
+            </tr>
+        
+        </div>
+                    <h3>Client Comments</h3>
                     <p>
                         <div class="comments">{{account["notes"]["client_notes"]}} </div>
                     </p>
-                    <h3>Consultant comments</h3>
+                    <h3>Consultant Comments</h3>
                     <p>
                         <div class="comments">{{account["notes"]["consultant_notes"]}} </div>
                     </p>
@@ -550,6 +551,7 @@
         </tbody>
     </table>
 </div>
+<div class="pagebreak"></div>
     {% endfor %}
     {% endif %}
 </div>

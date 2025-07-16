@@ -661,6 +661,7 @@ def evidence_printout():
     context["taq"] = consult_data.taq.to_dict()
     context["accounts"] = [acct.to_dict() for acct in consult_data.accounts]
 
+
     # Need url_root to load screenshots
     context["url_root"] = request.url_root
 

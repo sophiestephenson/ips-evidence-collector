@@ -440,6 +440,10 @@ class ConsultationData(Dictable):
             kids = TAQKids().questions,
             legal = TAQLegal().questions
         )
+        self.formquestions["apps"] = dict(
+            permission_info = PermissionInfo().questions,
+            install_info = InstallInfo().questions
+        )
 
         self.overall_summary = self.generate_overall_summary()
 

@@ -310,12 +310,21 @@ div.notes textarea {
     margin-bottom: 15px;
 }
 
-div.printout-summary {
+div.pagebreak {
+    break-after: page;
     page-break-after: always;
 }
 
+div.new-page {
+    break-before: page;
+}
+
+div.printout-summary {
+    break-after: page;
+}
+
 table.printout_columns {
-    page-break-after: always;
+    break-after: page;
 }
 
 table.printout_columns tr th td {
@@ -325,10 +334,9 @@ table.printout_columns tr th td {
 
 table.printout_columns th {
     text-align: left;
-    font-style: italic;
     font-weight: normal;
-
 }
+
 table.printout_columns + table {
     border: 1px;
 }
@@ -409,8 +417,14 @@ table.appinfo th {
     max-width: 200px;
     height: auto;
     border: 1px solid black;
+    float: left;
 }
 
+.screenshot-container::after {
+  content: "";
+  clear: both;
+  display: table;
+}
 
 table.appselect > tbody > tr > td > p {
     color: purple;
@@ -574,11 +588,13 @@ div.form-responses table > tbody > tr {
 }
 
 table.data-table th {
-    text-align: left;
+    text-align: right;
     vertical-align: top;
     padding-right: 15px;
     width: 200px;
     text-wrap-style: pretty;
+    font-weight: normal;
+    font-style: italic;
 }
 
 table.data-table td {
