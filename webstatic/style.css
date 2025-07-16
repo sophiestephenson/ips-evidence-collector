@@ -572,3 +572,20 @@ div.form-responses table > tbody > tr > td {
 div.form-responses table > tbody > tr {
     margin: 0px;
 }
+
+table.data-table th {
+    text-align: left;
+    vertical-align: top;
+    padding-right: 15px;
+    width: 200px;
+    text-wrap-style: pretty;
+}
+
+table.data-table td {
+    text-align: left;
+}
+
+div.comments {
+    border: 1px lightgray solid;
+    padding: 10px;
+}

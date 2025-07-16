@@ -41,7 +41,7 @@
                 <b>No risk factors identified.</b>
             {% else%}
                 <b>{{taq.risk_factors|length}} risk factors identified.</b>
-                <table>
+                <table class="data-table">
                     <tbody>
                         {% for item in taq.risk_factors %}
                         <tr>
@@ -88,10 +88,10 @@
         <h2>Notes on the Consultation</h2>
         <ul>
             <li>
-                <i>Consultant notes:</i> {{notes.consultant_notes}}
+                <i>Consultant notes:</i> <div class="comments">{{notes.consultant_notes}}</div>
             </li>
             <li>
-                <i>Client notes:</i> {{notes.client_notes}}
+                <i>Client notes:</i> <div class="comments">{{notes.client_notes}}</div>
             </li>
         </ul>
     </div>
@@ -162,7 +162,7 @@
     <h1>Device Scan ({{loop.index}} of {{scans|length}}) </h1>
     <hr />
 
-    <table>
+    <table class="data-table">
         <tbody>
             <tr>
                 <th>Device Nickname</th>
@@ -180,7 +180,7 @@
     </table>
 
     <h2>Jailbreak Assessment</h2>
-    <table>
+    <table class="data-table">
         <tbody>
             <tr>
                 <th>Evidence of jailbreaking?</th>
@@ -204,7 +204,7 @@
                 <p><b>Investigation summary:</b> {{app.report}}</p>
             </div>
             <h3>App information</h3>
-            <table class="appinfo">
+            <table class="appinfo data-table">
             <tbody>
                 <tr>
                     <th>App ID</th>
@@ -365,11 +365,11 @@
                     <td>
                         <h3>Client comments</h3>
                         <p>
-                            <p>&gt; {{app.notes.client_notes}} </p>
+                            <div class="comments">{{app.notes.client_notes}} </div>
                         </p>
                         <h3>Consultant comments</h3>
                         <p>
-                            <p>&gt; {{app.notes.consultant_notes}} </p>
+                            <div class="comments">{{app.notes.consultant_notes}} </div>
                         </p>
                     </td>
                 </tr>
@@ -539,11 +539,11 @@
             </tr></div>
                     <h3>Client comments</h3>
                     <p>
-                        <p>&gt; {{account["notes"]["client_notes"]}} </p>
+                        <div class="comments">{{account["notes"]["client_notes"]}} </div>
                     </p>
                     <h3>Consultant comments</h3>
                     <p>
-                        <p>&gt; {{account["notes"]["consultant_notes"]}} </p>
+                        <div class="comments">{{account["notes"]["consultant_notes"]}} </div>
                     </p>
                 </td>
             </tr>
