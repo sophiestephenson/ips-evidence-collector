@@ -96,7 +96,7 @@
         </ul>
     </div>
 
-<div class="new-page" id="taqsection">
+<div class="new-page form-responses">
     <h1>Technology Assessment Questionnaire</h1>
     <hr />
     <p>A set of questions used to assess a client's technology risk factors.</p>
@@ -279,6 +279,7 @@
             <tbody>
                 <tr valign="top">
                     <td valign="top">
+                        <div class="form-responses">
                         <table>
                             <tbody>
                                 <tr valign="top">
@@ -301,6 +302,7 @@
                                 </tr>
                         </tbody>
                     </table>
+                    </div>
                 </td>
             </tr>
             {% if screenshots|length > 0 %}
@@ -395,6 +397,7 @@
     <h2 {% if loop.index > 1 %}class="app-padding-top"{%endif%}>{{loop.index}}. {{account["account_nickname"]}} ({{account["platform"]}})</h2>
     <table class="printout_columns">
         <tbody>
+            <div class="form-responses">
             <tr valign="top">
                 <td>
                     <div class="appsummary">
@@ -411,6 +414,7 @@
             </tr>
             <tr>
                 <td>
+                <div class="form-responses">
                     <table>
                         <tbody>
                             {% for q in formquestions["accounts"]["suspicious_logins"] %}
@@ -421,6 +425,7 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    </div>
                 </td>
                 <td class="screenshot">
                 {% for fname in account["suspicious_logins"]["screenshot_files"] %}
@@ -435,6 +440,7 @@
             </tr>
             <tr>
                 <td>
+                <div class="form-responses">
                     <table>
                         <tbody>
                             {% for q in formquestions["accounts"]["password_check"] %}
@@ -445,6 +451,7 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    </div>
                 </td>
             </tr>
             <tr>
@@ -452,6 +459,7 @@
             </tr>
             <tr>
                 <td>
+                <div class="form-responses">
                     <table>
                         <tbody>
                             {% for q in formquestions["accounts"]["recovery_settings"] %}
@@ -462,6 +470,7 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    </div>
                 </td>
     
                 <td class="screenshot">
@@ -479,6 +488,7 @@
             </tr>
             <tr>
                 <td>
+                    <div class="form-responses">
                     <table>
                         <tbody>
                             {% for q in formquestions["accounts"]["two_factor_settings"] %}
@@ -489,6 +499,7 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    </div>
                 </td>
     
                 <td class="screenshot">
@@ -505,6 +516,7 @@
     
             <tr>
                 <td>
+                    <div class="form-responses">
                     <table>
                         <tbody>
                             {% for q in formquestions["accounts"]["security_questions"] %}
@@ -515,6 +527,7 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                    </div>
                 </td>
                 <td class="screenshot">
                 {% for fname in account["security_questions"]["screenshot_files"] %}
@@ -523,7 +536,7 @@
                     </div>
                 {% endfor %}
                 </td>
-            </tr>
+            </tr></div>
                     <h3>Client comments</h3>
                     <p>
                         <p>&gt; {{account["notes"]["client_notes"]}} </p>

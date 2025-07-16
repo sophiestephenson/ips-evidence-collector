@@ -317,7 +317,7 @@ def evidence_scan_select(ser, show_rescan):
     # fill form
     form = AppSelectPageForm(apps=[app.to_dict() for app in current_scan.all_apps])
 
-     ### IF IT'S A GET:
+    # IF IT'S A GET:
     if request.method == 'GET':
         #form.process(data=current_scan.to_dict())
 
@@ -353,21 +353,20 @@ def evidence_scan_select(ser, show_rescan):
 
             # remove apps we no longer want to investigate, 
             # while maintaining info from previous investigations
-            current_scan.selected_apps = [app for app in current_scan.selected_apps 
-                                          if app.appId in to_investigate_ids]
+            current_scan.selected_apps = [app for app in current_scan.selected_apps if app.appId in to_investigate_ids]
         
             # Update "investigate" marker and add new apps to selected_apps
             # TODO: Do we need the "investigate" marker?
-            for app in current_scan.all_apps:
-                if app.appId in to_investigate_ids:
-                    if not app.investigate:
-                        current_scan.selected_apps.append(app)
-                        app.investigate = True
+            for a in current_scan.all_apps:
+                if a.appId in to_investigate_ids:
+                    if not a.investigate:
+                        current_scan.selected_apps.append(a)
+                        a.investigate = True
                 else:
-                    app.investigate = False
+                    a.investigate = False
 
             # update the current scan data and save it as the most recent scan
-            #current_scan.selected_apps = [AppInfo(**app) for app in selected_apps]
+            # current_scan.selected_apps = [AppInfo(**app) for app in selected_apps]
             all_scan_data = update_scan_by_ser(current_scan, all_scan_data)
 
             # save this updated data
@@ -550,14 +549,14 @@ def evidence_account(id):
     ios_ser = None
     android_ser = None
 
-    try: 
+    try:
         ios_ser = get_ser_from_scan_obj(ios_scan_obj)
-    except:
+    except:  # noqa
         pass
 
-    try: 
+    try:
         android_ser = get_ser_from_scan_obj(android_scan_obj)
-    except:
+    except:  # noqa
         pass
 
     if request.method == 'GET':

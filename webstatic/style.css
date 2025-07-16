@@ -318,6 +318,10 @@ table.printout_columns {
     page-break-after: always;
 }
 
+table.printout_columns tr th td {
+    vertical-align: top;
+}
+
 
 table.printout_columns th {
     text-align: left;
@@ -549,22 +553,22 @@ table.accountinfo > tbody > tr > th > h4 {
     padding-right: 10px;
 }
 
-#taqsection table > tbody > tr > th,
-#taqsection table > tbody > tr > td {
+div.form-responses table > tbody > tr > th,
+div.form-responses table > tbody > tr > td {
     font-weight: normal;
     text-align: left;
-    width: 500px;
+    width: 400px;
     padding: 10px;
     margin: 0px;
     background-color: lightgray;
     border: 1px lightgray solid;
 }
 
-#taqsection table > tbody > tr > td {
-    width: 250px;
+div.form-responses table > tbody > tr > td {
+    width: 400px;
     background-color: white;
 }
 
-#taqsection table > tbody > tr {
+div.form-responses table > tbody > tr {
     margin: 0px;
 }
