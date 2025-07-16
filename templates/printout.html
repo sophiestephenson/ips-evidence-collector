@@ -3,10 +3,10 @@
 <head>
     <style>
         /* margins for printing */
-        body  { padding: 5mm; font-size: 14pt; }
+        body  { padding: 5mm; font-size: 11pt; }
         .new-page { padding-top: 5mm; }
 
-        h3 {font-size: 16pt; }
+        h3 {font-size: 14pt; }
 
         .app-padding-top {padding-top: 12mm;}
     </style>
@@ -176,11 +176,23 @@
             </tr>
             <tr>
                 <th>Device Specifications</th>
-                <td>{{scan.device_manufacturer}} {{scan.device_model}}, Version {{scan.device_version}}</td>
+                <td>
+                    {% if scan.manual %}
+                    <i>Not available for a manual scan</i>
+                    {% else %}
+                    {{scan.device_manufacturer}} {{scan.device_model}}, Version {{scan.device_version}}
+                    {% endif %}
+                </td>
             </tr>
             <tr>
                 <th>Serial Number</th>
-                <td>{{scan.serial}}</td>
+                <td>
+                    {% if scan.manual %}
+                    <i>Not available for a manual scan</i>
+                    {% else %}
+                    {{scan.serial}}
+                    {% endif %}
+                </td>
             </tr>
         </tbody>
     </table>
@@ -229,11 +241,15 @@
                 <tr>
                     <th>Automated App Flags</th>
                     <td>
-                        {% if app.flags|length > 0 %}
-                        {{app.flags}}
-                        {% else %}
-                        None
-                        {% endif %}
+                        {% for flag in app.flags %}
+                            {% if flag == 'system-app' %}
+                            <span class="flag">{{flag}}</span>
+                            {% elif flag == 'spyware' or flag == 'regex-spy' %}
+                            <span class="flag flag-danger">{{flag}}</span>
+                            {% elif flag != '' %}
+                             <span class="flag flag-warning">{{flag}}</span>
+                            {% endif %}
+                        {% endfor %}
                     </td>
                 </tr>
                 <tr>
@@ -254,8 +270,8 @@
                 </tr>
                 <tr>
                     <th>Permissions Used</th>
-                    {% if app.permission_info.permissions | length > 0 %}
                     <td>
+                        {% if app.permission_info.permissions | length > 0 %}
                         <ul>
                             {% for p in app.permission_info.permissions %}
                             <li>{{p[0]}} ({{p[1]}})</li>
@@ -399,8 +415,10 @@
                     </div>
                 </td>
             </tr>
+            {% if account["suspicious_logins"]["screenshot_files"]|length > 0 %}
             <tr>
-                <td><span>
+                <td>
+                <span>
                 {% for fname in account["suspicious_logins"]["screenshot_files"] %}
                     <div class="form-screenshot">
                         <img height='400px' src="{{url_root}}{{fname}}"/>
@@ -408,6 +426,8 @@
                 {% endfor %}
                 </span></td>
             </tr>
+            {% endif %}
+
             <tr>
               <th><h3>Password Questionnaire</h3></th>
             </tr>
@@ -446,6 +466,7 @@
                     </div>
                 </td>
             </tr>
+            {% if account["recovery_settings"]["screenshot_files"]|length > 0 %}
             <tr>
                 <td><span>
                 {% for fname in account["recovery_settings"]["screenshot_files"] %}
@@ -455,6 +476,7 @@
                 {% endfor %}
                 </span></td>
             </tr>
+            {% endif %}
             <tr>
               <th><h3>Two-Factor Authentication Questionnaire</h3></th>
             </tr>
@@ -474,6 +496,7 @@
                     </div>
                 </td>
             </tr>
+            {% if account["two_factor_settings"]["screenshot_files"]|length > 0 %}
             <tr>
                 <td><span>
                 {% for fname in account["two_factor_settings"]["screenshot_files"] %}
@@ -483,6 +506,7 @@
                 {% endfor %}
                 </span></td>
             </tr>
+            {% endif %}
             <tr>
               <th><h3>Security Questions Questionnaire</h3></th>
             </tr>
@@ -503,6 +527,7 @@
                     </div>
                 </td>
             </tr>
+            {% if account["security_questions"]["screenshot_files"]|length > 0 %}
             <tr>
                 <td>
                     <span>{% for fname in account["security_questions"]["screenshot_files"] %}
@@ -513,6 +538,7 @@
                     </span>
                 </td>
             </tr>
+            {% endif %}
         
         </div>
                     <h3>Client Comments</h3>
