@@ -483,7 +483,7 @@ span .badge .badge-danger {
     vertical-align: middle;
     background-color: #777;
     border-radius: 10px;
-    font-size: 10pt;
+    font-size: 11pt;
 }
 
 .flag-warning {
@@ -595,17 +595,14 @@ table.data-table th {
     text-align: right;
     vertical-align: top;
     padding-right: 15px;
-    max-width: 200px;
-    min-width: 100px;
-    width: auto;
-    text-wrap-style: pretty;
+    width: 150px;
     font-weight: normal;
     font-style: italic;
 }
 
 table.data-table td {
     text-align: left;
-    max-width: 80%;
+    max-width: 600px;
 }
 
 div.comments {
