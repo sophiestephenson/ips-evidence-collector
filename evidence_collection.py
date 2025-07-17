@@ -369,7 +369,7 @@ class TAQDevices(DictInitClass):
     }
     attrs = list(questions.keys())
 
-    def generate_risk_report(self):
+    def generate_risk_report(self) -> RiskReport:
         '''
         Generate a risk report for device compromise. Possible risk:
             - Physical access to devices
@@ -397,7 +397,7 @@ class TAQAccounts(DictInitClass):
                  'pwd_comp_which': "Which ones?"}
     attrs = list(questions.keys())
 
-    def generate_risk_report(self):
+    def generate_risk_report(self) -> RiskReport:
         '''
         Generate a risk report for password compromise. Possible risks:
             - Password compromise
@@ -426,7 +426,7 @@ class TAQSharing(DictInitClass):
                  'share_which': "Which accounts are shared with the person of concern?"}
     attrs = list(questions.keys())
 
-    def generate_risk_report(self):
+    def generate_risk_report(self) -> RiskReport:
         '''
         Generate a risk report for account compromise due to sharing. Possible risks:
             - Shared phone plan
@@ -466,7 +466,7 @@ class TAQSmarthome(DictInitClass):
                  'smart_home_acct_linking': "Can the person of concern access any of the smart home devices via their own smart home account?"}
     attrs = list(questions.keys())
 
-    def generate_risk_report(self):
+    def generate_risk_report(self) -> RiskReport:
         '''
         Generate a risk report for smart home device compromise. Possible risks:
             - Physical access to smart home devices
@@ -513,7 +513,7 @@ class TAQKids(DictInitClass):
         'child_phone_plan': "Does the person of concern pay for the child(ren)'s phone plan?"}
     attrs = list(questions.keys())
 
-    def generate_risk_report(self):
+    def generate_risk_report(self) -> RiskReport:
         '''
         Generate a risk report for children's devices. Possible risks:
             - Physical access to devices
@@ -609,6 +609,13 @@ class ConsultationData(Dictable):
         )
 
         self.overall_summary = self.generate_overall_summary()
+
+    def prepare_reports(self):
+
+        self.taq.generate_risk_reports()
+
+        # Add more as we go
+
 
 
 class AccountInvestigation(Dictable):
@@ -836,15 +843,19 @@ class TAQData(Dictable):
         self.kids = TAQKids(kids)
         self.legal = TAQLegal(legal)
 
-        self.generate_risk_reports()
-
     def generate_risk_reports(self):
         '''
         Generates all of the risk reports for the TAQ subforms.
+        Gathers all risks together for the summary.
         '''
+        self.all_risks = []
+
         for obj in [self.devices, self.accounts, self.sharing, self.smarthome, self.kids]:
-            report = obj.generate_risk_report()
-            pprint(report.to_dict())
+            risk_report: RiskReport = obj.generate_risk_report()
+            pprint(risk_report.to_dict())
+            self.all_risks.extend(risk_report.risk_details)
+
+        return self.all_risks
 
 
 class ConsultSetupData(Dictable):

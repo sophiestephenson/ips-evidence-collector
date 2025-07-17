@@ -37,13 +37,13 @@
             <p><i>The following are automated summaries generated from the detailed content of the report.</i></p>
 
             <h3>Technology Assessment Questionnaire</h3> 
-            {% if taq["risk factors"]|length == 0 %}
+            {% if taq["all_risks"]|length == 0 %}
                 <p>No risk factors identified.</p>
             {% else%}
-                <b>{{taq["risk factors"]|length}} risk factors identified.</b>
+                <b>{{taq["all_risks"]|length}} risks identified.</b>
                 <table class="data-table">
                     <tbody>
-                        {% for item in taq["risk factors"] %}
+                        {% for item in taq["all_risks"] %}
                         <tr>
                             <th>{{item.risk}}</th>
                             <td>{{item.description}}</td>

@@ -655,6 +655,8 @@ def evidence_printout():
         notes=load_json_data(ConsultDataTypes.NOTES.value)
     )
 
+    consult_data.prepare_reports()
+
     context = consult_data.to_dict()
 
     # Change to dict to enable iteration with questions
