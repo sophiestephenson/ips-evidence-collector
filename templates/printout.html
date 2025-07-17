@@ -58,7 +58,18 @@
             {% for scan in scans%}
             <li><div><b>{{scan.device_manufacturer}} {{scan.device_model}}, Version {{scan.device_version}} (Nickname: {{scan.device_nickname}})</b></div>
                 <div><i>Serial Number:</i> {{scan.serial}}</div>
-                <div><i>Scan report:</i> {{scan.report}}</div>
+                {% if scan.risk_report.risk_present %}
+                <div>The following risks were identified:
+                    <ul>
+                        {% for risk in scan.risk_report.risk_details %}
+                        <li>{{risk.risk}}</li>
+                        {% endfor %}
+                    </ul>
+
+                </div>
+                {% else %}
+                <div>No risks identified.</div>
+                {% endif %}
             </li>
             {%endfor%}
             </ol>

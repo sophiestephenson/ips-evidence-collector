@@ -617,12 +617,12 @@ class ConsultationData(Dictable):
         self.overall_summary = self.generate_overall_summary()
 
     def prepare_reports(self):
-
+        '''
+        Create all risk reports for the elements of the consultation.
+        '''
         self.taq.generate_risk_reports()
         for scan in self.scans:
             scan.generate_risk_report()
-
-        # Add more as we go
 
 
 
