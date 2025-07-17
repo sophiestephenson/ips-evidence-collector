@@ -118,6 +118,17 @@
         </tbody>
     </table>
 
+    {% if taq["devices"]["risk_report"]["risk_present"] %}
+    <div>
+        Risk identified. Risks:
+        <ul>
+            {% for risk in taq["devices"]["risk_report"]["risk_details"] %}
+            <li><b>{{risk["risk"]}}</b>: {{risk["description"]}}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
     <h3>Risk of Account Compromise</h3>
     <table>
         <tbody>
@@ -135,6 +146,20 @@
             {% endfor %}
         </tbody>
     </table>
+
+    {% if taq["accounts"]["risk_report"]["risk_present"] or taq["sharing"]["risk_report"]["risk_present"] %}
+    <div>
+        Risk identified. Risks:
+        <ul>
+            {% for risk in taq["accounts"]["risk_report"]["risk_details"] %}
+            <li><b>{{risk["risk"]}}</b>: {{risk["description"]}}</li>
+            {% endfor %}
+            {% for risk in taq["sharing"]["risk_report"]["risk_details"] %}
+            <li><b>{{risk["risk"]}}</b>: {{risk["description"]}}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
     
     <h3>Risks from Smart Home Devices</h3>
     <table>
@@ -147,6 +172,16 @@
             {% endfor %}
         </tbody>
     </table>
+    {% if taq["smarthome"]["risk_report"]["risk_present"] %}
+    <div>
+        Risk identified. Risks:
+        <ul>
+            {% for risk in taq["smarthome"]["risk_report"]["risk_details"] %}
+            <li><b>{{risk["risk"]}}</b>: {{risk["description"]}}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
     
     <h3>Risks from Children's Devices</h3>
     <table>
@@ -159,6 +194,16 @@
             {% endfor %}
         </tbody>
     </table>
+    {% if taq["kids"]["risk_report"]["risk_present"] %}
+    <div>
+        Risk identified. Risks:
+        <ul>
+            {% for risk in taq["kids"]["risk_report"]["risk_details"] %}
+            <li><b>{{risk["risk"]}}</b>: {{risk["description"]}}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
 
 </div>
 
