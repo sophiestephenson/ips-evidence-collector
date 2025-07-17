@@ -382,7 +382,7 @@ class TAQDevices(DictInitClass):
             risk_present = True
             new_risk = Risk(
                 risk="Physical access to devices",
-                description="The person of concern has physical access to the client's devices. A person with physical access to devices might be able to install apps, adjust device configurations, and access or manipulate accounts logged in on that device."
+                description="A person with physical access to devices might be able to install apps, adjust device configurations, and access or manipulate accounts logged in on that device."
             )
             risks.append(new_risk)
 

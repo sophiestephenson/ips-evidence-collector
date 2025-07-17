@@ -43,9 +43,11 @@
                     {% endif %}
                     </summary>
                     <div class="content">
+                        Risks identified:
+                        
                         <div class="risks">
                             <ul>
-                            {% for risk in consultdata.taq.risk_factors %}
+                            {% for risk in consultdata.taq.all_risks %}
                             <li>
                                 <div class="riskbox">
                                 <b>{{risk.risk}}</b>: {{risk.description}}
