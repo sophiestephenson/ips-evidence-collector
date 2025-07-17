@@ -263,7 +263,7 @@ class AppInfo(Dictable):
 
         self.screenshot_files = self._get_screenshot_files(device_hmac_serial)
 
-        self.report, self.is_concerning = self.generate_app_report()
+        #self.report, self.is_concerning = self.generate_app_report()
 
     def _get_screenshot_files(self, device_hmac_serial):
         """
@@ -279,61 +279,67 @@ class AppInfo(Dictable):
             return full_fnames
         return []
 
-    def generate_app_report(self, second_person=True, harmdoer="the person of concern"):
-        agent = "you"
-        pronoun = "you"
-        if second_person:
-            agent = "the client"
-            pronoun = "they"
+    def generate_risk_report(self):
+        '''
+        Generate a risk report about this app. Possible risks:
+            - Flag-based concerns (spyware, offstore)
+            - App installed without permission (accounting for system apps)
+            - App is sharing data
+        '''
 
-        spyware = 'spyware' in self.flags
+        risk_present = False
+        risks = []
 
-        sentences = []
-        concern = False
+        # Flag-based risk
+        if 'spyware' in self.flags or 'onstore-spyware' in self.flags or 'offstore-spyware' in self.flags:
+            risk_present = True
+            new_risk = Risk(
+                risk="Spyware application",
+                description="This app is designed for covert surveillance."
+            )
+            risks.append(new_risk)
+        elif 'regex-spy' in self.flags:
+            risk_present = True
+            new_risk = Risk(
+                risk="Potential spyware application",
+                description="This app may be a spyware application based on its title and description."
+            )
+            risks.append(new_risk)
+            pass
 
-        if spyware:
-            concern = True
-            sentences.append("{} is an app designed for surveillance.".format(self.title))
+        # Data leakage
+        if self.permission_info.access == 'yes':
+            risk_present = True
+            new_risk = Risk(
+                risk="Data leakage",
+                description="This app is sharing data with the person of concern. Investigation assessment: {}.".format(self.permission_info.describe)
+            )
+            risks.append(new_risk)
 
-        # for all apps, look at install information
-        if self.install_info.knew_installed != 'yes':
-            concern = True
-            sentences.append("{} did not know that this app was installed on the device.".format(agent.capitalize()))
-            if "system-app" in self.flags:
-                sentences.append("However, this is a system app which was likely installed on the phone when it was purchased.".format(agent.capitalize()))
-            elif spyware:
-                sentences.append("This indicates that another person installed the app with the intention of surveilling {}. Installing the app would require physical access to the device.".format(agent))
+        # Installation issues are only relevant if it's not a system app
+        if 'system-app' not in self.flags:
+            if self.install_info.knew_installed == 'no' or self.install_info.installed == 'no' or self.install_info.coerced == 'yes':
 
-        elif self.install_info.installed != 'yes':
-            if "system-app" in self.flags:
-                sentences.append("{} did not install this app. However, this is a system app which was likely installed on the phone when it was purchased.".format(agent.capitalize()))
-            else:
-                concern = True
-                if self.install_info.installed == 'no':
-                    sentences.append("{} knew this app was installed on the phone, but did not install it.".format(agent.capitalize()))
-                if self.install_info.installed == 'unsure':
-                    sentences.append("{} knew this app was installed on the phone, but {} are unsure whether {} installed it.".format(agent.capitalize(), pronoun, pronoun))
-                sentences.append("This indicates that another person installed this app, which would require physical access to the device.")
+                description = ""
+                if self.install_info.knew_installed == 'no':
+                    description = "The client did not know this app was installed, indicating someone else installed it."
 
+                elif self.install_info.installed == 'no':
+                    description = "The client did not install this app, indicating someone else installed it."
 
-        elif self.install_info.coerced != 'no':
-            concern = True
-            sentences.append("{} coerced {} to install this app, indicating that person is using the app to surveil {}.".format(harmdoer.capitalize(), agent, agent))
-        else:
-            sentences.append("{} installed this app voluntarily.".format(agent.capitalize()))
+                elif self.install_info.coerced == 'yes':
+                    description = "The client was coerced into installing this app."
 
-        # for spyware apps, look at permission stuff
-        if not spyware:
-            any_issues = False
-            if self.permission_info.access == 'yes':
-                any_issues = True
-                concern = True
-                sentences.append("Investigation indicates {} can use this app to access private information. Description: {}.".format(harmdoer, self.permission_info.describe))
+                risk_present = True
+                new_risk = Risk(
+                    risk="App installed without permission",
+                    description=description
+                )
+                risks.append(new_risk)
 
-            if not any_issues:
-                sentences.append("There is no evidence that this app is being used maliciously against {}.".format(agent))
+        self.risk_report = RiskReport(risk_present=risk_present, risk_details=risks)
 
-        return " ".join(sentences), concern
+        return self.risk_report
 
 class CheckApps(Dictable):
     def __init__(self,
@@ -613,6 +619,8 @@ class ConsultationData(Dictable):
     def prepare_reports(self):
 
         self.taq.generate_risk_reports()
+        for scan in self.scans:
+            scan.generate_risk_report()
 
         # Add more as we go
 
@@ -764,60 +772,47 @@ class ScanData(Dictable):
         self.rooted_reasons = rooted_reasons
         self.all_apps = [AppInfo(**app, device_hmac_serial=serial) for app in all_apps]
         self.selected_apps = [AppInfo(**app, device_hmac_serial=serial) for app in selected_apps]
-        self.concerning_apps = [app for app in self.selected_apps if app.is_concerning]
 
-        self.report = self.generate_report()
+        self.generate_risk_report()
 
-    def generate_report(self, harmdoer="the person of concern"):
-        agent = "the client"
+    def generate_risk_report(self):
+        '''
+        Generate a risk report for this device. Possible risks:
+            - Jailbroken device
+            - Risk from installed apps (raise up from apps)
+        '''
 
-        report_sentences = []
+        risk_present = False
+        risks = []
+        self.concerning_apps = []
 
+        # Jailbreaking
         if self.is_rooted:
-            report_sentences.append(
-                "This device is jailbroken, giving the jailbreaker nearly unbounded "
-                "access to the device and {}'s activity on the device.".format(
-                    agent
-                )
+            risk_present = True
+            new_risk = Risk(
+                risk="Evidence of jailbreaking",
+                description="The devices is jailbroken, giving the person of concern nearly unbounded access to the device and the client's activity on the device. Reasons jailbreaking is susptected: {}.".format(self.rooted_reasons)
             )
-        else:
-            report_sentences.append("There is no evidence that this device is jailbroken.")
+            risks.append(new_risk)
 
-        if len(self.selected_apps) == 0:
-            report_sentences.append("No suspicious apps were found on this device.")
-        else:
-            '''
-            plural = ""
-            if len(self.selected_apps) > 1:
-                plural = "s"
-            report_sentences.append(
-                "{} potentially malicious app{} investigated.".format(
-                    len(self.selected_apps), plural
+        # Apps
+        for a in self.selected_apps:
+            app_risk_report = a.generate_risk_report()
+            pprint(app_risk_report.to_dict())
+            if app_risk_report.risk_present:
+                self.concerning_apps.append(a)
+                risk_present = True
+                app_risk_list = [r.risk for r in app_risk_report.risk_details]
+                new_risk = Risk(
+                    risk="Risk from app: {}".format(a.title),
+                    description="Risks identified: {}.".format(", ".join(app_risk_list))
                 )
-            )
-            '''
+                risks.append(new_risk)
 
-            if len(self.concerning_apps) > 0:
-                plural = ""
-                verb_plural = "s"
-                if len(self.concerning_apps) > 1:
-                    plural = "s"
-                    verb_plural = ""
+        self.risk_report = RiskReport(risk_present=risk_present, risk_details=risks)
+        pprint(self.risk_report.to_dict())
 
-                report_sentences.append(
-                    "{} app{} pose{} a concern: {}.".format(
-                        len(self.concerning_apps), plural, verb_plural, ", ".join([app.title for app in self.concerning_apps])
-                    )
-                )
-            else:
-                report_sentences.append(
-                    "No apps determined to pose a concern."
-                )
-
-        if self.manual:
-            report_sentences.append("This device was not automatically scanned; instead, apps were manually investigated.")
-
-        return " ".join(report_sentences)
+        return self.risk_report
 
 
 class TAQData(Dictable):
