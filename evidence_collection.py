@@ -87,7 +87,7 @@ class Dictable:
         return json.loads(json.dumps(self, cls=EvidenceDataEncoder))
 
 # Base class for nested classes where we'll input data as dict (for ease)
-class DictInitClass (Dictable):
+class DictInitClass(Dictable):
     attrs = []
     screenshot_label = ""
     get_screenshots = False
@@ -348,6 +348,20 @@ class CheckApps(Dictable):
         self.dualuse = [AppInfo(app) for app in dualuse]
         self.other = [AppInfo(app) for app in other]
 
+class Risk(Dictable):
+    def __init__(self,
+                 risk="",
+                 description=""):
+        self.risk = risk
+        self.description = description
+
+class RiskReport(Dictable):
+    def __init__(self,
+                 risk_present=False,
+                 risk_details=list()):
+        self.risk_present = risk_present
+        self.risk_details = risk_details
+
 class TAQDevices(DictInitClass):
     questions = {
         'live_together': "Do you live with the person of concern?",
@@ -355,11 +369,55 @@ class TAQDevices(DictInitClass):
     }
     attrs = list(questions.keys())
 
+    def generate_risk_report(self):
+        '''
+        Generate a risk report for device compromise. Possible risk:
+            - Physical access to devices
+        '''
+        risk_present = False
+        risks = []
+
+        # Both indicate the same thing: physical access to devices.
+        if self.live_together.lower() == 'yes' or self.physical_access.lower() == 'yes':
+            risk_present = True
+            new_risk = Risk(
+                risk="Physical access to devices",
+                description="The person of concern has physical access to the client's devices. A person with physical access to devices might be able to install apps, adjust device configurations, and access or manipulate accounts logged in on that device."
+            )
+            risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_present=risk_present, risk_details=risks)
+
+        return self.risk_report
+
+
 class TAQAccounts(DictInitClass):
     questions = {'pwd_mgmt': "How do you manage passwords?",
                  'pwd_comp': "Do you believe the person of concern knows, or could guess, any of your passwords?",
                  'pwd_comp_which': "Which ones?"}
     attrs = list(questions.keys())
+
+    def generate_risk_report(self):
+        '''
+        Generate a risk report for password compromise. Possible risks:
+            - Password compromise
+            - Password manager compromise TODO
+        '''
+        risk_present = False
+        risks = []
+
+        if self.pwd_comp == 'yes':
+            risk_present = True
+            new_risk = Risk(
+                risk="Password compromise",
+                description="The client believes the person of concern knows, or could guess, the following passwords: {}. Knowing these passwords could allow them access and/or manipulate the client's accounts.".format(self.pwd_comp_which)
+            )
+            risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_present=risk_present, risk_details=risks)
+
+        return self.risk_report
+
 
 class TAQSharing(DictInitClass):
     questions = {'share_phone_plan': "Do you share a phone plan with the person of concern?",
@@ -367,6 +425,38 @@ class TAQSharing(DictInitClass):
                  'share_accounts': "Do you share any accounts with the person of concern?",
                  'share_which': "Which accounts are shared with the person of concern?"}
     attrs = list(questions.keys())
+
+    def generate_risk_report(self):
+        '''
+        Generate a risk report for account compromise due to sharing. Possible risks:
+            - Shared phone plan
+            - Shared accounts
+        '''
+
+        risk_present = False
+        risks = []
+
+        if self.share_phone_plan == 'yes':
+            risk_present = True
+            new_risk = Risk(
+                risk="Shared phone plan",
+                description="A shared phone plan may leak a variety of information, possibly including call history, message history (but not message content), contacts, and sometimes location. The account administrator of the client's phone plan, {}, has even more privileged access to this information.".format(self.phone_plan_admin)
+            )
+            # Going to need to reformat the administrator here bc it'll probably say 'poc' not spelled out
+            risks.append(new_risk)
+
+        if self.share_accounts == 'yes':
+            risk_present = True
+            new_risk = Risk(
+                risk="Shared accounts",
+                description="The client has shared accounts with the person of concern. Any information on those accounts can be assumed to be known by the person of concern. Shared accounts: {}.".format(self.share_which)
+            )
+            risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_present=risk_present, risk_details=risks)
+
+        return self.risk_report
+
 
 class TAQSmarthome(DictInitClass):
     questions = {'smart_home': "Do you have any smart home devices?",
@@ -376,12 +466,85 @@ class TAQSmarthome(DictInitClass):
                  'smart_home_acct_linking': "Can the person of concern access any of the smart home devices via their own smart home account?"}
     attrs = list(questions.keys())
 
+    def generate_risk_report(self):
+        '''
+        Generate a risk report for smart home device compromise. Possible risks:
+            - Physical access to smart home devices
+            - Online access to smart home devices
+        '''
+
+        risk_present = False
+        risks = []
+
+        # Physical access
+        if self.smart_home_setup == 'poc':  # Check that this is what it would be, and not "Person of Concern"
+            risk_present = True
+            new_risk = Risk(
+                risk="Physical access to smart home devices",
+                description="With physical access to smart home devices, someone could (1) learn private information, for example by querying a smart speaker, or (2) reconfigure the devices to share information or allow remote control. Someone who initially set up the devices would have even more power to configure as they wish."
+            )
+            risks.append(new_risk)
+        elif self.smart_home_access == 'yes':
+            risk_present = True
+            new_risk = Risk(
+                risk="Physical access to smart home devices",
+                description="With physical access to smart home devices, someone could (1) learn private information, for example by querying a smart speaker, or (2) reconfigure the devices to share information or allow remote control."
+            )
+            risks.append(new_risk)
+
+        # Online access
+        if self.smart_home_acct_sharing == 'yes' or self.smart_home_acct_linking == 'yes':
+            risk_present = True
+            new_risk = Risk(
+                risk="Online access to smart home devices",
+                description="Someone with online access to a smart home device might be able to gather data (e.g., viewing video recordings or voice commands used) or manipulate the device state (e.g., turning a light off or locking a smart lock.)"
+            )
+            risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_present=risk_present, risk_details=risks)
+
+        return self.risk_report
+
+
 class TAQKids(DictInitClass):
     questions = {
         'custody': "Do you share custody of children with the person of concern?",
         'child_phys_access': "Has the person of concern had physical access to any of the child(ren)'s devices?",
         'child_phone_plan': "Does the person of concern pay for the child(ren)'s phone plan?"}
     attrs = list(questions.keys())
+
+    def generate_risk_report(self):
+        '''
+        Generate a risk report for children's devices. Possible risks:
+            - Physical access to devices
+            - Shared phone plan
+            - TODO: Other things like accounts shared, location sharing, ??
+        '''
+
+        risk_present = False
+        risks = []
+
+        if self.child_phys_access == 'yes':
+            risk_present = True
+            new_risk = Risk(
+                risk="Physical access to children's devices",
+                description="A person with physical access to children's devices might be able to install apps, adjust device configurations, and access or manipulate accounts logged in on that device. These changes could allow monitoring of the parent, for example by tracking the children's location when they are with their parent."
+            )
+            risks.append(new_risk)
+
+        if self.child_phone_plan == 'yes':
+            risk_present = True
+            new_risk = Risk(
+                risk="Shared phone plan (child)",
+                description="A shared phone plan may leak a variety of information, possibly including call history, message history (but not message content), contacts, and sometimes location. This could include information about the parent, such as their phone number and location when with the children. The plan administrator has even more privileged access to this information."
+            )
+            # Going to need to reformat the administrator here bc it'll probably say 'poc' not spelled out
+            risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_present=risk_present, risk_details=risks)
+
+        return self.risk_report
+
 
 class TAQLegal(DictInitClass):
     questions = {
@@ -673,116 +836,16 @@ class TAQData(Dictable):
         self.kids = TAQKids(kids)
         self.legal = TAQLegal(legal)
 
-        self.risk_factors = self.get_risk_factors()
+        self.generate_risk_reports()
 
-    def get_risk_factors(self, second_person=True, harmdoer="the person of concern"):
-        agent = "you"
-        if second_person:
-            agent = "the client"
+    def generate_risk_reports(self):
+        '''
+        Generates all of the risk reports for the TAQ subforms.
+        '''
+        for obj in [self.devices, self.accounts, self.sharing, self.smarthome, self.kids]:
+            report = obj.generate_risk_report()
+            pprint(report.to_dict())
 
-        risk_factors = []
-
-        # accounts
-        if self.accounts.pwd_comp != 'no':
-            risk_factors.append(RiskFactor(
-                risk="Risk from password compromise",
-                description="{} believes that {} knows some passwords. Compromised passwords: {}. "
-                            "This could allow {} access to {}'s accounts.".format(
-                                agent.capitalize(), harmdoer, self.accounts.pwd_comp_which, harmdoer, agent
-                            )
-            ))
-        # TODO: Should we ask if the abuser has accesss to pwd management methods?
-
-        # devices
-        if self.devices.live_together == 'yes':
-            risk_factors.append(RiskFactor(
-                risk="Risk from device access",
-                description="{} lives with {}, giving {} physical access to {}'s devices. "
-                            "With physical access to devices, it is possible that {} could "
-                            "install spyware or access online accounts, and see private information.".format(
-                                agent.capitalize(),harmdoer,harmdoer,agent,harmdoer
-                            ))
-            )
-        elif self.devices.physical_access == 'yes':
-            risk_factors.append(RiskFactor(
-                risk="Risk from device access",
-                description="{} has had physical access to {}'s devices. "
-                "With physical access to devices, it is possible that {} could "
-                "install spyware, access online accounts, and see private information.".format(
-                    harmdoer.capitalize(), agent, harmdoer
-                )))
-
-        # sharing
-        if self.sharing.share_phone_plan == 'yes':
-            admin = ""
-            if self.sharing.phone_plan_admin.strip() != "":
-                admin = ", {},".format(self.sharing.phone_plan_admin)
-            risk_factors.append(RiskFactor(
-                risk="Risk from shared phone plan",
-                description="{} shares a phone plan with {}. This may leak information including call and text history or location. The administrator{} likely has even more privileged access to such information.".format(
-                    agent.capitalize(), harmdoer, admin
-                )
-            ))
-        if self.sharing.share_accounts == 'yes':
-            risk_factors.append(RiskFactor(
-                risk="Risk from shared accounts",
-                description="Some accounts are shared with {}, meaning {} can see any information and activity on those accounts.".format(
-                    harmdoer, harmdoer
-                )
-            ))
-
-        # kids
-        if self.kids.custody == 'yes':
-            if self.kids.child_phone_plan == 'yes':
-                risk_factors.append(RiskFactor(
-                    risk="Risk from child's phone plan",
-                    description="{}'s child shares a phone plan with {}. This may leak information including the child's call and text history or location.".format(
-                        agent.capitalize(), harmdoer
-                    )
-                ))
-            if self.kids.child_phys_access != 'no':
-                risk_factors.append(RiskFactor(
-                    risk="Risk from child's devices",
-                    description="{} has had physical access to devices owned by {}'s child. "
-                    "With physical access to these devices, it is possible that {} could "
-                    "install spyware, access online accounts, and see private information, "
-                    "including information about {}.".format(
-                        harmdoer.capitalize(), agent, harmdoer, agent
-                    )
-                ))
-
-        if self.smarthome.smart_home == 'yes':
-            # TODO: we should ask what devices they have to give more details about the risks
-
-            smarthome_risk = False
-            risk_reasons = []
-
-            # physical access
-            if self.smarthome.smart_home_setup == 'poc':
-                smarthome_risk = True
-                risk_reasons.append("{} set up some of the smart home devices in {}'s home.".format(harmdoer.capitalize(), agent))
-            elif self.smarthome.smart_home_access == 'yes':
-                smarthome_risk = True
-                risk_reasons.append("{} had physical access to some of the smart home devices in {}'s home.".format(harmdoer.capitalize(), agent))
-
-            # account
-            if self.smarthome.smart_home_account == 'yes':
-                smarthome_risk = True
-                also = ""
-                if len(risk_reasons) > 0:
-                    also = "also "
-                risk_reasons.append("{} can {}access accounts connected to smart home devices in {}'s home.".format(harmdoer.capitalize(), also, agent))
-
-            # combine risks
-            if smarthome_risk:
-                risk_factors.append(RiskFactor(
-                    risk="Risk from smart home devices",
-                    description="{} As a result, {} may be able to see data collected by those smart home devices.".format(
-                        " ".join(risk_reasons), harmdoer
-                    )
-                ))
-
-        return risk_factors
 
 class ConsultSetupData(Dictable):
     def __init__(self,
