@@ -130,7 +130,7 @@
     </table>
 
     {% if taq["devices"]["risk_report"]["risk_present"] %}
-    <div>
+    <div class="appsummary">
         Risk identified. Risks:
         <ul>
             {% for risk in taq["devices"]["risk_report"]["risk_details"] %}
@@ -159,7 +159,7 @@
     </table>
 
     {% if taq["accounts"]["risk_report"]["risk_present"] or taq["sharing"]["risk_report"]["risk_present"] %}
-    <div>
+    <div class="appsummary">
         Risk identified. Risks:
         <ul>
             {% for risk in taq["accounts"]["risk_report"]["risk_details"] %}
@@ -184,7 +184,7 @@
         </tbody>
     </table>
     {% if taq["smarthome"]["risk_report"]["risk_present"] %}
-    <div>
+    <div class="appsummary">
         Risk identified. Risks:
         <ul>
             {% for risk in taq["smarthome"]["risk_report"]["risk_details"] %}
@@ -206,7 +206,7 @@
         </tbody>
     </table>
     {% if taq["kids"]["risk_report"]["risk_present"] %}
-    <div>
+    <div class="appsummary">
         Risk identified. Risks:
         <ul>
             {% for risk in taq["kids"]["risk_report"]["risk_details"] %}
@@ -291,6 +291,18 @@
     {% if scan.selected_apps|length > 0 %}
         {% for app in scan.selected_apps %}
     <h2>Application Check {{loop.index}}: {{app.title}}</h3>
+
+            {% if app.risk_report.risk_present %}
+            <div class="appsummary">
+                Risk identified. Risks:
+                <ul>
+                    {% for risk in app.risk_report.risk_details %}
+                    <li><b>{{risk.risk}}</b>: {{risk.description}}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
             <h3>App information</h3>
             <table class="appinfo data-table">
             <tbody>
