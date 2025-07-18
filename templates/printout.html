@@ -227,6 +227,18 @@
     <p>*Note: This scan was done manually. Automated scan was not possible, so suspicious apps were identified by the consultant and added by hand.*</p>
     {% endif %}
 
+
+            {% if scan.risk_report.risk_present %}
+            <div class="appsummary">
+                Risk identified. Risks:
+                <ul>
+                    {% for risk in scan.risk_report.risk_details %}
+                    <li><b>{{risk.risk}}</b>: {{risk.description}}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
     <h3>Device Details</h3>
     <table class="data-table">
         <tbody>
