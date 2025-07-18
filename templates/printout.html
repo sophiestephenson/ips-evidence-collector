@@ -291,9 +291,6 @@
     {% if scan.selected_apps|length > 0 %}
         {% for app in scan.selected_apps %}
     <h2>Application Check {{loop.index}}: {{app.title}}</h3>
-            <div class="appsummary">
-                <p><b>Investigation summary:</b> {{app.report}}</p>
-            </div>
             <h3>App information</h3>
             <table class="appinfo data-table">
             <tbody>
@@ -438,17 +435,6 @@
     <h2 {% if loop.index > 1 %}class="app-padding-top"{%endif%}>{{loop.index}}. {{account["account_nickname"]}} ({{account["platform"]}})</h2>
     
             <div class="form-responses">
-            <tr valign="top">
-                <td>
-                    <div class="appsummary">
-                        <p><b>Investigation summary (automated):</b>
-                        <ul>
-                            <li><i>Evidence of access</i>: {{account["access_report"]}}</li>
-                            <li><i>Potential for access</i>: {{account["ability_report"]}}</li>
-                        </ul>
-                    </div>
-                </td>
-            </tr>
             <tr valign="top">
               <th><h3>Login Activity Questionnaire</h3></th>
             </tr>
