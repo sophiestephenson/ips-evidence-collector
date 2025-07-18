@@ -277,7 +277,13 @@ class AppInfo(Dictable):
             full_fnames = [os.path.join(screenshot_dir, f) for f in files]
             full_fnames.sort()
             return full_fnames
-        return []
+        return list()
+    
+    def _get_flag_risks(self):
+        risks = []
+
+
+        return list()
 
     def generate_risk_report(self):
         '''
@@ -286,20 +292,16 @@ class AppInfo(Dictable):
             - App installed without permission (accounting for system apps)
             - App is sharing data
         '''
-
-        risk_present = False
         risks = []
 
         # Flag-based risk
         if 'spyware' in self.flags or 'onstore-spyware' in self.flags or 'offstore-spyware' in self.flags:
-            risk_present = True
             new_risk = Risk(
                 risk="Spyware application",
                 description="This app is designed for covert surveillance."
             )
             risks.append(new_risk)
         elif 'regex-spy' in self.flags:
-            risk_present = True
             new_risk = Risk(
                 risk="Potential spyware application",
                 description="This app may be a spyware application based on its title and description."
@@ -309,7 +311,6 @@ class AppInfo(Dictable):
 
         # Data leakage
         if self.permission_info.access == 'yes':
-            risk_present = True
             new_risk = Risk(
                 risk="Data leakage",
                 description="This app is sharing data with the person of concern. Investigation assessment: {}.".format(self.permission_info.describe)
@@ -330,14 +331,13 @@ class AppInfo(Dictable):
                 elif self.install_info.coerced == 'yes':
                     description = "The client was coerced into installing this app."
 
-                risk_present = True
                 new_risk = Risk(
                     risk="App installed without permission",
                     description=description
                 )
                 risks.append(new_risk)
 
-        self.risk_report = RiskReport(risk_present=risk_present, risk_details=risks)
+        self.risk_report = RiskReport(risk_details=risks)
 
         return self.risk_report
 
@@ -363,10 +363,9 @@ class Risk(Dictable):
 
 class RiskReport(Dictable):
     def __init__(self,
-                 risk_present=False,
                  risk_details=list()):
-        self.risk_present = risk_present
         self.risk_details = risk_details
+        self.risk_present = len(risk_details) > 0
 
 class TAQDevices(DictInitClass):
     questions = {
@@ -380,19 +379,17 @@ class TAQDevices(DictInitClass):
         Generate a risk report for device compromise. Possible risk:
             - Physical access to devices
         '''
-        risk_present = False
-        risks = []
+        risks = list()
 
         # Both indicate the same thing: physical access to devices.
         if self.live_together.lower() == 'yes' or self.physical_access.lower() == 'yes':
-            risk_present = True
             new_risk = Risk(
                 risk="Physical access to devices",
                 description="A person with physical access to devices might be able to install apps, adjust device configurations, and access or manipulate accounts logged in on that device."
             )
             risks.append(new_risk)
 
-        self.risk_report = RiskReport(risk_present=risk_present, risk_details=risks)
+        self.risk_report = RiskReport(risk_details=risks)
 
         return self.risk_report
 
@@ -409,18 +406,16 @@ class TAQAccounts(DictInitClass):
             - Password compromise
             - Password manager compromise TODO
         '''
-        risk_present = False
-        risks = []
+        risks = list()
 
         if self.pwd_comp == 'yes':
-            risk_present = True
             new_risk = Risk(
                 risk="Password compromise",
                 description="The client believes the person of concern knows, or could guess, the following passwords: {}. Knowing these passwords could allow them access and/or manipulate the client's accounts.".format(self.pwd_comp_which)
             )
             risks.append(new_risk)
 
-        self.risk_report = RiskReport(risk_present=risk_present, risk_details=risks)
+        self.risk_report = RiskReport(risk_details=risks)
 
         return self.risk_report
 
@@ -438,12 +433,9 @@ class TAQSharing(DictInitClass):
             - Shared phone plan
             - Shared accounts
         '''
-
-        risk_present = False
-        risks = []
+        risks = list()
 
         if self.share_phone_plan == 'yes':
-            risk_present = True
             new_risk = Risk(
                 risk="Shared phone plan",
                 description="A shared phone plan may leak a variety of information, possibly including call history, message history (but not message content), contacts, and sometimes location. The account administrator of the client's phone plan, {}, has even more privileged access to this information.".format(self.phone_plan_admin)
@@ -452,14 +444,13 @@ class TAQSharing(DictInitClass):
             risks.append(new_risk)
 
         if self.share_accounts == 'yes':
-            risk_present = True
             new_risk = Risk(
                 risk="Shared accounts",
                 description="The client has shared accounts with the person of concern. Any information on those accounts can be assumed to be known by the person of concern. Shared accounts: {}.".format(self.share_which)
             )
             risks.append(new_risk)
 
-        self.risk_report = RiskReport(risk_present=risk_present, risk_details=risks)
+        self.risk_report = RiskReport(risk_details=risks)
 
         return self.risk_report
 
@@ -478,20 +469,16 @@ class TAQSmarthome(DictInitClass):
             - Physical access to smart home devices
             - Online access to smart home devices
         '''
-
-        risk_present = False
-        risks = []
+        risks = list()
 
         # Physical access
         if self.smart_home_setup == 'poc':  # Check that this is what it would be, and not "Person of Concern"
-            risk_present = True
             new_risk = Risk(
                 risk="Physical access to smart home devices",
                 description="With physical access to smart home devices, someone could (1) learn private information, for example by querying a smart speaker, or (2) reconfigure the devices to share information or allow remote control. Someone who initially set up the devices would have even more power to configure as they wish."
             )
             risks.append(new_risk)
         elif self.smart_home_access == 'yes':
-            risk_present = True
             new_risk = Risk(
                 risk="Physical access to smart home devices",
                 description="With physical access to smart home devices, someone could (1) learn private information, for example by querying a smart speaker, or (2) reconfigure the devices to share information or allow remote control."
@@ -500,14 +487,13 @@ class TAQSmarthome(DictInitClass):
 
         # Online access
         if self.smart_home_acct_sharing == 'yes' or self.smart_home_acct_linking == 'yes':
-            risk_present = True
             new_risk = Risk(
                 risk="Online access to smart home devices",
                 description="Someone with online access to a smart home device might be able to gather data (e.g., viewing video recordings or voice commands used) or manipulate the device state (e.g., turning a light off or locking a smart lock.)"
             )
             risks.append(new_risk)
 
-        self.risk_report = RiskReport(risk_present=risk_present, risk_details=risks)
+        self.risk_report = RiskReport(risk_details=risks)
 
         return self.risk_report
 
@@ -526,12 +512,9 @@ class TAQKids(DictInitClass):
             - Shared phone plan
             - TODO: Other things like accounts shared, location sharing, ??
         '''
-
-        risk_present = False
-        risks = []
+        risks = list()
 
         if self.child_phys_access == 'yes':
-            risk_present = True
             new_risk = Risk(
                 risk="Physical access to children's devices",
                 description="A person with physical access to children's devices might be able to install apps, adjust device configurations, and access or manipulate accounts logged in on that device. These changes could allow monitoring of the parent, for example by tracking the children's location when they are with their parent."
@@ -539,7 +522,6 @@ class TAQKids(DictInitClass):
             risks.append(new_risk)
 
         if self.child_phone_plan == 'yes':
-            risk_present = True
             new_risk = Risk(
                 risk="Shared phone plan (child)",
                 description="A shared phone plan may leak a variety of information, possibly including call history, message history (but not message content), contacts, and sometimes location. This could include information about the parent, such as their phone number and location when with the children. The plan administrator has even more privileged access to this information."
@@ -547,7 +529,7 @@ class TAQKids(DictInitClass):
             # Going to need to reformat the administrator here bc it'll probably say 'poc' not spelled out
             risks.append(new_risk)
 
-        self.risk_report = RiskReport(risk_present=risk_present, risk_details=risks)
+        self.risk_report = RiskReport(risk_details=risks)
 
         return self.risk_report
 
@@ -781,14 +763,11 @@ class ScanData(Dictable):
             - Jailbroken device
             - Risk from installed apps (raise up from apps)
         '''
-
-        risk_present = False
-        risks = []
-        self.concerning_apps = []
+        risks = list()
+        self.concerning_apps = list()
 
         # Jailbreaking
         if self.is_rooted:
-            risk_present = True
             new_risk = Risk(
                 risk="Evidence of jailbreaking",
                 description="The devices is jailbroken, giving the person of concern nearly unbounded access to the device and the client's activity on the device. Reasons jailbreaking is susptected: {}.".format(self.rooted_reasons)
@@ -801,7 +780,6 @@ class ScanData(Dictable):
             pprint(app_risk_report.to_dict())
             if app_risk_report.risk_present:
                 self.concerning_apps.append(a)
-                risk_present = True
                 app_risk_list = [r.risk for r in app_risk_report.risk_details]
                 new_risk = Risk(
                     risk="Risk from app: {}".format(a.title),
@@ -809,7 +787,7 @@ class ScanData(Dictable):
                 )
                 risks.append(new_risk)
 
-        self.risk_report = RiskReport(risk_present=risk_present, risk_details=risks)
+        self.risk_report = RiskReport(risk_details=risks)
         pprint(self.risk_report.to_dict())
 
         return self.risk_report
