@@ -279,45 +279,28 @@ class AppInfo(Dictable):
             return full_fnames
         return list()
     
-    def _get_flag_risks(self):
-        risks = []
-
-
-        return list()
-
-    def generate_risk_report(self):
-        '''
-        Generate a risk report about this app. Possible risks:
-            - Flag-based concerns (spyware, offstore)
-            - App installed without permission (accounting for system apps)
-            - App is sharing data
-        '''
-        risks = []
-
-        # Flag-based risk
+    def _get_flag_risk(self):
         if 'spyware' in self.flags or 'onstore-spyware' in self.flags or 'offstore-spyware' in self.flags:
-            new_risk = Risk(
+            return Risk(
                 risk="Spyware application",
                 description="This app is designed for covert surveillance."
             )
-            risks.append(new_risk)
         elif 'regex-spy' in self.flags:
-            new_risk = Risk(
+            return Risk(
                 risk="Potential spyware application",
                 description="This app may be a spyware application based on its title and description."
             )
-            risks.append(new_risk)
-            pass
+        return None
 
-        # Data leakage
+    def _get_data_leakage_risk(self):
         if self.permission_info.access == 'yes':
-            new_risk = Risk(
+            return Risk(
                 risk="Data leakage",
                 description="This app is sharing data with the person of concern. Investigation assessment: {}.".format(self.permission_info.describe)
             )
-            risks.append(new_risk)
+        return None
 
-        # Installation issues are only relevant if it's not a system app
+    def _get_install_risk(self):
         if 'system-app' not in self.flags:
             if self.install_info.knew_installed == 'no' or self.install_info.installed == 'no' or self.install_info.coerced == 'yes':
 
@@ -331,11 +314,35 @@ class AppInfo(Dictable):
                 elif self.install_info.coerced == 'yes':
                     description = "The client was coerced into installing this app."
 
-                new_risk = Risk(
+                return Risk(
                     risk="App installed without permission",
                     description=description
                 )
-                risks.append(new_risk)
+        return None
+
+    def generate_risk_report(self):
+        '''
+        Generate a risk report about this app. Possible risks:
+            - Flag-based concerns (spyware, offstore)
+            - App installed without permission (accounting for system apps)
+            - App is sharing data
+        '''
+        risks = list()
+
+        # Flag-based risk
+        flag_risk = self._get_flag_risk()
+        if flag_risk:
+            risks.append(flag_risk)
+
+        # Data leakage
+        data_risks = self._get_data_leakage_risk()
+        if data_risks:
+            risks.append(data_risks)
+
+        # Installation issues
+        install_risk = self._get_install_risk()
+        if install_risk:
+            risks.append(install_risk)
 
         self.risk_report = RiskReport(risk_details=risks)
 
@@ -463,6 +470,27 @@ class TAQSmarthome(DictInitClass):
                  'smart_home_acct_linking': "Can the person of concern access any of the smart home devices via their own smart home account?"}
     attrs = list(questions.keys())
 
+    def _get_phys_access_risk(self):
+        if self.smart_home_setup == 'poc':  # Check that this is what it would be, and not "Person of Concern"
+            return Risk(
+                risk="Physical access to smart home devices",
+                description="With physical access to smart home devices, someone could (1) learn private information, for example by querying a smart speaker, or (2) reconfigure the devices to share information or allow remote control. Someone who initially set up the devices would have even more power to configure as they wish."
+            )
+        elif self.smart_home_access == 'yes':
+            return Risk(
+                risk="Physical access to smart home devices",
+                description="With physical access to smart home devices, someone could (1) learn private information, for example by querying a smart speaker, or (2) reconfigure the devices to share information or allow remote control."
+            )
+        return None
+    
+    def _get_online_access_risk(self):
+        if self.smart_home_acct_sharing == 'yes' or self.smart_home_acct_linking == 'yes':
+            return Risk(
+                risk="Online access to smart home devices",
+                description="Someone with online access to a smart home device might be able to gather data (e.g., viewing video recordings or voice commands used) or manipulate the device state (e.g., turning a light off or locking a smart lock.)"
+            )
+        return None
+
     def generate_risk_report(self) -> RiskReport:
         '''
         Generate a risk report for smart home device compromise. Possible risks:
@@ -472,26 +500,14 @@ class TAQSmarthome(DictInitClass):
         risks = list()
 
         # Physical access
-        if self.smart_home_setup == 'poc':  # Check that this is what it would be, and not "Person of Concern"
-            new_risk = Risk(
-                risk="Physical access to smart home devices",
-                description="With physical access to smart home devices, someone could (1) learn private information, for example by querying a smart speaker, or (2) reconfigure the devices to share information or allow remote control. Someone who initially set up the devices would have even more power to configure as they wish."
-            )
-            risks.append(new_risk)
-        elif self.smart_home_access == 'yes':
-            new_risk = Risk(
-                risk="Physical access to smart home devices",
-                description="With physical access to smart home devices, someone could (1) learn private information, for example by querying a smart speaker, or (2) reconfigure the devices to share information or allow remote control."
-            )
-            risks.append(new_risk)
+        phys_access_risk = self._get_phys_access_risk()
+        if phys_access_risk:
+            risks.append(phys_access_risk)
 
         # Online access
-        if self.smart_home_acct_sharing == 'yes' or self.smart_home_acct_linking == 'yes':
-            new_risk = Risk(
-                risk="Online access to smart home devices",
-                description="Someone with online access to a smart home device might be able to gather data (e.g., viewing video recordings or voice commands used) or manipulate the device state (e.g., turning a light off or locking a smart lock.)"
-            )
-            risks.append(new_risk)
+        online_access_risk = self._get_online_access_risk()
+        if online_access_risk:
+            risks.append(online_access_risk)
 
         self.risk_report = RiskReport(risk_details=risks)
 
