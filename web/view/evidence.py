@@ -111,8 +111,6 @@ def evidence_home():
         notes = load_json_data(ConsultDataTypes.NOTES.value)
     )
 
-    consult_data.prepare_reports()
-
     form = HomepageNoteForm(**consult_data.notes.to_dict())
 
     context = dict(

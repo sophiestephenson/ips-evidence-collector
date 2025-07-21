@@ -778,6 +778,8 @@ class AccountInvestigation(Dictable):
         self.security_questions = SecurityQuestions(security_questions)
         self.notes = Notes(notes)
 
+        self.generate_risk_report()
+
 
     def generate_risk_report(self):
 
@@ -884,6 +886,8 @@ class TAQData(Dictable):
         self.smarthome = TAQSmarthome(smarthome)
         self.kids = TAQKids(kids)
         self.legal = TAQLegal(legal)
+
+        self.generate_risk_reports()
 
     def generate_risk_reports(self):
         '''

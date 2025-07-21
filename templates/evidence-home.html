@@ -44,7 +44,7 @@
                     </summary>
                     <div class="content">
                         Risks identified:
-                        
+
                         <div class="risks">
                             <ul>
                             {% for risk in consultdata.taq.all_risks %}
@@ -106,6 +106,15 @@
                                 <a href="{{ url_for('evidence_scan_investigate', ser=scan.serial) }}" class="btn btn-default">Edit investigation</a>
                             </td>
                         </tr> 
+                        {% if account.risk_report.risk_present %}
+                        <tr>The following risks were identified:
+                            <ul>
+                                {% for risk in account.risk_report.risk_details %}
+                                <li>{{risk.risk}}</li>
+                                {% endfor %}
+                            </ul>
+                        </tr>
+                        {% endif %}
                         {% endfor %}
                         </tbody>
                     </table></div>
