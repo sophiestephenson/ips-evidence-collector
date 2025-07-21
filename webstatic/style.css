@@ -464,6 +464,16 @@ div.header > h3 > a {
 table.summarytable > tbody > tr > th,
 table.summarytable > tbody > tr > td  {
     padding: 5px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+
+table.summarytable > tbody > tr > th {
+    vertical-align: bottom;
+}
+
+table.summarytable ul {
+    padding-inline-start: 10px;
 }
 
 span .badge .badge-danger {
