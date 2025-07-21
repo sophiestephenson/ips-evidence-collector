@@ -75,22 +75,25 @@
             </ol>
     
             <h3>{{accounts|length}} Accounts Checked for Compromise</h3>
-            {% if concerning_accounts|length == 0 %}
-            No evidence of account compromise at this time.
-            {% else %}
             <ol>
-                {% for account in concerning_accounts %}
+                {% for account in accounts %}
                 <li><b>{{account.platform}}{% if account.platform != account.account_nickname %} (Nickname: {{account.account_nickname}}){% endif %}</b>
-                    <div>
-                    {% if account.access_concern %}
-                    {{account.access_report}}
-                    {% endif %}
-                    {{account.ability_report}}
-                    </div>
+                {% if account.risk_report.risk_present %}
+                <div>The following risks were identified:
+                    <ul>
+                        {% for risk in account.risk_report.risk_details %}
+                        <li>{{risk.risk}}</li>
+                        {% endfor %}
+                    </ul>
+
+                </div>
+                {% else %}
+                <div>No risks identified.</div>
+                {% endif %}
+            </li>
                 </li>
                 {% endfor %}
             </ol>
-            {%endif%}
         </div>
 
         <h3>Comments on the Consultation</h3>

@@ -253,14 +253,14 @@ class TwoFactorSettings(DictInitClass):
 
         if self.second_factor_access == 'yes':
             new_risk = Risk(
-                risk = "Second factor compromised",
+                risk = "Compromised second factor",
                 description = "If someone has access to the second authentication factor, they only need the account password to log into the account. They could also intercept and delete login notifications."
             )
             risks.append(new_risk)
 
         elif self.enabled == 'no':
             new_risk = Risk(
-                risk = "Two-factor authentication off",
+                risk = "Two-factor authentication disabled",
                 description = "Without two-factor authentication, others only need the account password to log in."
             )
             risks.append(new_risk)
@@ -292,7 +292,7 @@ class SecurityQuestions(DictInitClass):
 
             if self.know == 'yes':
                 new_risk = Risk(
-                    risk = "Security questions guessable",
+                    risk = "Guessable security questions",
                     description = "The client believes the person of concern knows the answers to security questions, which could allow them an easy way to log into the account."
                     
                 )
@@ -747,7 +747,6 @@ class ConsultationData(Dictable):
             scan.generate_risk_report()
         for account in self.accounts:
             account.generate_risk_report()
-        self.concerning_accounts = [acct for acct in self.accounts if acct.is_concerning]
 
 
 
@@ -790,7 +789,6 @@ class AccountInvestigation(Dictable):
             risks.extend(risk_report.risk_details)
 
         self.risk_report = RiskReport(risk_details=risks)
-        self.is_concerning = self.risk_report.risk_present
 
         return self.risk_report
 
