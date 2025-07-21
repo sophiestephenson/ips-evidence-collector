@@ -476,6 +476,16 @@
                         </tbody>
                     </table>
                     </div>
+                    {% if account["suspicious_logins"]["risk_report"]["risk_present"] %}
+                    <div class="appsummary">
+                        Risk identified. Risks:
+                        <ul>
+                            {% for risk in account["suspicious_logins"]["risk_report"]["risk_details"] %}
+                            <li><b>{{risk["risk"]}}</b>: {{risk["description"]}}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
                 </td>
             </tr>
             {% if account["suspicious_logins"]["screenshot_files"]|length > 0 %}
@@ -507,6 +517,16 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                        {% if account["password_check"]["risk_report"]["risk_present"] %}
+                    <div class="appsummary">
+                        Risk identified. Risks:
+                        <ul>
+                            {% for risk in account["password_check"]["risk_report"]["risk_details"] %}
+                            <li><b>{{risk["risk"]}}</b>: {{risk["description"]}}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
                     </div>
                 </td>
             </tr>
@@ -525,7 +545,16 @@
                             </tr>
                             {% endfor %}
                         </tbody>
-                    </table>
+                    </table>    {% if account["recovery_settings"]["risk_report"]["risk_present"] %}
+                    <div class="appsummary">
+                        Risk identified. Risks:
+                        <ul>
+                            {% for risk in account["recovery_settings"]["risk_report"]["risk_details"] %}
+                            <li><b>{{risk["risk"]}}</b>: {{risk["description"]}}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
                     </div>
                 </td>
             </tr>
@@ -556,6 +585,16 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                        {% if account["two_factor_settings"]["risk_report"]["risk_present"] %}
+                        <div class="appsummary">
+                            Risk identified. Risks:
+                            <ul>
+                                {% for risk in account["two_factor_settings"]["risk_report"]["risk_details"] %}
+                                <li><b>{{risk["risk"]}}</b>: {{risk["description"]}}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
                     </div>
                 </td>
             </tr>
@@ -587,6 +626,16 @@
                             {% endfor %}
                         </tbody>
                     </table>
+                        {% if account["security_questions"]["risk_report"]["risk_present"] %}
+                    <div class="appsummary">
+                        Risk identified. Risks:
+                        <ul>
+                            {% for risk in account["security_questions"]["risk_report"]["risk_details"] %}
+                            <li><b>{{risk["risk"]}}</b>: {{risk["description"]}}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
                     </div>
                 </td>
             </tr>

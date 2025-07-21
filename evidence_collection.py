@@ -133,7 +133,7 @@ class DictInitClass(Dictable):
 
 class SuspiciousLogins(DictInitClass):
     questions = {
-        'recognize': "Do you see any unrecognized devices that have logged into this account?",
+        'recognize': "Do you see any unrecognized devices that are logged into this account?",
         'describe_logins': "Which devices do you not recognize?",
         'activity_log': "In the login history, do you see any suspicious logins?",
         'describe_activity': "Which logins are suspicious, and why?"
@@ -142,12 +142,64 @@ class SuspiciousLogins(DictInitClass):
     screenshot_label = "suspicious_logins"
     get_screenshots = True
 
+    def generate_risk_report(self):
+        '''
+        Generate a risk report about suspicious logins. Possible risks:
+            - Unrecognized devices
+            - Suspicious logins
+        '''
+        risks = list()
+
+        if self.recognize == 'yes':
+            new_risk = Risk(
+                risk = "Unrecognized devices",
+                description = "There are unrecognized devices currently logged into this account. These devices are: {}.".format(self.describe_logins)
+            )
+            risks.append(new_risk)
+
+        if self.activity_log == 'yes':
+            new_risk = Risk(
+                risk = "Suspicious logins",
+                description = "There are suspicious logins that do not appear to have come from the client. Description: {}.".format(self.describe_activity)
+            )
+            risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_details=risks)
+
+        return self.risk_report
+
 class PasswordCheck(DictInitClass):
     questions = {
         "know": "Does the person of concern know the password for this account?",
         "guess": "Do you believe the person of concern could guess the password?",
     }
     attrs = list(questions.keys())
+
+    def generate_risk_report(self):
+        '''
+        Generate a risk report about password knowledge. Possible risks:
+            - Knowledge of passwords
+            - Ability to guess password
+        '''
+        risks = list()
+
+        if self.know == 'yes':
+            new_risk = Risk(
+                risk = "Password compromise",
+                description = "Knowing the password to this account could enable the person of concern to log in. (Note: If two-factor authentication is enabled, they would still need to bypass the second factor.)"
+            )
+            risks.append(new_risk)
+
+        elif self.guess == 'yes':
+            new_risk = Risk(
+                risk = "Potential password compromise",
+                description = "The client believes the person of concern could guess the password for this account. If they guess correctly, it would enable them to log in. (Note: If two-factor authentication is enabled, they would still need to bypass the second factor.)"
+            )
+            risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_details=risks)
+
+        return self.risk_report
 
 class RecoverySettings(DictInitClass):
     questions = {
@@ -162,6 +214,24 @@ class RecoverySettings(DictInitClass):
     screenshot_label = "recovery_settings"
     get_screenshots = True
 
+    def generate_risk_report(self):
+        '''
+        Generate a risk report about recovery settings. Possible risks:
+            - Recovery settings compromised
+        '''
+        risks = list()
+
+        if self.phone_access == 'yes' or self.email_access == 'yes':
+            new_risk = Risk(
+                risk = "Compromised recovery information",
+                description = "With access to the recovery contact information, someone can access an account without knowing the password using the 'Forgot password' option."
+            )
+            risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_details=risks)
+
+        return self.risk_report
+
 class TwoFactorSettings(DictInitClass):
     questions = {
         'enabled': "Is two-factor authentication enabled for this account?",
@@ -173,6 +243,32 @@ class TwoFactorSettings(DictInitClass):
     screenshot_label = "two_factor_settings"
     get_screenshots = True
 
+    def generate_risk_report(self):
+        '''
+        Generate a risk report about two factor settings. Possible risks:
+            - Two factor not set
+            - 2nd factor compromised
+        '''
+        risks = list()
+
+        if self.second_factor_access == 'yes':
+            new_risk = Risk(
+                risk = "Second factor compromised",
+                description = "If someone has access to the second authentication factor, they only need the account password to log into the account. They could also intercept and delete login notifications."
+            )
+            risks.append(new_risk)
+
+        elif self.enabled == 'no':
+            new_risk = Risk(
+                risk = "Two-factor authentication off",
+                description = "Without two-factor authentication, others only need the account password to log in."
+            )
+            risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_details=risks)
+
+        return self.risk_report
+
 
 class SecurityQuestions(DictInitClass):
     questions = {
@@ -183,6 +279,35 @@ class SecurityQuestions(DictInitClass):
     attrs = list(questions.keys())
     screenshot_label = "security_questions"
     get_screenshots = True
+
+    def generate_risk_report(self):
+        '''
+        Generate a risk report about security questions. Possible risks:
+            - Enabled
+            - Known
+        '''
+        risks = list()
+
+        if self.present == 'yes':
+
+            if self.know == 'yes':
+                new_risk = Risk(
+                    risk = "Security questions guessable",
+                    description = "The client believes the person of concern knows the answers to security questions, which could allow them an easy way to log into the account."
+                    
+                )
+                risks.append(new_risk)
+
+            else:
+                new_risk = Risk(
+                    risk = "Use of security questions",
+                    description = "The account allows login using security questions, which are not secure because they are easy to guess."
+                )
+                risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_details=risks)
+
+        return self.risk_report
 
 class InstallInfo(DictInitClass):
     questions = {
@@ -584,7 +709,6 @@ class ConsultationData(Dictable):
         self.setup = ConsultSetupData(**setup)
         self.taq = TAQData(**taq)
         self.accounts = [AccountInvestigation(**account) for account in accounts]
-        self.concerning_accounts = [acct for acct in self.accounts if acct.is_concerning]
         self.scans = [ScanData(**scan) for scan in scans]
         self.screenshot_dir = screenshot_dir
         self.notes = ConsultNotesData(**notes)
@@ -621,6 +745,9 @@ class ConsultationData(Dictable):
         self.taq.generate_risk_reports()
         for scan in self.scans:
             scan.generate_risk_report()
+        for account in self.accounts:
+            account.generate_risk_report()
+        self.concerning_accounts = [acct for acct in self.accounts if acct.is_concerning]
 
 
 
@@ -652,92 +779,20 @@ class AccountInvestigation(Dictable):
         self.security_questions = SecurityQuestions(security_questions)
         self.notes = Notes(notes)
 
-        self.access_report, self.ability_report, self.access_concern, self.ability_concern = self.generate_reports()
 
-        self.is_concerning = self.access_concern or self.ability_concern
+    def generate_risk_report(self):
 
+        risks = list()
 
-    def generate_reports(self, second_person=True, harmdoer="the person of concern"):
-        agent = "you"
-        if second_person:
-            agent = "the client"
+        for obj in [self.suspicious_logins, self.password_check, self.recovery_settings, self.two_factor_settings, self.security_questions]:
+            risk_report: RiskReport = obj.generate_risk_report()
+            pprint(risk_report.to_dict())
+            risks.extend(risk_report.risk_details)
 
-        # generally, more high level because there is a lot going on.
-        access_sentences = []
-        access_concern = False
+        self.risk_report = RiskReport(risk_details=risks)
+        self.is_concerning = self.risk_report.risk_present
 
-        # Suspicious logins
-        suspicious_logins = False
-        if self.suspicious_logins.recognize != "yes":
-            access_concern = True
-            suspicious_logins = True
-            if self.suspicious_logins.describe_logins != "":
-                access_sentences.append("There is evidence that someone other than {} is currently logged into this account using {}.".format(agent, self.suspicious_logins.describe_logins))
-            else:
-                access_sentences.append("There is evidence that someone other than {} is currently logged into this account.".format(agent))
-        elif self.suspicious_logins.activity_log != "no":
-            access_concern = True
-            suspicious_logins = True
-            access_sentences.append("There is evidence that someone other than {} has recently logged into this account.".format(agent))
-        else:
-            access_sentences.append("There is no evidence that someone other than {} has logged into this account recently.".format(agent))
-
-        # Passwords
-        pwd = False
-        if self.password_check.know != 'no' or self.password_check.guess != 'no':
-            pwd = True
-
-        # Recovery details
-        recovery = False
-        if (self.recovery_settings.email_present == 'yes' and self.recovery_settings.email_access != 'no'
-            ) or (
-            self.recovery_settings.phone_present == 'yes' and self.recovery_settings.phone_access != 'no'
-        ):
-            recovery = True
-
-        # Two-factor
-        twofactor = False
-        if self.two_factor_settings.enabled == 'yes' and self.two_factor_settings.second_factor_access != 'no':
-            twofactor = True
-
-        # Security questions
-        questions = False
-        if self.security_questions.present and self.security_questions.know != 'no':
-            questions = True
-
-        ability_sentences = []
-        ability_concern = False
-
-        if not (pwd or recovery or twofactor or questions):
-
-            other = ""
-            if suspicious_logins:
-                other = "other "
-            ability_sentences.append("There is no {}evidence that anyone else could access this account.".format(other))
-        else:
-            ability_concern = True
-            methods = []
-            if pwd:
-                methods.append("the password")
-            if recovery:
-                methods.append("the recovery contact information")
-            if questions:
-                methods.append("the security questions")
-
-            also = ""
-            if suspicious_logins:
-                also = "also "
-
-            if len(methods) > 1:
-                ability_sentences.append("There is {}evidence that {} can access this account via these methods: {}.".format(also, harmdoer, ", ".join(methods)))
-            else:
-                ability_sentences.append("There is {}evidence that {} can access this account via {}.".format(also, harmdoer, methods[0]))
-
-            if twofactor:
-                ability_sentences.append("{} has access to the second authentication factor; if they know the password, they could access this account without alerting {}.".format(harmdoer.capitalize(), agent))
-
-        return " ".join(access_sentences), " ".join(ability_sentences), access_concern, ability_concern
-
+        return self.risk_report
 
 
 class ScanData(Dictable):
@@ -837,7 +892,7 @@ class TAQData(Dictable):
         Generates all of the risk reports for the TAQ subforms.
         Gathers all risks together for the summary.
         '''
-        self.all_risks = []
+        self.all_risks = list()
 
         for obj in [self.devices, self.accounts, self.sharing, self.smarthome, self.kids]:
             risk_report: RiskReport = obj.generate_risk_report()
