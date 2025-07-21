@@ -332,9 +332,10 @@ table.printout_columns tr th td {
 }
 
 
-table.printout_columns th {
+table.printout_columns > tbody > tr > th {
     text-align: left;
     font-weight: normal;
+    width: 70%;
 }
 
 table.printout_columns + table {
@@ -350,9 +351,10 @@ table.printout_columns + table {
     border: 1px solid black;
     border-left: 5px solid black;
     background-color: goldenrod;
-    padding: 5px 10px;
+    padding: 10px;
     margin-right: 10px;
     margin-bottom: 20px;
+    font-size: small;
 }
 
 .footer {
@@ -589,11 +591,10 @@ div.form-responses table > tbody > tr > td {
 }
 
 div.form-responses table > tbody > tr > th {
-    width: 300px;
+    width: 60%;
 }
 
 div.form-responses table > tbody > tr > td {
-    width: 500px;
     background-color: white;
 }
 

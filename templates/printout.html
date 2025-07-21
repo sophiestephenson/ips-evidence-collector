@@ -114,110 +114,148 @@
     </div>
 
 <div class="pagebreak"></div>
-<div class="new-page form-responses">
+<div class="new-page">
     <h1>Technology Assessment Questionnaire</h1>
     <hr />
     <p>A set of questions used to assess a client's technology risk factors.</p>
 
+
     <h3>Risk of Device Compromise</h3>
-    <table>
+    <table class="printout_columns">
         <tbody>
-            {% for q in formquestions["taq"]["devices"] %}
-            <tr>
-                <th>{{formquestions["taq"]["devices"][q]}}</th>
-                <td>{{taq["devices"][q]|capitalize}}</td>
+            <tr valign="top">
+                <th>
+                    <div class="form-responses">
+                    <table>
+                        <tbody>
+                            {% for q in formquestions["taq"]["devices"] %}
+                            <tr>
+                                <th>{{formquestions["taq"]["devices"][q]}}</th>
+                                <td>{{taq["devices"][q]|capitalize}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                </th>
+                <td>
+                    {% for risk in taq["devices"]["risk_report"]["risk_details"] %}
+                    <div class="appsummary">
+                       <span>&#9888;&#65039;</span> 
+                       <span><b>{{risk["risk"]}}</b>: {{risk["description"]}}
+                       </span>
+                    </div>
+                    {% endfor %}
+                </td>
             </tr>
-            {% endfor %}
         </tbody>
     </table>
 
-    {% if taq["devices"]["risk_report"]["risk_present"] %}
-    <div class="appsummary">
-        Risk identified. Risks:
-        <ul>
-            {% for risk in taq["devices"]["risk_report"]["risk_details"] %}
-            <li><b>{{risk["risk"]}}</b>: {{risk["description"]}}</li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
 
     <h3>Risk of Account Compromise</h3>
-    <table>
+    <table class="printout_columns">
         <tbody>
-            {% for q in formquestions["taq"]["accounts"] %}
-            <tr>
-                <th>{{formquestions["taq"]["accounts"][q]}}</th>
-                <td>{{taq["accounts"][q]}}</td>
+            <tr valign="top">
+                <th>
+                    <div class="form-responses">
+                    <table>
+                        <tbody>
+                            {% for q in formquestions["taq"]["accounts"] %}
+                            <tr>
+                                <th>{{formquestions["taq"]["accounts"][q]}}</th>
+                                <td>{{taq["accounts"][q]}}</td>
+                            </tr>
+                            {% endfor %}
+                            {% for q in formquestions["taq"]["sharing"] %}
+                            <tr>
+                                <th>{{formquestions["taq"]["sharing"][q]}}</th>
+                                <td>{{taq["sharing"][q]}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                </th>
+                <td>
+                    {% for risk in taq["accounts"]["risk_report"]["risk_details"] %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                       <span><b>{{risk["risk"]}}</b>: {{risk["description"]}}</span>
+                    </div>
+                    {% endfor %}
+                    {% for risk in taq["sharing"]["risk_report"]["risk_details"] %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                       <span><b>{{risk["risk"]}}</b>: {{risk["description"]}}</span>
+                    </div>
+                    {% endfor %}
+                </td>
             </tr>
-            {% endfor %}
-            {% for q in formquestions["taq"]["sharing"] %}
-            <tr>
-                <th>{{formquestions["taq"]["sharing"][q]}}</th>
-                <td>{{taq["sharing"][q]}}</td>
-            </tr>
-            {% endfor %}
         </tbody>
     </table>
 
-    {% if taq["accounts"]["risk_report"]["risk_present"] or taq["sharing"]["risk_report"]["risk_present"] %}
-    <div class="appsummary">
-        Risk identified. Risks:
-        <ul>
-            {% for risk in taq["accounts"]["risk_report"]["risk_details"] %}
-            <li><b>{{risk["risk"]}}</b>: {{risk["description"]}}</li>
-            {% endfor %}
-            {% for risk in taq["sharing"]["risk_report"]["risk_details"] %}
-            <li><b>{{risk["risk"]}}</b>: {{risk["description"]}}</li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
     
     <h3>Risks from Smart Home Devices</h3>
-    <table>
+    <table class="printout_columns">
         <tbody>
-            {% for q in formquestions["taq"]["smarthome"] %}
-            <tr>
-                <th>{{formquestions["taq"]["smarthome"][q]}}</th>
-                <td>{{taq["smarthome"][q]}}</td>
+            <tr valign="top">
+                <th>
+                    <div class="form-responses">
+                    <table>
+                        <tbody>
+                            {% for q in formquestions["taq"]["smarthome"] %}
+                            <tr>
+                                <th>{{formquestions["taq"]["smarthome"][q]}}</th>
+                                <td>{{taq["smarthome"][q]}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                </th>
+                <td>
+                    {% for risk in taq["smarthome"]["risk_report"]["risk_details"] %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                       <span><b>{{risk["risk"]}}</b>: {{risk["description"]}}</span>
+                    </div>
+                    {% endfor %}
+                </td>
             </tr>
-            {% endfor %}
         </tbody>
     </table>
-    {% if taq["smarthome"]["risk_report"]["risk_present"] %}
-    <div class="appsummary">
-        Risk identified. Risks:
-        <ul>
-            {% for risk in taq["smarthome"]["risk_report"]["risk_details"] %}
-            <li><b>{{risk["risk"]}}</b>: {{risk["description"]}}</li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
     
     <h3>Risks from Children's Devices</h3>
-    <table>
+    <table class="printout_columns">
         <tbody>
-            {% for q in formquestions["taq"]["kids"] %}
-            <tr>
-                <th>{{formquestions["taq"]["kids"][q]}}</th>
-                <td>{{taq["kids"][q]}}</td>
+            <tr valign="top">
+                <th>
+                    <div class="form-responses">
+                    <table>
+                        <tbody>
+                            {% for q in formquestions["taq"]["kids"] %}
+                            <tr>
+                                <th>{{formquestions["taq"]["kids"][q]}}</th>
+                                <td>{{taq["kids"][q]}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                </th>
+                <td>
+                    {% for risk in taq["kids"]["risk_report"]["risk_details"] %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                       <span>
+                            <b>{{risk["risk"]}}</b>: {{risk["description"]}}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </td>
             </tr>
-            {% endfor %}
         </tbody>
-    </table>
-    {% if taq["kids"]["risk_report"]["risk_present"] %}
-    <div class="appsummary">
-        Risk identified. Risks:
-        <ul>
-            {% for risk in taq["kids"]["risk_report"]["risk_details"] %}
-            <li><b>{{risk["risk"]}}</b>: {{risk["description"]}}</li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
-
+     </table>
 </div>
 
 {% for scan in scans %}
