@@ -6,7 +6,7 @@
         body  { padding: 5mm; font-size: 11pt; }
         .new-page { padding-top: 5mm; }
 
-        h2 {font-size: 15pt; }
+        h2 {font-size: 17pt; }
         h3 {font-size: 13pt; }
 
         .app-padding-top {padding-top: 12mm;}
@@ -31,8 +31,7 @@
 
 
     <div class="printout-summary">
-        <h2>Summary of Findings</h2>
-        <hr/>
+        <h2 class="separator">Summary of Findings</h2>
         <div class="overallsummary">
             <p><i>The following are automated summaries generated from the detailed content of the report.</i></p>
 
@@ -348,7 +347,7 @@
 
     {% if scan.selected_apps|length > 0 %}
         {% for app in scan.selected_apps %}
-    <h2>Application Check {{loop.index}}: {{app.title}}</h3>
+    <h2 class="separator">Application Check {{loop.index}}: {{app.title}}</h3>
 
      <h3>App Information</h3>
     
@@ -448,7 +447,11 @@
             </tr>
             <tr>
                 <th>
-                    <h3>Client Questionnaire</h3>
+                    <h3>Installation Questionnaire</h3>
+                </th>
+            </tr>
+            <tr>
+                <th>
                     <div class="form-responses">
                         <table>
                             <tbody>
@@ -479,6 +482,9 @@
                     {% endfor %}
                 </td>
             </tr>
+            <tr><th>
+                    <h3>Data Leakage Questionnaire</h3>
+                </th></tr>
             <tr>
                 <th>
                     <div class="form-responses">
@@ -540,15 +546,26 @@
 </div>
 {% endfor %}
 
+<div class="pagebreak"></div>
 <div class="new-page">
-    <h1>Account Compromise Check: {{accounts|length}} investigated</h1>
+    <h1>Account Compromise Checks</h1>
     <hr />
+    <div>
+        {% if accounts|length > 0 %}
+        <p>Summary of accounts investigated:</p>
+        <ol>
+            {% for account in accounts %}
+            <li>{{account.platform}}{% if account.platform != account.account_nickname %} (Nickname: {{account.account_nickname}}){% endif %}</li>
+            {% endfor %}
+        </ol>
+        {% else %}
+        <p>No accounts investigated.</p>
+        {% endif %}
+    </div>
 
-    <br>
-    {% if accounts|length > 0 %}
     {% for account in accounts %}
     <div class="account-check">
-    <h2 {% if loop.index > 1 %}class="app-padding-top"{%endif%}>{{loop.index}}. {{account["account_nickname"]}} ({{account["platform"]}})</h2>
+    <h2  class="separator">Account Check {{loop.index}}: {{account.platform}}{% if account.platform != account.account_nickname %} (Nickname: {{account.account_nickname}}){% endif %}</h2>
 
     <table class="printout_columns">
         <tbody>
@@ -763,21 +780,10 @@
         </tbody>
     </table>     
 </div>
-<div class="pagebreak"></div>
-    {% endfor %}
-    {% endif %}
+{% endfor %}
 </div>
 
 
-<!--
-<hr />
-<div class="footer">
-    <p>
-        <em>Sherloc Investigation Report. &copy; Madison Tech Clinic,
-            University of Wisconsin Madison.</em>
-    </p>
-</div>
--->
 </body>
 </html>
 

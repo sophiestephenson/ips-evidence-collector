@@ -342,19 +342,21 @@ table.printout_columns + table {
     border: 1px;
 }
 
+table.printout_columns td {
+    overflow: visible;
+}
+
 #printout-header th {
     font-style: italic;
     font-weight: normal;
 }
 
 .appsummary {
-    border: 1px solid black;
-    border-left: 5px solid black;
-    background-color: goldenrod;
-    padding: 10px;
-    margin-right: 10px;
-    margin-bottom: 20px;
-    font-size: small;
+  border-left: 6px solid goldenrod;
+  background-color: #fef2cb;
+  padding: 10px 15px;
+  margin-bottom: 15px;
+  font-style: italic;
 }
 
 .footer {
@@ -580,27 +582,34 @@ table.accountinfo > tbody > tr > th > h4 {
     padding-right: 10px;
 }
 
-div.form-responses table > tbody > tr > th,
-div.form-responses table > tbody > tr > td {
+div.form-responses table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 11pt;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+div.form-responses table th,
+div.form-responses table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    vertical-align: top;
     font-weight: normal;
     text-align: left;
-    padding: 10px;
-    margin: 0px;
-    background-color: lightgray;
-    border: 1px lightgray solid;
 }
 
-div.form-responses table > tbody > tr > th {
-    width: 300px;
+div.form-responses table th {
+    background-color: #f5f5f5;
+    width: 40%;
 }
 
-div.form-responses table > tbody > tr > td {
-    background-color: white;
-    width: 200px;
+div.form-responses table td {
+    background-color: #fff;
 }
 
-div.form-responses table > tbody > tr {
-    margin: 0px;
+div.form-responses table tr:nth-child(even) td {
+    background-color: #fafafa;
 }
 
 table.data-table th {
@@ -627,3 +636,37 @@ div.comments {
 p.report-explainer {
     width: 80%;
 }
+
+h2.separator {
+  border-left: 6px solid #333;
+  padding: 5px;
+  padding-left: 10px;
+  background-color: #f5f5f5;
+  color: #222;
+  font-weight: bold;
+}
+
+div.line {
+  display: inline-block; /* Allows the div to be on the same line */
+  width: 100%; /* Adjust line length as needed */
+  height: 3px; /* Adjust line thickness as needed */
+  background-color: #000; /* Set the line color */
+}
+
+.print-footer {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  font-size: 9pt;
+  text-align: center;
+  padding: 5mm 0;
+  color: #555;
+  border-top: 1px solid #ccc;
+  background: white;
+}
+
+.footer {
+    position: running(footer);
+  }

@@ -1269,7 +1269,14 @@ def create_printout(context):
 
     options = {
         'enable-local-file-access': True,
-        'footer-right': '[page]'
+        'margin-top': '15mm',
+        'margin-bottom': '20mm',
+        'margin-left': '10mm',
+        'margin-right': '10mm',
+        'footer-spacing': '5',
+        'footer-center': '© Madison Tech Clinic • https://techclinic.cs.wisc.edu • Page [page] of [toPage]',
+        #'footer-font-name': 'Courier',
+        'footer-font-size': '8',
     }
 
     pdfkit.from_string(html_string, out_file, options=options, configuration=config, css=css_path, verbose=True)
