@@ -29,48 +29,50 @@
     <hr />
     </div>
 
+    <div class="pagebreak"></div>
 
+
+    <h1>Summary of Findings</h1>
+    <hr/>
     <div class="printout-summary">
-        <h2>Summary of Findings</h2>
         <div class="overallsummary">
-            <p><i>The following are automated summaries generated from the detailed content of the report.</i></p>
+            <p><i>The following are automated summaries generated deterministically from the content of this report.</i></p>
 
-            <h3 class="">Technology Assessment Questionnaire</h3> 
-            {% if taq["all_risks"]|length == 0 %}
-                <p>No risk factors identified.</p>
-            {% else%}
-                <b>{{taq["all_risks"]|length}} risks identified.</b>
-                <table class="data-table">
-                    <tbody>
-                        {% for item in taq["all_risks"] %}
-                        <tr>
-                            <th>{{item.risk}}</th>
-                            <td>{{item.description}}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {%endif%}
+            <h2 class="">Technology Assessment Questionnaire</h2> 
+                        {% if taq["all_risks"]|length > 0 %}
+                            <div>The following risks were identified:
+                                <ul>
+                                    {% for risk in taq["all_risks"] %}
+                                    <li><span class="inlinerisk"><span>&#9888;&#65039;</span> <b>{{risk.risk}}</b></span>: {{risk.description}}.</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% else %}
+                            <div>No risks identified.</div>
+                            {% endif %}
     
-            <h3 class="">{{scans|length}} Devices Scanned</h3>
+            <h2 class="">{{scans|length}} Devices Scanned</h2>
             {% if scans|length > 0 %}
             <table class="summary-table">
-                <tbody>
                     <thead>
+                        <tr>
                         <th>Device</th>
                         <th>Risks Identified</th>
+                    </tr>
                     </thead>
+                <tbody>
                     {% for scan in scans%}
                     <tr>
                         <th>
-                            {{scan.device_manufacturer}} {{scan.device_model}}, Version {{scan.device_version}} (Nickname: {{scan.device_nickname}})
+                            <div>{{scan.device_manufacturer}} {{scan.device_model}}, Version {{scan.device_version}}</div>
+                            <div>(Nickname: {{scan.device_nickname}})</div> 
                         </th>
                         <td>
                             {% if scan.risk_report.risk_present %}
                             <div>The following risks were identified:
                                 <ul>
                                     {% for risk in scan.risk_report.risk_details %}
-                                    <li>{{risk.risk}}</li>
+                                    <li><span class="inlinerisk"><span>&#9888;&#65039;</span> <b>{{risk.risk}}</b></span>: {{risk.description}}.</li>
                                     {% endfor %}
                                 </ul>
 
@@ -88,14 +90,18 @@
             <p>No devices were scanned during this appointment.</p>
             {% endif %}
 
-            <h3 class="">{{accounts|length}} Accounts Checked for Compromise</h3>
+            <br/>
+
+            <h2 class="">{{accounts|length}} Accounts Checked for Compromise</h2>
             {% if accounts|length > 0 %}
             <table class="summary-table">
-                <tbody>
                     <thead>
-                        <th>Account</th>
-                        <th>Risks Identified</th>
+                        <tr>
+                            <th>Account</th>
+                            <th>Risks Identified</th>
+                        </tr>
                     </thead>
+                <tbody>
                     {% for account in accounts%}
                     <tr>
                         <th>
@@ -106,7 +112,7 @@
                             <div>The following risks were identified:
                                 <ul>
                                     {% for risk in account.risk_report.risk_details %}
-                                    <li>{{risk.risk}}</li>
+                                    <li><span class="inlinerisk"><span>&#9888;&#65039;</span> <b>{{risk.risk}}</b></span>: {{risk.description}}.</li>
                                     {% endfor %}
                                 </ul>
 
@@ -125,7 +131,9 @@
             {% endif %}
         </div>
 
-        <h3 class="">Comments on the Consultation</h3>
+            <br/>
+
+        <h2 class="">Comments on the Consultation</h2>
          <div class="form-responses">
             <table>
                 <tbody>

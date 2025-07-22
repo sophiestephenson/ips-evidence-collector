@@ -708,10 +708,13 @@ table.summary-table > tbody > tr > th,
 table.summary-table > tbody > tr > td {
     text-align: left;
     vertical-align: top;
-    width: 50%;
     padding: 5px 10px;
     border: 1px solid #ddd;
     font-weight: normal;
+}
+
+table.summary-table > tbody > tr > th {
+    width: 30%;
 }
 
 table.summary-table {
@@ -724,4 +727,27 @@ table.summary-table {
 
 table.summary-table thead {
     background-color: #f5f5f5;
+}
+
+table.summary-table thead th {
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+table.summary-table ul, ol {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  padding-left: 20px;
+}
+
+table.summary-table li {
+  margin-bottom: 8px; /* reduce vertical spacing between items */
+  line-height: 1.4em;   /* tighten line spacing */
+}
+
+span.inlinerisk {
+    background-color: #fef2cb;
+    padding: 2px 5px;
+    border-radius: 5px;
+    font-weight: normal;
 }
