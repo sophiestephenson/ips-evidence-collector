@@ -413,42 +413,42 @@
                     {% endfor %}
                 </td>
             </tr>
-        </tbody>
-    </table>
-            
-    <br/>
-    <div>
-        Permissions Used:
-        {% if app.permission_info.permissions | length > 0 %}
-        <ul>
-            {% for p in app.permission_info.permissions %}
-            <li>{{p[0]}} ({{p[1]}})</li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        None.
-        {% endif %}
-    </div>              
-
-        <h3>Screenshots</h3>
-        {% if app.screenshot_files|length > 0 %}
-            <div class="screenshot-container"><span>
-            {% for fname in app.screenshot_files %}
-                <div class="form-screenshot">
-                    <img height='400px' src="{{url_root}}{{fname}}"/>
-                </div>
-            {% endfor %}
-            </span>
-            </div>
-        {% else %}
-        No screenshots taken.
-        {% endif %}
-
-    <h3>Client Questionnaire</h3>
-    <table class="printout_columns">
-        <tbody>
-            <tr valign="top">
+            <tr>
                 <th>
+                <div>
+                    Permissions Used:
+                    {% if app.permission_info.permissions | length > 0 %}
+                    <ul>
+                        {% for p in app.permission_info.permissions %}
+                        <li>{{p[0]}} ({{p[1]}})</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    None.
+                    {% endif %}
+                </div>  
+                </th>   
+            </tr>
+            <tr>
+                <th>
+                <h3>Screenshots</h3>
+                {% if app.screenshot_files|length > 0 %}
+                    <div class="screenshot-container"><span>
+                    {% for fname in app.screenshot_files %}
+                        <div class="form-screenshot">
+                            <img height='400px' src="{{url_root}}{{fname}}"/>
+                        </div>
+                    {% endfor %}
+                    </span>
+                    </div>
+                {% else %}
+                No screenshots taken.
+                {% endif %}
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    <h3>Client Questionnaire</h3>
                     <div class="form-responses">
                         <table>
                             <tbody>
@@ -507,24 +507,28 @@
                     {% endfor %}
                 </td>
             </tr>
+            <tr>
+                <th>
+                <h3>Comments</h3>
+                <div class="form-responses">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th><i>Consultant Comments</i></th>
+                                <td>{{app.notes.consultant_notes}}</td>
+                            </tr>
+                            <tr>
+                                <th><i>Client Comments</i></th>
+                                <td>{{app.notes.client_notes}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                </th>
+            </tr>
         </tbody>
     </table>
 
-        <h3>Comments</h3>
-         <div class="form-responses">
-            <table>
-                <tbody>
-                    <tr>
-                        <th><i>Consultant Comments</i></th>
-                        <td>{{app.notes.consultant_notes}}</td>
-                    </tr>
-                    <tr>
-                        <th><i>Client Comments</i></th>
-                        <td>{{app.notes.client_notes}}</td>
-                    </tr>
-                </tbody>
-            </table>
-         </div>
         {% endfor %}
     {% else %}
     <div style="page-break-after:always">
@@ -545,47 +549,46 @@
     {% for account in accounts %}
     <div class="account-check">
     <h2 {% if loop.index > 1 %}class="app-padding-top"{%endif%}>{{loop.index}}. {{account["account_nickname"]}} ({{account["platform"]}})</h2>
-    
-            <div class="form-responses">
-            <tr valign="top">
-              <th><h3>Login Activity Questionnaire</h3></th>
+
+    <table class="printout_columns">
+        <tbody>
+            <tr valign="top">       
+                <th><h3>Login Activity Questionnaire</h3></th>
             </tr>
             <tr>
+                <th>
+                    <div class="form-responses">
+                        <table>
+                            <tbody>
+                                {% for q in formquestions["accounts"]["suspicious_logins"] %}
+                                <tr>
+                                    <th>{{formquestions["accounts"]["suspicious_logins"][q]}}</th>
+                                    <td>{{account["suspicious_logins"][q]|capitalize}}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </th>
                 <td>
-                <div class="form-responses">
-                    <table>
-                        <tbody>
-                            {% for q in formquestions["accounts"]["suspicious_logins"] %}
-                            <tr>
-                                <th>{{formquestions["accounts"]["suspicious_logins"][q]}}</th>
-                                <td>{{account["suspicious_logins"][q]|capitalize}}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    </div>
-                    {% if account["suspicious_logins"]["risk_report"]["risk_present"] %}
+                    {% for risk in account["suspicious_logins"]["risk_report"]["risk_details"] %}
                     <div class="appsummary">
-                        Risk identified. Risks:
-                        <ul>
-                            {% for risk in account["suspicious_logins"]["risk_report"]["risk_details"] %}
-                            <li><b>{{risk["risk"]}}</b>: {{risk["description"]}}</li>
-                            {% endfor %}
-                        </ul>
+                        <span>&#9888;&#65039;</span> 
+                        <span><b>{{risk["risk"]}}</b>: {{risk["description"]}}</span>
                     </div>
-                    {% endif %}
+                    {% endfor %}
                 </td>
             </tr>
             {% if account["suspicious_logins"]["screenshot_files"]|length > 0 %}
             <tr>
-                <td><div class="screenshot-container">
+                <th><div class="screenshot-container">
                 <span>
                 {% for fname in account["suspicious_logins"]["screenshot_files"] %}
                     <div class="form-screenshot">
                         <img height='400px' src="{{url_root}}{{fname}}"/>
                     </div>
                 {% endfor %}
-                </div></span></td>
+                </div></span></th>
             </tr>
             {% endif %}
 
@@ -593,7 +596,7 @@
               <th><h3>Password Questionnaire</h3></th>
             </tr>
             <tr>
-                <td>
+                <th>
                 <div class="form-responses">
                     <table>
                         <tbody>
@@ -605,24 +608,22 @@
                             {% endfor %}
                         </tbody>
                     </table>
-                        {% if account["password_check"]["risk_report"]["risk_present"] %}
+                </div>
+                </th>
+                <td>
+                    {% for risk in account["password_check"]["risk_report"]["risk_details"] %}
                     <div class="appsummary">
-                        Risk identified. Risks:
-                        <ul>
-                            {% for risk in account["password_check"]["risk_report"]["risk_details"] %}
-                            <li><b>{{risk["risk"]}}</b>: {{risk["description"]}}</li>
-                            {% endfor %}
-                        </ul>
+                        <span>&#9888;&#65039;</span> 
+                        <span><b>{{risk["risk"]}}</b>: {{risk["description"]}}</span>
                     </div>
-                    {% endif %}
-                    </div>
+                    {% endfor %}
                 </td>
             </tr>
             <tr>
                   <th><h3>Recovery Settings Questionnaire</h3></th>
             </tr>
             <tr>
-                <td>
+                <th>
                 <div class="form-responses">
                     <table>
                         <tbody>
@@ -633,35 +634,34 @@
                             </tr>
                             {% endfor %}
                         </tbody>
-                    </table>    {% if account["recovery_settings"]["risk_report"]["risk_present"] %}
+                    </table>    
+                </div>
+                </th>
+                <td>
+                    {% for risk in account["recovery_settings"]["risk_report"]["risk_details"] %}
                     <div class="appsummary">
-                        Risk identified. Risks:
-                        <ul>
-                            {% for risk in account["recovery_settings"]["risk_report"]["risk_details"] %}
-                            <li><b>{{risk["risk"]}}</b>: {{risk["description"]}}</li>
-                            {% endfor %}
-                        </ul>
+                        <span>&#9888;&#65039;</span> 
+                        <span><b>{{risk["risk"]}}</b>: {{risk["description"]}}</span>
                     </div>
-                    {% endif %}
-                    </div>
+                    {% endfor %}
                 </td>
             </tr>
             {% if account["recovery_settings"]["screenshot_files"]|length > 0 %}
             <tr>
-                <td><div class="screenshot-container"><span>
+                <th><div class="screenshot-container"><span>
                 {% for fname in account["recovery_settings"]["screenshot_files"] %}
                     <div class="form-screenshot">
                         <img height='400px' src="{{url_root}}{{fname}}"/>
                     </div>
                 {% endfor %}
-                </div></span></td>
+                </div></span></th>
             </tr>
             {% endif %}
             <tr>
               <th><h3>Two-Factor Authentication Questionnaire</h3></th>
             </tr>
             <tr>
-                <td>
+                <th>
                     <div class="form-responses">
                     <table>
                         <tbody>
@@ -673,17 +673,15 @@
                             {% endfor %}
                         </tbody>
                     </table>
-                        {% if account["two_factor_settings"]["risk_report"]["risk_present"] %}
-                        <div class="appsummary">
-                            Risk identified. Risks:
-                            <ul>
-                                {% for risk in account["two_factor_settings"]["risk_report"]["risk_details"] %}
-                                <li><b>{{risk["risk"]}}</b>: {{risk["description"]}}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                        {% endif %}
                     </div>
+                </th>
+                <td>
+                    {% for risk in account["two_factor_settings"]["risk_report"]["risk_details"] %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                        <span><b>{{risk["risk"]}}</b>: {{risk["description"]}}</span>
+                    </div>
+                    {% endfor %}
                 </td>
             </tr>
             {% if account["two_factor_settings"]["screenshot_files"]|length > 0 %}
@@ -702,7 +700,7 @@
             </tr>
     
             <tr>
-                <td>
+                <th>
                     <div class="form-responses">
                     <table>
                         <tbody>
@@ -714,22 +712,20 @@
                             {% endfor %}
                         </tbody>
                     </table>
-                        {% if account["security_questions"]["risk_report"]["risk_present"] %}
+                    </div>
+                </th>
+                <td>
+                    {% for risk in account["security_questions"]["risk_report"]["risk_details"] %}
                     <div class="appsummary">
-                        Risk identified. Risks:
-                        <ul>
-                            {% for risk in account["security_questions"]["risk_report"]["risk_details"] %}
-                            <li><b>{{risk["risk"]}}</b>: {{risk["description"]}}</li>
-                            {% endfor %}
-                        </ul>
+                        <span>&#9888;&#65039;</span> 
+                        <span><b>{{risk["risk"]}}</b>: {{risk["description"]}}</span>
                     </div>
-                    {% endif %}
-                    </div>
+                    {% endfor %}
                 </td>
             </tr>
             {% if account["security_questions"]["screenshot_files"]|length > 0 %}
             <tr>
-                <td>
+                <th>
                     <div class="screenshot-container">
                     <span>{% for fname in account["security_questions"]["screenshot_files"] %}
                         <div class="form-screenshot">
@@ -737,27 +733,35 @@
                         </div>
                     {% endfor %}
                     </div></span>
-                </td>
+                </th>
             </tr>
             {% endif %}
-        
-        </div>
-                    
-        <h3>Comments</h3>
-         <div class="form-responses">
-            <table>
-                <tbody>
-                    <tr>
-                        <th><i>Consultant Comments</i></th>
-                        <td>{{account["notes"]["consultant_notes"]}}</td>
-                    </tr>
-                    <tr>
-                        <th><i>Client Comments</i></th>
-                        <td>{{account["notes"]["client_notes"]}}</td>
-                    </tr>
-                </tbody>
-            </table>
-         </div>
+
+            <tr>
+                <th>
+                    <h3>Comments</h3>
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    <div class="form-responses">
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <th><i>Consultant Comments</i></th>
+                                    <td>{{account["notes"]["consultant_notes"]}}</td>
+                                </tr>
+                                <tr>
+                                    <th><i>Client Comments</i></th>
+                                    <td>{{account["notes"]["client_notes"]}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </th>
+            </tr>
+        </tbody>
+    </table>     
 </div>
 <div class="pagebreak"></div>
     {% endfor %}
