@@ -124,6 +124,25 @@ details {
     font-size: 14px;
   }
 
+  .section-content {
+    max-width: 700px;
+    margin: auto;
+}
+
+.section-header {
+  border-top: 2px solid #666;
+  padding-top: 10px;
+  margin-top: 20px;
+  font-size: 1.25em;
+}
+
+.section-title {
+  background-color: #f2f2f2;
+  padding: 4px 8px;
+  display: inline-block;
+  border-radius: 4px;
+}
+
 
   .secondarybutton {
     float: left;
@@ -338,6 +357,10 @@ table.printout_columns > tbody > tr > th {
     width: 600px;
 }
 
+table.printout_columns > tbody > tr > td {
+    vertical-align: top;
+}
+
 table.printout_columns + table {
     border: 1px;
 }
@@ -355,8 +378,7 @@ table.printout_columns td {
   border-left: 6px solid goldenrod;
   background-color: #fef2cb;
   padding: 10px 15px;
-  margin-bottom: 15px;
-  font-style: italic;
+  font-size: small;
 }
 
 .footer {
@@ -587,7 +609,6 @@ div.form-responses table {
     width: 100%;
     font-size: 11pt;
     border-radius: 2px;
-    overflow: hidden;
 }
 
 div.form-responses table th,
@@ -601,7 +622,7 @@ div.form-responses table td {
 
 div.form-responses table th {
     background-color: #f5f5f5;
-    width: 40%;
+    width: 50%;
 }
 
 div.form-responses table td {
@@ -610,6 +631,18 @@ div.form-responses table td {
 
 div.form-responses table tr:nth-child(even) td {
     background-color: #fafafa;
+}
+
+.form-responses td:first-child {
+  font-weight: bold;
+  background: #f9f9f9;
+  width: 40%;
+}
+.form-responses td:last-child {
+  color: #333;
+}
+.form-responses tr {
+  border-bottom: 1px solid #ddd;
 }
 
 table.data-table th {
@@ -637,7 +670,7 @@ p.report-explainer {
     width: 80%;
 }
 
-h2.separator {
+.separator {
   border-left: 6px solid #333;
   padding: 5px;
   padding-left: 10px;
@@ -670,3 +703,25 @@ div.line {
 .footer {
     position: running(footer);
   }
+
+table.summary-table > tbody > tr > th,
+table.summary-table > tbody > tr > td {
+    text-align: left;
+    vertical-align: top;
+    width: 50%;
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    font-weight: normal;
+}
+
+table.summary-table {
+    border: 1px solid #ddd;
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 11pt;
+    border-radius: 2px;
+}
+
+table.summary-table thead {
+    background-color: #f5f5f5;
+}

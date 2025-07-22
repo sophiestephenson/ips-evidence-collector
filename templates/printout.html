@@ -3,7 +3,7 @@
 <head>
     <style>
         /* margins for printing */
-        body  { padding: 5mm; font-size: 11pt; }
+        body  { padding: 5mm; font-size: 12pt; }
         .new-page { padding-top: 5mm; }
 
         h2 {font-size: 17pt; }
@@ -11,7 +11,7 @@
 
         .app-padding-top {padding-top: 12mm;}
 
-        body { font-family: Arial, Helvetica, sans-serif}
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
     </style>
 </head>
 
@@ -31,11 +31,11 @@
 
 
     <div class="printout-summary">
-        <h2 class="separator">Summary of Findings</h2>
+        <h2>Summary of Findings</h2>
         <div class="overallsummary">
             <p><i>The following are automated summaries generated from the detailed content of the report.</i></p>
 
-            <h3>Technology Assessment Questionnaire</h3> 
+            <h3 class="">Technology Assessment Questionnaire</h3> 
             {% if taq["all_risks"]|length == 0 %}
                 <p>No risk factors identified.</p>
             {% else%}
@@ -52,49 +52,80 @@
                 </table>
             {%endif%}
     
-            <h3>{{scans|length}} Devices Scanned</h3>
-            <ol>
-            {% for scan in scans%}
-            <li><div><b>{{scan.device_manufacturer}} {{scan.device_model}}, Version {{scan.device_version}} (Nickname: {{scan.device_nickname}})</b></div>
-                <div><i>Serial Number:</i> {{scan.serial}}</div>
-                {% if scan.risk_report.risk_present %}
-                <div>The following risks were identified:
-                    <ul>
-                        {% for risk in scan.risk_report.risk_details %}
-                        <li>{{risk.risk}}</li>
-                        {% endfor %}
-                    </ul>
+            <h3 class="">{{scans|length}} Devices Scanned</h3>
+            {% if scans|length > 0 %}
+            <table class="summary-table">
+                <tbody>
+                    <thead>
+                        <th>Device</th>
+                        <th>Risks Identified</th>
+                    </thead>
+                    {% for scan in scans%}
+                    <tr>
+                        <th>
+                            {{scan.device_manufacturer}} {{scan.device_model}}, Version {{scan.device_version}} (Nickname: {{scan.device_nickname}})
+                        </th>
+                        <td>
+                            {% if scan.risk_report.risk_present %}
+                            <div>The following risks were identified:
+                                <ul>
+                                    {% for risk in scan.risk_report.risk_details %}
+                                    <li>{{risk.risk}}</li>
+                                    {% endfor %}
+                                </ul>
 
-                </div>
-                {% else %}
-                <div>No risks identified.</div>
-                {% endif %}
-            </li>
-            {%endfor%}
-            </ol>
-    
-            <h3>{{accounts|length}} Accounts Checked for Compromise</h3>
-            <ol>
-                {% for account in accounts %}
-                <li><b>{{account.platform}}{% if account.platform != account.account_nickname %} (Nickname: {{account.account_nickname}}){% endif %}</b>
-                {% if account.risk_report.risk_present %}
-                <div>The following risks were identified:
-                    <ul>
-                        {% for risk in account.risk_report.risk_details %}
-                        <li>{{risk.risk}}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% else %}
-                <div>No risks identified.</div>
-                {% endif %}
-            </li>
-                </li>
-                {% endfor %}
-            </ol>
+                            </div>
+                            {% else %}
+                            <div>No risks identified.</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {%endfor%}
+                    <tr></tr>
+                </tbody>
+            </table>
+            {% else %}
+            <p>No devices were scanned during this appointment.</p>
+            {% endif %}
+
+            <h3 class="">{{accounts|length}} Accounts Checked for Compromise</h3>
+            {% if accounts|length > 0 %}
+            <table class="summary-table">
+                <tbody>
+                    <thead>
+                        <th>Account</th>
+                        <th>Risks Identified</th>
+                    </thead>
+                    {% for account in accounts%}
+                    <tr>
+                        <th>
+                            {{account.platform}}{% if account.platform != account.account_nickname %} (Nickname: {{account.account_nickname}}){% endif %}
+                        </th>
+                        <td>
+                            {% if account.risk_report.risk_present %}
+                            <div>The following risks were identified:
+                                <ul>
+                                    {% for risk in account.risk_report.risk_details %}
+                                    <li>{{risk.risk}}</li>
+                                    {% endfor %}
+                                </ul>
+
+                            </div>
+                            {% else %}
+                            <div>No risks identified.</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {%endfor%}
+                    <tr></tr>
+                </tbody>
+            </table>
+            {% else %}
+            <p>No devices were scanned during this appointment.</p>
+            {% endif %}
         </div>
 
-        <h3>Comments on the Consultation</h3>
+        <h3 class="">Comments on the Consultation</h3>
          <div class="form-responses">
             <table>
                 <tbody>
@@ -703,13 +734,13 @@
             </tr>
             {% if account["two_factor_settings"]["screenshot_files"]|length > 0 %}
             <tr>
-                <td><div class="screenshot-container"><span>
+                <th><div class="screenshot-container"><span>
                 {% for fname in account["two_factor_settings"]["screenshot_files"] %}
                     <div class="form-screenshot">
                         <img height='400px' src="{{url_root}}{{fname}}"/>
                     </div>
                 {% endfor %}
-                </div></span></td>
+                </div></span></th>
             </tr>
             {% endif %}
             <tr>
