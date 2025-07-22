@@ -11,25 +11,34 @@
 
         .app-padding-top {padding-top: 12mm;}
 
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+        body { font-family: 'Georgia', serif; }
     </style>
 </head>
 
 <body>
-    <div id="printout-header">
-        <img id="printout-header" width="50px" src="https://pages.cs.wisc.edu/~srstephenso2/misc/uwlogo.png"/>
-        <h1>Sherloc Investigation Report</h1>
+    <div class="cover-page">
+        <div class="cover-inner">
+            <h1 class="report-title">Investigation Report</h1>
+            <p class="report-subtitle">Prepared by the Madison Tech Clinic</p>
+            <img src="{{url_root}}webstatic/images/mtc-logo.png" alt="Madison Tech Clinic Logo" class="cover-logo">
 
-        <p class="report-explainer">This report describes a consultation performed by Madison Tech Clinic volunteers. Please see <a href>https://techclinic.cs.wisc.edu</a> for more information about the Madison Tech Clinic.</p>
+            <div class="cover-meta">
 
-        <div>
-            <span><b>Client Name:</b> {{setup.client}}&emsp; <b>Start Time:</b> {{setup.date}}</span>
+            <p><b>Client Name:</b> {{setup.client}}</p>
+            <p><b>Consultation Start Time:</b> {{setup.date}}</p>
+
+            <hr/>
+
+            <p>This report describes the findings of a Madison Tech Clinic consultation. The report was created using the Sherloc investigative tool developed by Madison Tech Clinic volunteers. Source code for Sherloc is available at <a href>https://github.com/sophiestephenson/ips-evidence-collector</a>.</p>
+                
+            <p>Please see <a href>https://techclinic.cs.wisc.edu</a> or contact <a href>techclinic.madison@gmail.com</a> for more information about the Madison Tech Clinic, Sherloc, or this report.</p>
+            </div>
+
         </div>
-        <br/>
-    <hr />
     </div>
-
     <div class="pagebreak"></div>
+
+<div class="new-page"></div>
 
 
     <h1>Summary of Findings</h1>

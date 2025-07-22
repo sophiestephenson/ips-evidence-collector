@@ -751,3 +751,49 @@ span.inlinerisk {
     border-radius: 5px;
     font-weight: normal;
 }
+
+
+.cover-page {
+  page-break-after: always;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: 'Georgia', serif;
+  color: #222;
+  background-color: #fff;
+}
+
+.cover-inner {
+  max-width: 600px;
+  margin: auto;
+}
+
+.report-title {
+  font-size: 36pt;
+  margin-bottom: 0.2em;
+}
+
+.report-subtitle {
+  font-size: 16pt;
+  margin-bottom: 2em;
+  color: #555;
+}
+
+.cover-meta {
+  font-size: 12pt;
+  text-align: left;
+  margin: 0 auto 2em;
+  line-height: 1.6;
+}
+
+.cover-footer {
+  font-size: 10pt;
+  color: #888;
+}
+
+.cover-logo {
+  width: 500px;
+  margin-bottom: 2em;
+}
