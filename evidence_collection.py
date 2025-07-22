@@ -317,6 +317,31 @@ class InstallInfo(DictInitClass):
     }
     attrs = list(questions.keys())
 
+    def generate_risk_report(self, system_app = False):
+        risks = list()
+
+        if not system_app:
+            if self.knew_installed == 'no' or self.installed == 'no' or self.coerced == 'yes':
+
+                description = ""
+                if self.knew_installed == 'no':
+                    description = "The client did not know this app was installed, indicating someone else installed it."
+
+                elif self.installed == 'no':
+                    description = "The client did not install this app, indicating someone else installed it."
+
+                elif self.coerced == 'yes':
+                    description = "The client was coerced into installing this app."
+
+                new_risk = Risk(
+                    risk="App installed without permission",
+                    description=description
+                )
+                risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_details=risks)
+        return self.risk_report
+
 class PermissionInfo(DictInitClass):
     questions = {
         "access": "Review the permissions used. Can any of this information be accessed by the person of concern using this app?",
@@ -325,6 +350,19 @@ class PermissionInfo(DictInitClass):
     attrs = ['permissions',
              'access',
              'describe']
+
+    def generate_risk_report(self):
+        risks = list()
+
+        if self.access == 'yes':
+            new_risk = Risk(
+                risk="Data leakage",
+                description="This app is sharing data with the person of concern. Investigation assessment: {}.".format(self.describe)
+            )
+            risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_details=risks)
+        return self.risk_report
 
 
 class AppInfo(Dictable):
@@ -403,7 +441,7 @@ class AppInfo(Dictable):
             full_fnames.sort()
             return full_fnames
         return list()
-    
+
     def _get_flag_risk(self):
         if 'spyware' in self.flags or 'onstore-spyware' in self.flags or 'offstore-spyware' in self.flags:
             return Risk(
@@ -415,34 +453,6 @@ class AppInfo(Dictable):
                 risk="Potential spyware application",
                 description="This app may be a spyware application based on its title and description."
             )
-        return None
-
-    def _get_data_leakage_risk(self):
-        if self.permission_info.access == 'yes':
-            return Risk(
-                risk="Data leakage",
-                description="This app is sharing data with the person of concern. Investigation assessment: {}.".format(self.permission_info.describe)
-            )
-        return None
-
-    def _get_install_risk(self):
-        if 'system-app' not in self.flags:
-            if self.install_info.knew_installed == 'no' or self.install_info.installed == 'no' or self.install_info.coerced == 'yes':
-
-                description = ""
-                if self.install_info.knew_installed == 'no':
-                    description = "The client did not know this app was installed, indicating someone else installed it."
-
-                elif self.install_info.installed == 'no':
-                    description = "The client did not install this app, indicating someone else installed it."
-
-                elif self.install_info.coerced == 'yes':
-                    description = "The client was coerced into installing this app."
-
-                return Risk(
-                    risk="App installed without permission",
-                    description=description
-                )
         return None
 
     def generate_risk_report(self):
@@ -460,14 +470,12 @@ class AppInfo(Dictable):
             risks.append(flag_risk)
 
         # Data leakage
-        data_risks = self._get_data_leakage_risk()
-        if data_risks:
-            risks.append(data_risks)
+        data_risks = self.permission_info.generate_risk_report()
+        risks.extend(data_risks.risk_details)
 
         # Installation issues
-        install_risk = self._get_install_risk()
-        if install_risk:
-            risks.append(install_risk)
+        install_risks = self.install_info.generate_risk_report(system_app='system-app' in self.flags)
+        risks.extend(install_risks.risk_details)
 
         self.risk_report = RiskReport(risk_details=risks)
 

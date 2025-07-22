@@ -267,18 +267,6 @@
     <p>*Note: This scan was done manually. Automated scan was not possible, so suspicious apps were identified by the consultant and added by hand.*</p>
     {% endif %}
 
-
-            {% if scan.risk_report.risk_present %}
-            <div class="appsummary">
-                Risk identified. Risks:
-                <ul>
-                    {% for risk in scan.risk_report.risk_details %}
-                    <li><b>{{risk.risk}}</b>: {{risk.description}}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
-
     <h3>Device Details</h3>
     <table class="data-table">
         <tbody>
@@ -309,16 +297,34 @@
         </tbody>
     </table>
 
-    <h3>Jailbreak Assessment</h3>
-    <table class="data-table">
+    <table class="printout_columns">
         <tbody>
-            <tr>
-                <th>Evidence of Jailbreaking?</th>
-                <td>{{"Yes" if scan.is_rooted else "No"}}</td>
-            </tr>
-            <tr>
-                <th>Description</th>
-                <td>{{scan.rooted_reasons}}</td>
+            <tr valign="top">
+                <th>
+                    <h3>Jailbreak Assessment</h3>
+                    <table class="data-table">
+                        <tbody>
+                            <tr>
+                                <th>Evidence of Jailbreaking?</th>
+                                <td>{{"Yes" if scan.is_rooted else "No"}}</td>
+                            </tr>
+                            <tr>
+                                <th>Description</th>
+                                <td>{{scan.rooted_reasons}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </th>
+                <td>
+                    {% for risk in scan.risk_report.risk_details %}
+                    {% if "app" not in risk.risk %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                        <span><b>{{risk.risk}}</b>: {{risk.description}}</span>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </td>
             </tr>
         </tbody>
     </table>
@@ -344,76 +350,85 @@
         {% for app in scan.selected_apps %}
     <h2>Application Check {{loop.index}}: {{app.title}}</h3>
 
-            {% if app.risk_report.risk_present %}
-            <div class="appsummary">
-                Risk identified. Risks:
-                <ul>
-                    {% for risk in app.risk_report.risk_details %}
-                    <li><b>{{risk.risk}}</b>: {{risk.description}}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            {% endif %}
+     <h3>App Information</h3>
+    
+    <table class="printout_columns">
+        <tbody>
+            <tr valign="top">
+                <th>
+                    <table class="appinfo data-table">
+                        <tbody>
+                            <tr>
+                                <th>Automated App Flags</th>
+                                <td>
+                                    {% for flag in app.flags %}
+                                        {% if flag == 'system-app' %}
+                                        <span class="flag">{{flag}}</span>
+                                        {% elif flag == 'spyware' or flag == 'regex-spy' %}
+                                        <span class="flag flag-danger">{{flag}}</span>
+                                        {% elif flag != '' %}
+                                        <span class="flag flag-warning">{{flag}}</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                            </tr>
 
-            <h3>App information</h3>
-            <table class="appinfo data-table">
-            <tbody>
-                <tr>
-                    <th>Automated App Flags</th>
-                    <td>
-                        {% for flag in app.flags %}
-                            {% if flag == 'system-app' %}
-                            <span class="flag">{{flag}}</span>
-                            {% elif flag == 'spyware' or flag == 'regex-spy' %}
-                            <span class="flag flag-danger">{{flag}}</span>
-                            {% elif flag != '' %}
-                             <span class="flag flag-warning">{{flag}}</span>
-                            {% endif %}
-                        {% endfor %}
-                    </td>
-                </tr>
-                <tr>
-                    <th>App ID</th>
-                    <td>
-                        {{app.appId}}
-                    </td>
-                </tr>
-                <tr>
-                    <th>Date Installed</th>
-                    <td>
-                        {% if app.install_time %}
-                        {{app.install_time}}
-                        {% else %}
-                        <i>Unknown</i>
-                        {% endif %}
-                    </td>
-                </tr>
-                <tr>
-                    <th>Permissions Used</th>
-                    <td>
-                        {% if app.permission_info.permissions | length > 0 %}
-                        <ul>
-                            {% for p in app.permission_info.permissions %}
-                            <li>{{p[0]}} ({{p[1]}})</li>
-                            {% endfor %}
-                        </ul>
-                        {% else %}
-                        None
-                        {% endif %}
-                    </td>
-                </tr>
-                <tr>
-                    <th>App Description</th>
-                    <td>
-                        {% if app.description %}
-                        {{app.description}}
-                        {% else %}
-                        <i>None provided</i>
-                        {% endif %}
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                            <tr>
+                                <th>App ID</th>
+                                <td>
+                                    {{app.appId}}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Date Installed</th>
+                                <td>
+                                    {% if app.install_time %}
+                                    {{app.install_time}}
+                                    {% else %}
+                                    <i>Unknown</i>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>App Description</th>
+                                <td>
+                                    {% if app.description %}
+                                    {{app.description}}
+                                    {% else %}
+                                    <i>None provided</i>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </th>
+                <td>
+                    {% for risk in app.risk_report.risk_details %}
+                    {% if "spyware" in risk.risk %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                        <span><b>{{risk.risk}}</b>: {{risk.description}}</span>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+            
+    <br/>
+    <div>
+        Permissions Used:
+        {% if app.permission_info.permissions | length > 0 %}
+        <ul>
+            {% for p in app.permission_info.permissions %}
+            <li>{{p[0]}} ({{p[1]}})</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        None.
+        {% endif %}
+    </div>              
 
         <h3>Screenshots</h3>
         {% if app.screenshot_files|length > 0 %}
@@ -429,12 +444,14 @@
         No screenshots taken.
         {% endif %}
 
-        <h3>Client Questionnaire</h3>
-        
-                        <div class="form-responses">
+    <h3>Client Questionnaire</h3>
+    <table class="printout_columns">
+        <tbody>
+            <tr valign="top">
+                <th>
+                    <div class="form-responses">
                         <table>
                             <tbody>
-                                <tr valign="top">
                                     <tr>
                                         <th>{{formquestions["apps"]["install_info"]["knew_installed"]}}</th>
                                         <td>{{app.install_info.knew_installed |
@@ -449,6 +466,24 @@
                                         <td>{{app.install_info.coerced |
                                         capitalize}}</td>
                                     </tr>
+                        </tbody>
+                    </table>
+                    </div>
+                </th>
+                <td>
+                    {% for risk in app.install_info.risk_report.risk_details %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                        <span><b>{{risk.risk}}</b>: {{risk.description}}</span>
+                    </div>
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <div class="form-responses">
+                        <table>
+                            <tbody>
                                     <tr>
                                         <th>{{formquestions["apps"]["permission_info"]["access"]}}</th>
                                         <td>{{app.permission_info.access |
@@ -458,10 +493,23 @@
                                         <th>{{formquestions["apps"]["permission_info"]["describe"]}}</th>
                                         <td>{{app.permission_info.describe}}</td>
                                     </tr>
-                                </tr>
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
                     </div>
+                </th>
+                <td>
+
+                    {% for risk in app.permission_info.risk_report.risk_details %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                        <span><b>{{risk.risk}}</b>: {{risk.description}}</span>
+                    </div>
+                    {% endfor %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
         <h3>Comments</h3>
          <div class="form-responses">
             <table>

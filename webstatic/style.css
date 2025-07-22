@@ -335,7 +335,7 @@ table.printout_columns tr th td {
 table.printout_columns > tbody > tr > th {
     text-align: left;
     font-weight: normal;
-    width: 70%;
+    width: 600px;
 }
 
 table.printout_columns + table {
@@ -591,11 +591,12 @@ div.form-responses table > tbody > tr > td {
 }
 
 div.form-responses table > tbody > tr > th {
-    width: 60%;
+    width: 300px;
 }
 
 div.form-responses table > tbody > tr > td {
     background-color: white;
+    width: 200px;
 }
 
 div.form-responses table > tbody > tr {
