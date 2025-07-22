@@ -124,6 +124,25 @@ details {
     font-size: 14px;
   }
 
+  .section-content {
+    max-width: 700px;
+    margin: auto;
+}
+
+.section-header {
+  border-top: 2px solid #666;
+  padding-top: 10px;
+  margin-top: 20px;
+  font-size: 1.25em;
+}
+
+.section-title {
+  background-color: #f2f2f2;
+  padding: 4px 8px;
+  display: inline-block;
+  border-radius: 4px;
+}
+
 
   .secondarybutton {
     float: left;
@@ -310,23 +329,44 @@ div.notes textarea {
     margin-bottom: 15px;
 }
 
-div.printout-summary {
+div.pagebreak {
+    break-after: page;
     page-break-after: always;
+}
+
+div.new-page {
+    break-before: page;
+}
+
+div.printout-summary {
+    break-after: page;
 }
 
 table.printout_columns {
-    page-break-after: always;
+    break-after: page;
+}
+
+table.printout_columns tr th td {
+    vertical-align: top;
 }
 
 
-table.printout_columns th {
+table.printout_columns > tbody > tr > th {
     text-align: left;
-    font-style: italic;
     font-weight: normal;
-
+    width: 600px;
 }
+
+table.printout_columns > tbody > tr > td {
+    vertical-align: top;
+}
+
 table.printout_columns + table {
     border: 1px;
+}
+
+table.printout_columns td {
+    overflow: visible;
 }
 
 #printout-header th {
@@ -335,12 +375,11 @@ table.printout_columns + table {
 }
 
 .appsummary {
-    border: 1px solid black;
-    border-left: 5px solid black;
-    background-color: rgb(208, 206, 206);
-    padding: 5px 10px;
-    margin-right: 10px;
-    margin-bottom: 20px;
+  border-left: 6px solid goldenrod;
+  background-color: #fef2cb;
+  padding: 10px 15px;
+  font-size: small;
+  margin-top: 52px;
 }
 
 .footer {
@@ -405,8 +444,14 @@ table.appinfo th {
     max-width: 200px;
     height: auto;
     border: 1px solid black;
+    float: left;
 }
 
+.screenshot-container::after {
+  content: "";
+  clear: both;
+  display: table;
+}
 
 table.appselect > tbody > tr > td > p {
     color: purple;
@@ -446,6 +491,16 @@ div.header > h3 > a {
 table.summarytable > tbody > tr > th,
 table.summarytable > tbody > tr > td  {
     padding: 5px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+
+table.summarytable > tbody > tr > th {
+    vertical-align: bottom;
+}
+
+table.summarytable ul {
+    padding-inline-start: 10px;
 }
 
 span .badge .badge-danger {
@@ -457,7 +512,7 @@ span .badge .badge-danger {
     min-width: 10px;
     padding: 3px 7px;
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1;
     color: #fff;
     text-align: center;
@@ -465,6 +520,7 @@ span .badge .badge-danger {
     vertical-align: middle;
     background-color: #777;
     border-radius: 10px;
+    font-size: 11pt;
 }
 
 .flag-warning {
@@ -547,4 +603,252 @@ div.screenshotfail {
 
 table.accountinfo > tbody > tr > th > h4 {
     padding-right: 10px;
+}
+
+div.form-responses table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 11pt;
+    border-radius: 2px;
+}
+
+div.form-responses table th,
+div.form-responses table td {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    vertical-align: top;
+    font-weight: normal;
+    text-align: left;
+    padding: 7px 5px;
+}
+
+div.form-responses table th {
+    background-color: #f5f5f5;
+    width: 50%;
+}
+
+div.form-responses table td {
+    background-color: #fff;
+}
+
+
+.form-responses td:first-child {
+  font-weight: bold;
+  background: #f9f9f9;
+  width: 40%;
+}
+.form-responses td:last-child {
+  color: #333;
+}
+.form-responses tr {
+  border-bottom: 1px solid #ddd;
+}
+
+.form-responses thead th {
+    font-weight: bold !important;
+    text-align: center !important;
+}
+
+table.data-table th {
+    text-align: right;
+    vertical-align: top;
+    padding-right: 15px;
+    font-weight: normal;
+    font-style: italic;
+}
+
+table.data-table td {
+    text-align: left;
+}
+
+div.comments {
+    border: 1px lightgray solid;
+    padding: 10px;
+    margin: 5px;
+    width: 90%;
+}
+
+p.report-explainer {
+    width: 80%;
+}
+
+.separator {
+  border-left: 6px solid #333;
+  padding: 5px;
+  padding-left: 10px;
+  background-color: #dddddd;
+  color: #222;
+  font-weight: bold;
+  margin-top: 40px;
+}
+
+div.line {
+  display: inline-block; /* Allows the div to be on the same line */
+  width: 100%; /* Adjust line length as needed */
+  height: 3px; /* Adjust line thickness as needed */
+  background-color: #000; /* Set the line color */
+}
+
+.print-footer {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  font-size: 9pt;
+  text-align: center;
+  padding: 5mm 0;
+  color: #555;
+  border-top: 1px solid #ccc;
+  background: white;
+}
+
+.footer {
+    position: running(footer);
+  }
+
+table.summary-table > tbody > tr > th,
+table.summary-table > tbody > tr > td {
+    text-align: left;
+    vertical-align: top;
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    font-weight: normal;
+}
+
+table.summary-table > tbody > tr > th {
+    width: 30%;
+}
+
+table.summary-table {
+    border: 1px solid #ddd;
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 11pt;
+    border-radius: 2px;
+}
+
+table.summary-table thead {
+    background-color: #f5f5f5;
+}
+
+table.summary-table thead th {
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+table.summary-table ul, table.summary-table ol {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  padding-left: 20px;
+}
+
+table.summary-table li {
+  margin-bottom: 8px; /* reduce vertical spacing between items */
+  line-height: 1.4em;   /* tighten line spacing */
+}
+
+span.inlinerisk {
+    background-color: #fef2cb;
+    padding: 2px 5px;
+    border-radius: 5px;
+    font-weight: normal;
+}
+
+
+.cover-page {
+  page-break-after: always;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: 'Georgia', serif;
+  color: #222;
+  background-color: #fff;
+}
+
+.cover-inner {
+  max-width: 600px;
+  margin: auto;
+}
+
+.report-title {
+  font-size: 36pt;
+  margin-bottom: 0.2em;
+}
+
+.report-subtitle {
+  font-size: 16pt;
+  margin-bottom: 2em;
+  color: #555;
+}
+
+.cover-meta {
+  font-size: 12pt;
+  text-align: left;
+  margin: 0 auto 2em;
+  line-height: 1.6;
+}
+
+.cover-footer {
+  font-size: 10pt;
+  color: #888;
+}
+
+.cover-logo {
+  width: 500px;
+  margin-bottom: 2em;
+}
+
+.permissions-used {
+  page-break-inside: auto !important;
+  break-inside: auto !important;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.permissions-used li {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin-bottom: 0.2em;
+}
+
+.app-info-table, .permissions-used {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10.5pt;
+  margin: 1em 0;
+}
+
+.app-info-table th {
+  text-align: right;
+  color: #666;
+  font-weight: 500;
+  padding: 4px 10px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.app-info-table td {
+  padding: 4px 10px;
+  color: black;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.tag {
+  font-size: 9pt;
+  text-transform: uppercase;
+  color: #555;
+  background: #f0f0f0;
+  border-radius: 3px;
+  padding: 5px;
+  margin-left: 10px;
+  font-family: sans-serif;
+  letter-spacing: 0.5px;
+  width: auto;
+}
+
+.appid {
+    font-family: 'Courier New', Courier, monospace;
 }

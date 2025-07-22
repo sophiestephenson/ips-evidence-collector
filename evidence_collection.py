@@ -11,22 +11,18 @@ Collect evidence of IPS. Basic version collects this data from the phone:
 """
 import json
 import os
-from collections import defaultdict
 from enum import Enum
 from pprint import pprint
-from time import sleep
 
 import jinja2
 import pdfkit
 from filelock import FileLock
-from flask import session, url_for
 from flask_wtf import FlaskForm
 from wtforms import (
     BooleanField,
     FieldList,
     FormField,
     HiddenField,
-    MultipleFileField,
     RadioField,
     SelectMultipleField,
     StringField,
@@ -60,9 +56,9 @@ YES_NO_CHOICES = EMPTY_CHOICE + [('yes', 'Yes'), ('no', 'No')]
 PERSON_CHOICES = [('me', 'Me'), ('poc', 'Person of concern'), ('other', 'Someone else'), ('unsure', 'Unsure')]
 
 LEGAL_CHOICES = [('ro', 'Restraining order'), ('div', 'Divorce or other family court'), ('cl', 'Criminal case'), ('other', 'Other')]
-DEVICE_TYPE_CHOICES =  EMPTY_CHOICE + [('android', 'Android'), ('ios', 'iOS')]
+DEVICE_TYPE_CHOICES = EMPTY_CHOICE + [('android', 'Android'), ('ios', 'iOS')]
 #two_factor_choices = [empty_choice] + [(x.lower(), x) for x in second_factors]
-TWO_FACTOR_CHOICES =  EMPTY_CHOICE + [(x.lower(), x) for x in SECOND_FACTORS] + [('none', 'None')]
+TWO_FACTOR_CHOICES = EMPTY_CHOICE + [(x.lower(), x) for x in SECOND_FACTORS] + [('none', 'None')]
 ACCOUNT_CHOICES = [(x, x) for x in ACCOUNTS]
 
 class Pages(Enum):
@@ -83,15 +79,15 @@ class Pages(Enum):
 
 # Helps create JSON encoding from nested classes
 class EvidenceDataEncoder(json.JSONEncoder):
-        def default(self, o):
-            return o.__dict__
+    def default(self, o):
+        return o.__dict__
 
 class Dictable:
     def to_dict(self):
         return json.loads(json.dumps(self, cls=EvidenceDataEncoder))
 
 # Base class for nested classes where we'll input data as dict (for ease)
-class DictInitClass (Dictable):
+class DictInitClass(Dictable):
     attrs = []
     screenshot_label = ""
     get_screenshots = False
@@ -128,7 +124,7 @@ class DictInitClass (Dictable):
                     if subdir.name == "account{}_{}".format(account_id, self.screenshot_label):
                         # add all files in that subdir
                         files = os.listdir(subdir.path)
-                        full_fnames = [os.path.join(subdir, f) for f in files] 
+                        full_fnames = [os.path.join(subdir, f) for f in files]
                         full_fnames.sort()
                         screenshot_files.extend(full_fnames)
 
@@ -136,58 +132,237 @@ class DictInitClass (Dictable):
         return []
 
 class SuspiciousLogins(DictInitClass):
-    attrs = ['recognize',
-             'describe_logins',
-             'login_screenshot',
-             'activity_log',
-             'describe_activity',
-             'activity_screenshot']
+    questions = {
+        'recognize': "Do you see any unrecognized devices that are logged into this account?",
+        'describe_logins': "Which devices do you not recognize?",
+        'activity_log': "In the login history, do you see any suspicious logins?",
+        'describe_activity': "Which logins are suspicious, and why?"
+    }
+    attrs = list(questions.keys())
     screenshot_label = "suspicious_logins"
     get_screenshots = True
 
+    def generate_risk_report(self):
+        '''
+        Generate a risk report about suspicious logins. Possible risks:
+            - Unrecognized devices
+            - Suspicious logins
+        '''
+        risks = list()
+
+        if self.recognize == 'yes':
+            new_risk = Risk(
+                risk = "Unrecognized devices",
+                description = "There are unrecognized devices currently logged into this account. These devices are: {}.".format(self.describe_logins)
+            )
+            risks.append(new_risk)
+
+        if self.activity_log == 'yes':
+            new_risk = Risk(
+                risk = "Suspicious logins",
+                description = "There are suspicious logins that do not appear to have come from the client. Description: {}.".format(self.describe_activity)
+            )
+            risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_details=risks)
+
+        return self.risk_report
+
 class PasswordCheck(DictInitClass):
-    attrs = ['know', 'guess']
+    questions = {
+        "know": "Does the person of concern know the password for this account?",
+        "guess": "Do you believe the person of concern could guess the password?",
+    }
+    attrs = list(questions.keys())
+
+    def generate_risk_report(self):
+        '''
+        Generate a risk report about password knowledge. Possible risks:
+            - Knowledge of passwords
+            - Ability to guess password
+        '''
+        risks = list()
+
+        if self.know == 'yes':
+            new_risk = Risk(
+                risk = "Password compromise",
+                description = "Knowing the password to this account could enable the person of concern to log in. (Note: If two-factor authentication is enabled, they would still need to bypass the second factor.)"
+            )
+            risks.append(new_risk)
+
+        elif self.guess == 'yes':
+            new_risk = Risk(
+                risk = "Potential password compromise",
+                description = "The client believes the person of concern could guess the password for this account. If they guess correctly, it would enable them to log in. (Note: If two-factor authentication is enabled, they would still need to bypass the second factor.)"
+            )
+            risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_details=risks)
+
+        return self.risk_report
 
 class RecoverySettings(DictInitClass):
-    attrs = ['phone_present',
-             'phone',
-             'phone_access',
-             'phone_screenshot',
-             'email_present',
-             'email',
-             'email_access',
-             'email_screenshot']
+    questions = {
+        'phone_present': "Is there a recovery phone number set for this account?",
+        'phone': "What is the recovery phone number?",
+        'phone_access': "Do you believe the person of concern has access to the recovery phone number?",
+        'email_present': "Is there a recovery email address set for this account?",
+        'email': "What is the recovery email address?",
+        'email_access': "Do you believe the person of concern has access to this recovery email address?"
+    }
+    attrs = list(questions.keys())
     screenshot_label = "recovery_settings"
     get_screenshots = True
 
+    def generate_risk_report(self):
+        '''
+        Generate a risk report about recovery settings. Possible risks:
+            - Recovery settings compromised
+        '''
+        risks = list()
+
+        if self.phone_access == 'yes' or self.email_access == 'yes':
+            new_risk = Risk(
+                risk = "Compromised recovery information",
+                description = "With access to the recovery contact information, someone can access an account without knowing the password using the 'Forgot password' option."
+            )
+            risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_details=risks)
+
+        return self.risk_report
+
 class TwoFactorSettings(DictInitClass):
-    attrs = ['enabled',
-             'second_factor_type',
-             'describe',
-             'second_factor_access',
-             'screenshot']
+    questions = {
+        'enabled': "Is two-factor authentication enabled for this account?",
+        'second_factor_type': "What type of two-factor authentication is it?",
+        'describe': "Which phone/email/app is set as the second factor?",
+        'second_factor_access': "Do you believe the person of concern has access to this second factor?",
+    }
+    attrs = list(questions.keys())
     screenshot_label = "two_factor_settings"
     get_screenshots = True
 
+    def generate_risk_report(self):
+        '''
+        Generate a risk report about two factor settings. Possible risks:
+            - Two factor not set
+            - 2nd factor compromised
+        '''
+        risks = list()
+
+        if self.second_factor_access == 'yes':
+            new_risk = Risk(
+                risk = "Compromised second factor",
+                description = "If someone has access to the second authentication factor, they only need the account password to log into the account. They could also intercept and delete login notifications."
+            )
+            risks.append(new_risk)
+
+        elif self.enabled == 'no':
+            new_risk = Risk(
+                risk = "Two-factor authentication disabled",
+                description = "Without two-factor authentication, others only need the account password to log in."
+            )
+            risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_details=risks)
+
+        return self.risk_report
+
 
 class SecurityQuestions(DictInitClass):
-    attrs = ['present',
-             'questions',
-             'know',
-             'screenshot']
+    questions = {
+        'present': "Does the account use security questions?",
+        'know': "Do you believe the person of concern knows the answer to any of these questions?",
+        'which': "Which questions might they be able to answer?",
+    }
+    attrs = list(questions.keys())
     screenshot_label = "security_questions"
     get_screenshots = True
 
+    def generate_risk_report(self):
+        '''
+        Generate a risk report about security questions. Possible risks:
+            - Enabled
+            - Known
+        '''
+        risks = list()
+
+        if self.present == 'yes':
+
+            if self.know == 'yes':
+                new_risk = Risk(
+                    risk = "Guessable security questions",
+                    description = "The client believes the person of concern knows the answers to security questions, which could allow them an easy way to log into the account."
+                    
+                )
+                risks.append(new_risk)
+
+            else:
+                new_risk = Risk(
+                    risk = "Use of security questions",
+                    description = "The account allows login using security questions, which are not secure because they are easy to guess."
+                )
+                risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_details=risks)
+
+        return self.risk_report
+
 class InstallInfo(DictInitClass):
-    attrs = ['knew_installed',
-             'installed',
-             'coerced',
-             'screenshot']
+    questions = {
+        'knew_installed': 'Did you know this app was installed?',
+        'installed': 'Did you install this app?',
+        'coerced': 'Did the person of concern coerce you into installing this app?'
+    }
+    attrs = list(questions.keys())
+
+    def generate_risk_report(self, system_app = False):
+        risks = list()
+
+        if not system_app:
+            if self.knew_installed == 'no' or self.installed == 'no' or self.coerced == 'yes':
+
+                description = ""
+                if self.knew_installed == 'no':
+                    description = "The client did not know this app was installed, indicating someone else installed it."
+
+                elif self.installed == 'no':
+                    description = "The client did not install this app, indicating someone else installed it."
+
+                elif self.coerced == 'yes':
+                    description = "The client was coerced into installing this app."
+
+                new_risk = Risk(
+                    risk="App installed without permission",
+                    description=description
+                )
+                risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_details=risks)
+        return self.risk_report
 
 class PermissionInfo(DictInitClass):
+    questions = {
+        "access": "Review the permissions used. Can any of this information be accessed by the person of concern using this app?",
+        "describe": "If yes, please describe."
+    }
     attrs = ['permissions',
              'access',
              'describe']
+
+    def generate_risk_report(self):
+        risks = list()
+
+        if self.access == 'yes':
+            new_risk = Risk(
+                risk="Data leakage",
+                description="This app is sharing data with the person of concern. Investigation assessment: {}.".format(self.describe)
+            )
+            risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_details=risks)
+        return self.risk_report
 
 
 class AppInfo(Dictable):
@@ -226,7 +401,7 @@ class AppInfo(Dictable):
 
         # Fill in flags, removing any flags == ""
         self.flags = list(filter(None, flags))
-        
+
         self.application_icon = application_icon
         self.app_website = app_website
         self.description = description
@@ -251,7 +426,7 @@ class AppInfo(Dictable):
 
         self.screenshot_files = self._get_screenshot_files(device_hmac_serial)
 
-        self.report, self.is_concerning = self.generate_app_report()
+        #self.report, self.is_concerning = self.generate_app_report()
 
     def _get_screenshot_files(self, device_hmac_serial):
         """
@@ -262,66 +437,49 @@ class AppInfo(Dictable):
         if os.path.exists(screenshot_dir):
             # get full filepaths
             files = os.listdir(screenshot_dir)
-            full_fnames = [os.path.join(screenshot_dir, f) for f in files] 
+            full_fnames = [os.path.join(screenshot_dir, f) for f in files]
             full_fnames.sort()
             return full_fnames
-        return []
+        return list()
 
-    def generate_app_report(self, second_person=True, harmdoer="the person of concern"):
-        agent = "you"
-        pronoun = "you"
-        if second_person:
-            agent = "the client"
-            pronoun = "they"
+    def _get_flag_risk(self):
+        if 'spyware' in self.flags or 'onstore-spyware' in self.flags or 'offstore-spyware' in self.flags:
+            return Risk(
+                risk="Spyware application",
+                description="This app is designed for covert surveillance."
+            )
+        elif 'regex-spy' in self.flags:
+            return Risk(
+                risk="Potential spyware application",
+                description="This app may be a spyware application based on its title and description."
+            )
+        return None
 
-        spyware = 'spyware' in self.flags
+    def generate_risk_report(self):
+        '''
+        Generate a risk report about this app. Possible risks:
+            - Flag-based concerns (spyware, offstore)
+            - App installed without permission (accounting for system apps)
+            - App is sharing data
+        '''
+        risks = list()
 
-        sentences = []
-        concern = False
+        # Flag-based risk
+        flag_risk = self._get_flag_risk()
+        if flag_risk:
+            risks.append(flag_risk)
 
-        if spyware:
-            concern = True
-            sentences.append("{} is an app designed for surveillance.".format(self.title))
+        # Data leakage
+        data_risks = self.permission_info.generate_risk_report()
+        risks.extend(data_risks.risk_details)
 
-        # for all apps, look at install information
-        if self.install_info.knew_installed != 'yes':
-            concern = True
-            sentences.append("{} did not know that this app was installed on the device.".format(agent.capitalize()))
-            if "system-app" in self.flags:
-                sentences.append("However, this is a system app which was likely installed on the phone when it was purchased.".format(agent.capitalize()))
-            elif spyware:
-                sentences.append("This indicates that another person installed the app with the intention of surveilling {}. Installing the app would require physical access to the device.".format(agent))
+        # Installation issues
+        install_risks = self.install_info.generate_risk_report(system_app='system-app' in self.flags)
+        risks.extend(install_risks.risk_details)
 
-        elif self.install_info.installed != 'yes':
-            if "system-app" in self.flags:
-                sentences.append("{} did not install this app. However, this is a system app which was likely installed on the phone when it was purchased.".format(agent.capitalize()))
-            else:
-                concern = True
-                if self.install_info.installed == 'no':
-                    sentences.append("{} knew this app was installed on the phone, but did not install it.".format(agent.capitalize()))
-                if self.install_info.installed == 'unsure':
-                    sentences.append("{} knew this app was installed on the phone, but {} are unsure whether {} installed it.".format(agent.capitalize(), pronoun, pronoun))
-                sentences.append("This indicates that another person installed this app, which would require physical access to the device.")
+        self.risk_report = RiskReport(risk_details=risks)
 
-
-        elif self.install_info.coerced != 'no':
-            concern = True
-            sentences.append("{} coerced {} to install this app, indicating that person is using the app to surveil {}.".format(harmdoer.capitalize(), agent, agent))
-        else:
-            sentences.append("{} installed this app voluntarily.".format(agent.capitalize()))
-
-        # for spyware apps, look at permission stuff
-        if not spyware:
-            any_issues = False
-            if self.permission_info.access == 'yes':
-                any_issues = True
-                concern = True
-                sentences.append("Investigation indicates {} can use this app to access private information. Description: {}.".format(harmdoer, self.permission_info.describe))
-
-            if not any_issues:
-                sentences.append("There is no evidence that this app is being used maliciously against {}.".format(agent))
-
-        return " ".join(sentences), concern
+        return self.risk_report
 
 class CheckApps(Dictable):
     def __init__(self,
@@ -336,6 +494,19 @@ class CheckApps(Dictable):
         self.dualuse = [AppInfo(app) for app in dualuse]
         self.other = [AppInfo(app) for app in other]
 
+class Risk(Dictable):
+    def __init__(self,
+                 risk="",
+                 description=""):
+        self.risk = risk
+        self.description = description
+
+class RiskReport(Dictable):
+    def __init__(self,
+                 risk_details=list()):
+        self.risk_details = risk_details
+        self.risk_present = len(risk_details) > 0
+
 class TAQDevices(DictInitClass):
     questions = {
         'live_together': "Do you live with the person of concern?",
@@ -343,11 +514,51 @@ class TAQDevices(DictInitClass):
     }
     attrs = list(questions.keys())
 
+    def generate_risk_report(self) -> RiskReport:
+        '''
+        Generate a risk report for device compromise. Possible risk:
+            - Physical access to devices
+        '''
+        risks = list()
+
+        # Both indicate the same thing: physical access to devices.
+        if self.live_together.lower() == 'yes' or self.physical_access.lower() == 'yes':
+            new_risk = Risk(
+                risk="Physical access to devices",
+                description="A person with physical access to devices might be able to install apps, adjust device configurations, and access or manipulate accounts logged in on that device."
+            )
+            risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_details=risks)
+
+        return self.risk_report
+
+
 class TAQAccounts(DictInitClass):
     questions = {'pwd_mgmt': "How do you manage passwords?",
                  'pwd_comp': "Do you believe the person of concern knows, or could guess, any of your passwords?",
                  'pwd_comp_which': "Which ones?"}
     attrs = list(questions.keys())
+
+    def generate_risk_report(self) -> RiskReport:
+        '''
+        Generate a risk report for password compromise. Possible risks:
+            - Password compromise
+            - Password manager compromise TODO
+        '''
+        risks = list()
+
+        if self.pwd_comp == 'yes':
+            new_risk = Risk(
+                risk="Password compromise",
+                description="The client believes the person of concern knows, or could guess, the following passwords: {}. Knowing these passwords could allow them access and/or manipulate the client's accounts.".format(self.pwd_comp_which)
+            )
+            risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_details=risks)
+
+        return self.risk_report
+
 
 class TAQSharing(DictInitClass):
     questions = {'share_phone_plan': "Do you share a phone plan with the person of concern?",
@@ -355,6 +566,34 @@ class TAQSharing(DictInitClass):
                  'share_accounts': "Do you share any accounts with the person of concern?",
                  'share_which': "Which accounts are shared with the person of concern?"}
     attrs = list(questions.keys())
+
+    def generate_risk_report(self) -> RiskReport:
+        '''
+        Generate a risk report for account compromise due to sharing. Possible risks:
+            - Shared phone plan
+            - Shared accounts
+        '''
+        risks = list()
+
+        if self.share_phone_plan == 'yes':
+            new_risk = Risk(
+                risk="Shared phone plan",
+                description="A shared phone plan may leak a variety of information, possibly including call history, message history (but not message content), contacts, and sometimes location. The account administrator of the client's phone plan, {}, has even more privileged access to this information.".format(self.phone_plan_admin)
+            )
+            # Going to need to reformat the administrator here bc it'll probably say 'poc' not spelled out
+            risks.append(new_risk)
+
+        if self.share_accounts == 'yes':
+            new_risk = Risk(
+                risk="Shared accounts",
+                description="The client has shared accounts with the person of concern. Any information on those accounts can be assumed to be known by the person of concern. Shared accounts: {}.".format(self.share_which)
+            )
+            risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_details=risks)
+
+        return self.risk_report
+
 
 class TAQSmarthome(DictInitClass):
     questions = {'smart_home': "Do you have any smart home devices?",
@@ -364,12 +603,85 @@ class TAQSmarthome(DictInitClass):
                  'smart_home_acct_linking': "Can the person of concern access any of the smart home devices via their own smart home account?"}
     attrs = list(questions.keys())
 
+    def _get_phys_access_risk(self):
+        if self.smart_home_setup == 'poc':  # Check that this is what it would be, and not "Person of Concern"
+            return Risk(
+                risk="Physical access to smart home devices",
+                description="With physical access to smart home devices, someone could (1) learn private information, for example by querying a smart speaker, or (2) reconfigure the devices to share information or allow remote control. Someone who initially set up the devices would have even more power to configure as they wish."
+            )
+        elif self.smart_home_access == 'yes':
+            return Risk(
+                risk="Physical access to smart home devices",
+                description="With physical access to smart home devices, someone could (1) learn private information, for example by querying a smart speaker, or (2) reconfigure the devices to share information or allow remote control."
+            )
+        return None
+    
+    def _get_online_access_risk(self):
+        if self.smart_home_acct_sharing == 'yes' or self.smart_home_acct_linking == 'yes':
+            return Risk(
+                risk="Online access to smart home devices",
+                description="Someone with online access to a smart home device might be able to gather data (e.g., viewing video recordings or voice commands used) or manipulate the device state (e.g., turning a light off or locking a smart lock.)"
+            )
+        return None
+
+    def generate_risk_report(self) -> RiskReport:
+        '''
+        Generate a risk report for smart home device compromise. Possible risks:
+            - Physical access to smart home devices
+            - Online access to smart home devices
+        '''
+        risks = list()
+
+        # Physical access
+        phys_access_risk = self._get_phys_access_risk()
+        if phys_access_risk:
+            risks.append(phys_access_risk)
+
+        # Online access
+        online_access_risk = self._get_online_access_risk()
+        if online_access_risk:
+            risks.append(online_access_risk)
+
+        self.risk_report = RiskReport(risk_details=risks)
+
+        return self.risk_report
+
+
 class TAQKids(DictInitClass):
     questions = {
         'custody': "Do you share custody of children with the person of concern?",
         'child_phys_access': "Has the person of concern had physical access to any of the child(ren)'s devices?",
         'child_phone_plan': "Does the person of concern pay for the child(ren)'s phone plan?"}
     attrs = list(questions.keys())
+
+    def generate_risk_report(self) -> RiskReport:
+        '''
+        Generate a risk report for children's devices. Possible risks:
+            - Physical access to devices
+            - Shared phone plan
+            - TODO: Other things like accounts shared, location sharing, ??
+        '''
+        risks = list()
+
+        if self.child_phys_access == 'yes':
+            new_risk = Risk(
+                risk="Physical access to children's devices",
+                description="A person with physical access to children's devices might be able to install apps, adjust device configurations, and access or manipulate accounts logged in on that device. These changes could allow monitoring of the parent, for example by tracking the children's location when they are with their parent."
+            )
+            risks.append(new_risk)
+
+        if self.child_phone_plan == 'yes':
+            new_risk = Risk(
+                risk="Shared phone plan (child)",
+                description="A shared phone plan may leak a variety of information, possibly including call history, message history (but not message content), contacts, and sometimes location. This could include information about the parent, such as their phone number and location when with the children. The plan administrator has even more privileged access to this information."
+            )
+            # Going to need to reformat the administrator here bc it'll probably say 'poc' not spelled out
+            risks.append(new_risk)
+
+        self.risk_report = RiskReport(risk_details=risks)
+
+        return self.risk_report
+
 
 class TAQLegal(DictInitClass):
     questions = {
@@ -392,7 +704,7 @@ class RiskFactor():
 class ConsultationData(Dictable):
 
     def generate_overall_summary(self):
-         return "TODO: WRITE CODE TO GENERATE AN OVERALL SUMMARY"
+        return "TODO: WRITE CODE TO GENERATE AN OVERALL SUMMARY"
 
     def __init__(self,
                  setup = dict(),
@@ -405,12 +717,45 @@ class ConsultationData(Dictable):
         self.setup = ConsultSetupData(**setup)
         self.taq = TAQData(**taq)
         self.accounts = [AccountInvestigation(**account) for account in accounts]
-        self.concerning_accounts = [acct for acct in self.accounts if acct.is_concerning]
         self.scans = [ScanData(**scan) for scan in scans]
         self.screenshot_dir = screenshot_dir
         self.notes = ConsultNotesData(**notes)
 
+        # Grab questions that we will use to generate the printout
+        # TODO: streamline
+        self.formquestions = dict()
+        self.formquestions["accounts"] = dict(
+            suspicious_logins = SuspiciousLogins().questions,
+            password_check = PasswordCheck().questions,
+            recovery_settings = RecoverySettings().questions,
+            two_factor_settings = TwoFactorSettings().questions,
+            security_questions = SecurityQuestions().questions
+        )
+        self.formquestions["taq"] = dict(
+            devices = TAQDevices().questions,
+            accounts = TAQAccounts().questions,
+            sharing = TAQSharing().questions,
+            smarthome = TAQSmarthome().questions,
+            kids = TAQKids().questions,
+            legal = TAQLegal().questions
+        )
+        self.formquestions["apps"] = dict(
+            permission_info = PermissionInfo().questions,
+            install_info = InstallInfo().questions
+        )
+
         self.overall_summary = self.generate_overall_summary()
+
+    def prepare_reports(self):
+        '''
+        Create all risk reports for the elements of the consultation.
+        '''
+        self.taq.generate_risk_reports()
+        for scan in self.scans:
+            scan.generate_risk_report()
+        for account in self.accounts:
+            account.generate_risk_report()
+
 
 
 class AccountInvestigation(Dictable):
@@ -441,93 +786,21 @@ class AccountInvestigation(Dictable):
         self.security_questions = SecurityQuestions(security_questions)
         self.notes = Notes(notes)
 
-        self.access_report, self.ability_report, self.access_concern, self.ability_concern = self.generate_reports()
-
-        self.is_concerning = self.access_concern or self.ability_concern
+        self.generate_risk_report()
 
 
-    def generate_reports(self, second_person=True, harmdoer="the person of concern"):
-        agent = "you"
-        pronoun = "you"
-        possessive = "your"
-        if second_person:
-            agent = "the client"
-            pronoun = "they"
-            possessive = "their"
+    def generate_risk_report(self):
 
-        # generally, more high level because there is a lot going on.
-        access_sentences = []
-        access_concern = False
+        risks = list()
 
-        # Suspicious logins
-        suspicious_logins = False
-        if self.suspicious_logins.recognize != "yes":
-            access_concern = True
-            suspicious_logins = True
-            if self.suspicious_logins.describe_logins != "":
-                access_sentences.append("There is evidence that someone other than {} is currently logged into this account using {}.".format(agent, self.suspicious_logins.describe_logins))
-            else:
-                access_sentences.append("There is evidence that someone other than {} is currently logged into this account.".format(agent))
-        elif self.suspicious_logins.activity_log != "no":
-            access_concern = True
-            suspicious_logins = True
-            access_sentences.append("There is evidence that someone other than {} has recently logged into this account.".format(agent))
-        else:
-            access_sentences.append("There is no evidence that someone other than {} has logged into this account recently.".format(agent))
+        for obj in [self.suspicious_logins, self.password_check, self.recovery_settings, self.two_factor_settings, self.security_questions]:
+            risk_report: RiskReport = obj.generate_risk_report()
+            pprint(risk_report.to_dict())
+            risks.extend(risk_report.risk_details)
 
-        # Passwords
-        pwd = False
-        if self.password_check.know != 'no' or self.password_check.guess != 'no':
-            pwd = True
+        self.risk_report = RiskReport(risk_details=risks)
 
-        # Recovery details
-        recovery = False
-        if (self.recovery_settings.email_present == 'yes' and self.recovery_settings.email_access != 'no'
-            ) or (
-            self.recovery_settings.phone_present == 'yes' and self.recovery_settings.phone_access != 'no'
-            ):
-            recovery = True
-
-        # Two-factor
-        twofactor = False
-        if self.two_factor_settings.enabled == 'yes' and self.two_factor_settings.second_factor_access != 'no':
-            twofactor = True
-
-        # Security questions
-        questions = False
-        if self.security_questions.present and self.security_questions.know != 'no':
-            questions= True
-
-        ability_sentences = []
-        ability_concern = False
-
-        if not (pwd or recovery or twofactor or questions):
-
-            other = ""
-            if suspicious_logins:
-                other = "other "
-            ability_sentences.append("There is no {}evidence that anyone else could access this account.".format(other))
-        else:
-            ability_concern = True
-            methods = []
-            if pwd: methods.append("the password")
-            if recovery: methods.append("the recovery contact information")
-            if questions: methods.append("the security questions")
-
-            also = ""
-            if suspicious_logins:
-                also = "also "
-
-            if len(methods) > 1:
-                ability_sentences.append("There is {}evidence that {} can access this account via these methods: {}.".format(also, harmdoer, ", ".join(methods)))
-            else:
-                ability_sentences.append("There is {}evidence that {} can access this account via {}.".format(also, harmdoer, methods[0]))
-
-            if twofactor:
-                ability_sentences.append("{} has access to the second authentication factor; if they know the password, they could access this account without alerting {}.".format(harmdoer.capitalize(), agent))
-
-        return " ".join(access_sentences), " ".join(ability_sentences), access_concern, ability_concern
-
+        return self.risk_report
 
 
 class ScanData(Dictable):
@@ -560,60 +833,43 @@ class ScanData(Dictable):
         self.rooted_reasons = rooted_reasons
         self.all_apps = [AppInfo(**app, device_hmac_serial=serial) for app in all_apps]
         self.selected_apps = [AppInfo(**app, device_hmac_serial=serial) for app in selected_apps]
-        self.concerning_apps = [app for app in self.selected_apps if app.is_concerning]
 
-        self.report = self.generate_report()
+        self.generate_risk_report()
 
-    def generate_report(self, harmdoer="the person of concern"):
-        agent = "the client"
+    def generate_risk_report(self):
+        '''
+        Generate a risk report for this device. Possible risks:
+            - Jailbroken device
+            - Risk from installed apps (raise up from apps)
+        '''
+        risks = list()
+        self.concerning_apps = list()
 
-        report_sentences = []
-
+        # Jailbreaking
         if self.is_rooted:
-            report_sentences.append(
-                "This device is jailbroken, giving the jailbreaker nearly unbounded "
-                "access to the device and {}'s activity on the device.".format(
-                    agent
-                )
+            new_risk = Risk(
+                risk="Evidence of jailbreaking",
+                description="The devices is jailbroken, giving the person of concern nearly unbounded access to the device and the client's activity on the device. Reasons jailbreaking is susptected: {}.".format(self.rooted_reasons)
             )
-        else:
-            report_sentences.append("There is no evidence that this device is jailbroken.")
+            risks.append(new_risk)
 
-        if len(self.selected_apps) == 0:
-            report_sentences.append("No suspicious apps were found on this device.")
-        else:
-            '''
-            plural = ""
-            if len(self.selected_apps) > 1:
-                plural = "s"
-            report_sentences.append(
-                "{} potentially malicious app{} investigated.".format(
-                    len(self.selected_apps), plural
+        # Apps
+        for a in self.selected_apps:
+            app_risk_report = a.generate_risk_report()
+            pprint(app_risk_report.to_dict())
+            if app_risk_report.risk_present:
+                self.concerning_apps.append(a)
+                app_risk_list = [r.risk for r in app_risk_report.risk_details]
+                new_risk = Risk(
+                    risk="Risk from app: {}".format(a.title),
+                    description="Risks identified: {}.".format(", ".join(app_risk_list))
                 )
-            )
-            '''
+                risks.append(new_risk)
 
-            if len(self.concerning_apps) > 0:
-                plural = ""
-                verb_plural = "s"
-                if len(self.concerning_apps) > 1:
-                    plural = "s"
-                    verb_plural = ""
+        self.risk_report = RiskReport(risk_details=risks)
+        pprint(self.risk_report.to_dict())
 
-                report_sentences.append(
-                    "{} app{} pose{} a concern: {}.".format(
-                        len(self.concerning_apps), plural, verb_plural, ", ".join([app.title for app in self.concerning_apps])
-                    )
-                )
-            else:
-                report_sentences.append(
-                    "No apps determined to pose a concern."
-                )
-
-        if self.manual:
-            report_sentences.append("This device was not automatically scanned; instead, apps were manually investigated.")
-
-        return " ".join(report_sentences)
+        return self.risk_report
 
 
 class TAQData(Dictable):
@@ -639,119 +895,22 @@ class TAQData(Dictable):
         self.kids = TAQKids(kids)
         self.legal = TAQLegal(legal)
 
-        self.risk_factors = self.get_risk_factors()
+        self.generate_risk_reports()
 
-    def get_risk_factors(self, second_person=True, harmdoer="the person of concern"):
-        agent = "you"
-        pronoun = "you"
-        if second_person:
-            agent = "the client"
-            pronoun = "they"
+    def generate_risk_reports(self):
+        '''
+        Generates all of the risk reports for the TAQ subforms.
+        Gathers all risks together for the summary.
+        '''
+        self.all_risks = list()
 
-        risk_factors = []
+        for obj in [self.devices, self.accounts, self.sharing, self.smarthome, self.kids]:
+            risk_report: RiskReport = obj.generate_risk_report()
+            pprint(risk_report.to_dict())
+            self.all_risks.extend(risk_report.risk_details)
 
-        # accounts
-        if self.accounts.pwd_comp != 'no':
-            risk_factors.append(RiskFactor(
-                risk="Risk from password compromise",
-                description="{} believes that {} knows some passwords. Compromised passwords: {}. "
-                            "This could allow {} access to {}'s accounts.".format(
-                                agent.capitalize(), harmdoer, self.accounts.pwd_comp_which, harmdoer, agent
-                            )
-                )
-            )
-        # TODO: Should we ask if the abuser has accesss to pwd management methods?
+        return self.all_risks
 
-        # devices
-        if self.devices.live_together == 'yes':
-            risk_factors.append(RiskFactor(
-                risk="Risk from device access",
-                description="{} lives with {}, giving {} physical access to {}'s devices. "
-                            "With physical access to devices, it is possible that {} could "
-                            "install spyware or access online accounts, and see private information.".format(
-                                agent.capitalize(),harmdoer,harmdoer,agent,harmdoer
-                            ))
-            )
-        elif self.devices.physical_access == 'yes':
-            risk_factors.append(RiskFactor(
-                risk="Risk from device access",
-                description="{} has had physical access to {}'s devices. "
-                "With physical access to devices, it is possible that {} could "
-                "install spyware, access online accounts, and see private information.".format(
-                    harmdoer.capitalize(), agent, harmdoer
-                )))
-
-        # sharing
-        if self.sharing.share_phone_plan == 'yes':
-            admin = ""
-            if self.sharing.phone_plan_admin.strip() != "":
-                admin = ", {},".format(self.sharing.phone_plan_admin)
-            risk_factors.append(RiskFactor(
-                risk="Risk from shared phone plan",
-                description="{} shares a phone plan with {}. This may leak information including call and text history or location. The administrator{} likely has even more privileged access to such information.".format(
-                    agent.capitalize(), harmdoer, admin
-                )
-            ))
-        if self.sharing.share_accounts == 'yes':
-            risk_factors.append(RiskFactor(
-                risk="Risk from shared accounts",
-                description="Some accounts are shared with {}, meaning {} can see any information and activity on those accounts.".format(
-                    harmdoer, harmdoer
-                )
-            ))
-
-        # kids
-        if self.kids.custody == 'yes':
-            if self.kids.child_phone_plan == 'yes':
-                risk_factors.append(RiskFactor(
-                    risk="Risk from child's phone plan",
-                    description="{}'s child shares a phone plan with {}. This may leak information including the child's call and text history or location.".format(
-                        agent.capitalize(), harmdoer
-                    )
-                ))
-            if self.kids.child_phys_access != 'no':
-                risk_factors.append(RiskFactor(
-                    risk="Risk from child's devices",
-                    description="{} has had physical access to devices owned by {}'s child. "
-                    "With physical access to these devices, it is possible that {} could "
-                    "install spyware, access online accounts, and see private information, "
-                    "including information about {}.".format(
-                        harmdoer.capitalize(), agent, harmdoer, agent
-                    )
-                ))
-
-        if self.smarthome.smart_home == 'yes':
-            # TODO: we should ask what devices they have to give more details about the risks
-
-            smarthome_risk = False
-            risk_reasons = []
-
-            # physical access
-            if self.smarthome.smart_home_setup == 'poc':
-                smarthome_risk = True
-                risk_reasons.append("{} set up some of the smart home devices in {}'s home.".format(harmdoer.capitalize(), agent))
-            elif self.smarthome.smart_home_access == 'yes':
-                smarthome_risk = True
-                risk_reasons.append("{} had physical access to some of the smart home devices in {}'s home.".format(harmdoer.capitalize(), agent))
-
-            # account
-            if self.smarthome.smart_home_account == 'yes':
-                smarthome_risk = True
-                also = ""
-                if len(risk_reasons) > 0:
-                    also = "also "
-                risk_reasons.append("{} can {}access accounts connected to smart home devices in {}'s home.".format(harmdoer.capitalize(), also, agent))
-
-            # combine risks
-            if smarthome_risk:
-                risk_factors.append(RiskFactor(
-                    risk="Risk from smart home devices",
-                    description="{} As a result, {} may be able to see data collected by those smart home devices.".format(
-                        " ".join(risk_reasons), harmdoer
-                    )
-                ))
-
-        return risk_factors
 
 class ConsultSetupData(Dictable):
     def __init__(self,
@@ -827,18 +986,16 @@ class NotesForm(FlaskForm):
 ## HELPER FORMS FOR APPS
 class PermissionForm(FlaskForm):
     permissions = HiddenField("Permissions")
-    access = RadioField("Review the permissions used. Can any of this information be accessed by the person of concern using this app?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    describe = TextAreaField("If yes, please describe.")
-    screenshot = MultipleFileField('Add screenshot(s)')
+    access = RadioField(PermissionInfo().questions["access"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    describe = TextAreaField(PermissionInfo().questions["describe"])
 
 # HELPER FORM FOR SCREENSHOTS
 
 class InstallForm(FlaskForm):
-    knew_installed = RadioField('Did you know this app was installed?', choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    installed = RadioField('Did you install this app?', choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    coerced = RadioField('Did the person of concern coerce you into installing this app?', choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    knew_installed = RadioField(InstallInfo().questions["knew_installed"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    installed = RadioField(InstallInfo().questions["installed"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    coerced = RadioField(InstallInfo().questions["coerced"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     #who = TextAreaField("If you were coerced, who coerced you?")
-    screenshot = MultipleFileField('Add screenshot(s)')
 
 class SpywareAppForm(FlaskForm):
     title = HiddenField("App Name")
@@ -874,39 +1031,33 @@ class DualUseAppForm(FlaskForm):
 
 ## HELPER FORMS FOR ACCOUNTS
 class SuspiciousLoginsForm(FlaskForm):
-    recognize = RadioField("Do you see any unrecognized devices that have logged into this account?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    describe_logins = TextAreaField("Which devices do you not recognize?")
-    login_screenshot = MultipleFileField('Add screenshot(s)')
-    activity_log = RadioField("In the login history, do you see any suspicious logins?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    describe_activity = TextAreaField("Which logins are suspicious, and why?")
-    activity_screenshot = MultipleFileField('Add screenshot(s)')
+    recognize = RadioField(SuspiciousLogins().questions["recognize"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    describe_logins = TextAreaField(SuspiciousLogins().questions["describe_logins"])
+    activity_log = RadioField(SuspiciousLogins().questions["activity_log"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    describe_activity = TextAreaField(SuspiciousLogins().questions["describe_activity"])
 
 class PasswordForm(FlaskForm):
-    know = RadioField("Does the person of concern know the password for this account?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    guess = RadioField("Do you believe the person of concern could guess the password?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    know = RadioField(PasswordCheck().questions["know"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    guess = RadioField(PasswordCheck().questions["guess"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
 
 class RecoveryForm(FlaskForm):
-    phone_present = RadioField("Is there a recovery phone number set for this account?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
-    phone = TextAreaField("What is the recovery phone number?")
-    phone_access = RadioField("Do you believe the person of concern has access to the recovery phone number?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    phone_screenshot = MultipleFileField('Add screenshot(s)')
-    email_present = RadioField("Is there a recovery email address set for this account?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
-    email = TextAreaField("What is the recovery email address?")
-    email_access = RadioField("Do you believe the person of concern has access to this recovery email address?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    email_screenshot = MultipleFileField('Add screenshot(s)')
+    phone_present = RadioField(RecoverySettings().questions["phone_present"], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+    phone = TextAreaField(RecoverySettings().questions["phone"])
+    phone_access = RadioField(RecoverySettings().questions["phone_access"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    email_present = RadioField(RecoverySettings().questions["email_present"], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+    email = TextAreaField(RecoverySettings().questions["email"])
+    email_access = RadioField(RecoverySettings().questions["email_access"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
 
 class TwoFactorForm(FlaskForm):
-    enabled = RadioField("Is two-factor authentication enabled for this account?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
-    second_factor_type = RadioField("What type of two-factor authentication is it?", choices=TWO_FACTOR_CHOICES, default=TWO_FACTOR_DEFAULT)
-    describe = TextAreaField("Which phone/email/app is set as the second factor?")
-    second_factor_access = RadioField("Do you believe the person of concern has access to this second factor?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    screenshot = MultipleFileField('Add screenshot(s)')
+    enabled = RadioField(TwoFactorSettings().questions["enabled"], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+    second_factor_type = RadioField(TwoFactorSettings().questions["second_factor_type"], choices=TWO_FACTOR_CHOICES, default=TWO_FACTOR_DEFAULT)
+    describe = TextAreaField(TwoFactorSettings().questions["describe"])
+    second_factor_access = RadioField(TwoFactorSettings().questions["second_factor_access"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
 
 class SecurityQForm(FlaskForm):
-    present = RadioField("Does the account use security questions?", choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
-    questions = TextAreaField("Which questions might they be able to answer?")
-    know = RadioField("Do you believe the person of concern knows the answer to any of these questions?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    screenshot = MultipleFileField('Add screenshot(s)')
+    present = RadioField(SecurityQuestions().questions["present"], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+    know = RadioField(SecurityQuestions().questions["know"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    which = TextAreaField(SecurityQuestions().questions["which"])
 
 class AccountInfoForm(FlaskForm):
     account_nickname = TextAreaField("Account Nickname")
@@ -1057,30 +1208,30 @@ class TAQSharingForm(FlaskForm):
     phone_plan_admin = SelectMultipleField(
         TAQSharing().questions['phone_plan_admin'], choices=PERSON_CHOICES, default=PERSON_DEFAULT)
     share_accounts = RadioField(
-        TAQSharing().questions['share_accounts'],  choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+        TAQSharing().questions['share_accounts'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     share_which = StringField(TAQSharing().questions['share_which'])
 
 class TAQSmartHomeForm(FlaskForm):
     title = "Smart Home Devices"
     smart_home = RadioField(
-        TAQSmarthome().questions['smart_home'],   choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+        TAQSmarthome().questions['smart_home'], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
     smart_home_setup = SelectMultipleField(
-        TAQSmarthome().questions['smart_home_setup'],   choices=PERSON_CHOICES, default=PERSON_DEFAULT)
+        TAQSmarthome().questions['smart_home_setup'], choices=PERSON_CHOICES, default=PERSON_DEFAULT)
     smart_home_access = RadioField(
-        TAQSmarthome().questions['smart_home_access'],    choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+        TAQSmarthome().questions['smart_home_access'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     smart_home_acct_sharing = RadioField(
-        TAQSmarthome().questions['smart_home_acct_sharing'],    choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+        TAQSmarthome().questions['smart_home_acct_sharing'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     smart_home_acct_linking = RadioField(
-        TAQSmarthome().questions['smart_home_acct_linking'],    choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+        TAQSmarthome().questions['smart_home_acct_linking'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
 
 class TAQKidsForm(FlaskForm):
     title = "Children's Devices"
     custody = RadioField(
-        TAQKids().questions['custody'],   choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+        TAQKids().questions['custody'], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
     child_phys_access = RadioField(
-        TAQKids().questions['child_phys_access'],    choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+        TAQKids().questions['child_phys_access'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     child_phone_plan = RadioField(
-        TAQKids().questions['child_phone_plan'],    choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+        TAQKids().questions['child_phone_plan'], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
 
 class TAQLegalForm(FlaskForm):
     title = "Legal Proceedings"
@@ -1118,9 +1269,16 @@ def create_printout(context):
 
     options = {
         'enable-local-file-access': True,
-        'footer-right': '[page]'
-        }
-    
+        'margin-top': '15mm',
+        'margin-bottom': '20mm',
+        'margin-left': '10mm',
+        'margin-right': '10mm',
+        'footer-spacing': '5',
+        'footer-center': '© Madison Tech Clinic • https://techclinic.cs.wisc.edu • Page [page] of [toPage]',
+        'footer-font-name': 'Georgia',
+        'footer-font-size': '8',
+    }
+
     pdfkit.from_string(html_string, out_file, options=options, configuration=config, css=css_path, verbose=True)
 
     print("Printout created. Filename is", out_file)
@@ -1166,10 +1324,10 @@ def remove_unwanted_data(data):
     """Clean data from forms (e.g., remove CSRF tokens so they don't live in the session)"""
     unwanted_keys = ["csrf_token"]
 
-    if type(data) == list:
+    if isinstance(data, list):
         return [remove_unwanted_data(d) for d in data]
 
-    elif type(data) == dict:
+    elif isinstance(data, dict):
         new_data = {}
         for k in data.keys():
             if k not in unwanted_keys:
@@ -1211,7 +1369,7 @@ def get_app_details(device, ser, appid):
             d[item] = info[item]
             if d[item].strip() == "":
                 d[item] = ""
-        except KeyError as e:
+        except KeyError:
             d[item] = ""
 
     #d = d.fillna('')
@@ -1266,7 +1424,7 @@ def get_scan_data(device, device_owner):
     try:
         sc = get_scan_obj(device, device_owner)
         ser = get_ser_from_scan_obj(sc)
-        
+
         print(">>>scanning_device", device, ser, "<<<<<")
 
         if device == 'ios':
@@ -1296,8 +1454,6 @@ def get_scan_data(device, device_owner):
             raise Exception(error)
 
         clientid = "1"
-        if 'clientid' in session.keys():
-            clientid = session['clientid']
 
         scan_d = {
             'clientid': clientid,
@@ -1324,12 +1480,12 @@ def get_scan_data(device, device_owner):
 
         scanid = create_scan(scan_d)
 
-        if device == 'ios':
-            pii_fpath = sc.dump_path(ser, 'Device_Info')
-            print('Revelant info saved to db. Deleting {} now.'.format(pii_fpath))
-            cmd = os.unlink(pii_fpath)
-            # s = catch_err(run_command(cmd), msg="Delete pii failed", cmd=cmd)
-            print('iOS PII deleted.')
+        # if device == 'ios':
+        #    pii_fpath = sc.dump_path(ser, 'Device_Info')
+        #    print('Revelant info saved to db. Deleting {} now.'.format(pii_fpath))
+        #    cmd = os.unlink(pii_fpath)
+        #    s = catch_err(run_command(cmd), msg="Delete pii failed", cmd=cmd)
+        #    print('iOS PII deleted.')
 
         print("Creating appinfo...")
         create_mult_appinfo([(scanid, appid, json.dumps(
@@ -1366,12 +1522,12 @@ def get_scan_data(device, device_owner):
                 app["app_name"] = k
 
             # Check if any suspicious flags are present and add to the suspicious list
-            suspicious_flags = ['spyware', 
-                                'dual-use', 
-                                'regex-spy', 
-                                'offstore-spyware', 
-                                'co-occurrence', 
-                                'onstore-dual-use', 
+            suspicious_flags = ['spyware',
+                                'dual-use',
+                                'regex-spy',
+                                'offstore-spyware',
+                                'co-occurrence',
+                                'onstore-dual-use',
                                 'offstore-app']
             if len([x for x in app["flags"] if x in suspicious_flags]) > 0:
                 suspicious_apps.append(app)
@@ -1414,15 +1570,14 @@ def load_json_data(datatype: ConsultDataTypes):
     lock = FileLock(fname + ".lock")
     with lock:
         if not os.path.exists(fname):
-           if datatype in [ConsultDataTypes.SETUP.value, ConsultDataTypes.NOTES.value, ConsultDataTypes.TAQ.value]:
-               return dict()
-           else:
-               return list()
+            if datatype in [ConsultDataTypes.SETUP.value, ConsultDataTypes.NOTES.value, ConsultDataTypes.TAQ.value]:
+                return dict()
+            else:
+                return list()
 
         with open(fname, 'r') as openfile:
             json_object = json.load(openfile)
             return json_object
-        
 
 def load_object_from_json(datatype: ConsultDataTypes):
     json_data = load_json_data(datatype)
@@ -1431,16 +1586,16 @@ def load_object_from_json(datatype: ConsultDataTypes):
 
     if datatype == ConsultDataTypes.TAQ.value:
         return TAQData(**json_data)
-    
+
     if datatype == ConsultDataTypes.ACCOUNTS.value:
-        assert type(json_data) == list
+        assert isinstance(json_data, list)
         return [AccountInvestigation(**acct) for acct in json_data]
 
     if datatype == ConsultDataTypes.SCANS.value:
-        assert type(json_data) == list
+        assert isinstance(json_data, list)
         return [ScanData(**scan) for scan in json_data]
-    
+
     if datatype == ConsultDataTypes.NOTES.value:
         return ConsultNotesData(**json_data)
-    
+
     return None

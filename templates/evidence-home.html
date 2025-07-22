@@ -43,9 +43,11 @@
                     {% endif %}
                     </summary>
                     <div class="content">
+                        Risks identified:
+
                         <div class="risks">
                             <ul>
-                            {% for risk in consultdata.taq.risk_factors %}
+                            {% for risk in consultdata.taq.all_risks %}
                             <li>
                                 <div class="riskbox">
                                 <b>{{risk.risk}}</b>: {{risk.description}}
@@ -70,8 +72,8 @@
                         <tr><th>Nickname</th>
                             <th>Type</th>
                             <th>Manual?</th>
-                            <th>Apps Found</th>
                             <th>Apps Checked</th>
+                            <th>Risks</th>
                         </tr>
 
                         {% for scan in consultdata.scans %}
@@ -86,22 +88,30 @@
                                 <p>{{scan.manual}}</p>
                             </td>
                             <td>
-                                <p>{{scan.all_apps|length}}</p>
+                                <p>{{scan.selected_apps|length}}/{{scan.all_apps|length}}</p>
                             </td>
                             <td>
-                                <p>{{scan.selected_apps|length}}</p>
+                            {% if scan.risk_report.risk_present %}
+                            <ul>
+                                {% for risk in scan.risk_report.risk_details %}
+                                <li>{{risk.risk}}</li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <i>None.</i>
+                            {% endif %}
                             </td>
                             {% if scan.manual %}
                             <td>
-                                <a href="{{ url_for('evidence_scan_manualadd', ser=scan.serial) }}" class="btn btn-default">Select apps</a>
+                                <a href="{{ url_for('evidence_scan_manualadd', ser=scan.serial) }}" class="btn btn-default">Select</a>
                             </td>
                             {% else %} 
                             <td>
-                                <a href="{{ url_for('evidence_scan_select', ser=scan.serial) }}" class="btn btn-default">Select apps</a>
+                                <a href="{{ url_for('evidence_scan_select', ser=scan.serial) }}" class="btn btn-default">Select</a>
                             </td>
                             {% endif %}
                             <td>
-                                <a href="{{ url_for('evidence_scan_investigate', ser=scan.serial) }}" class="btn btn-default">Edit investigation</a>
+                                <a href="{{ url_for('evidence_scan_investigate', ser=scan.serial) }}" class="btn btn-default">Investigate</a>
                             </td>
                         </tr> 
                         {% endfor %}
@@ -112,7 +122,6 @@
                 <p><b>Scans</b>: None</p>
                 {% endif %}
                 <br/>
-                {% if consultdata.accounts %}
                 <details>
                     <summary>
                     <span class="icon">▼</span>
@@ -120,10 +129,12 @@
                     </summary>
 
                     <div class="content">
+                    {% if consultdata.accounts %}
                     <table class="summarytable">
                         <tbody>
                         <tr><th>Nickname</th>
                             <th>Platform</th>
+                            <th>Risks</th>
                         </tr>
 
                         {% for account in consultdata.accounts %}
@@ -135,17 +146,28 @@
                                 <p>{{account.platform}}</p>
                             </td>
                             <td>
-                                <a href="{{ url_for('evidence_account', id=loop.index0) }}" class="btn btn-default">Edit Account</a>
+                            {% if account.risk_report.risk_present %}
+                            <ul>
+                                {% for risk in account.risk_report.risk_details %}
+                                <li>{{risk.risk}}</li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <i>None.</i>
+                            {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('evidence_account', id=loop.index0) }}" class="btn btn-default">Edit</a>
                             </td>
                         </tr> 
                         {% endfor %}
                     </tbody>
                     </table>
+                    {% else %}
+                    <p>None investigated.</p>
+                    {% endif %}
                     </div>
                 </details>
-                {% else %}
-                <p><b>Accounts</b>: None</p>
-                {% endif %}
 
                  <h3>Overall Consultation Notes</h3>
                 <form action method="post" class="form" role="form">
