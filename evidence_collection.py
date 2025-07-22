@@ -1275,7 +1275,7 @@ def create_printout(context):
         'margin-right': '10mm',
         'footer-spacing': '5',
         'footer-center': '© Madison Tech Clinic • https://techclinic.cs.wisc.edu • Page [page] of [toPage]',
-        #'footer-font-name': 'Courier',
+        'footer-font-name': 'Georgia',
         'footer-font-size': '8',
     }
 

@@ -379,6 +379,7 @@ table.printout_columns td {
   background-color: #fef2cb;
   padding: 10px 15px;
   font-size: small;
+  margin-top: 52px;
 }
 
 .footer {
@@ -618,6 +619,7 @@ div.form-responses table td {
     vertical-align: top;
     font-weight: normal;
     text-align: left;
+    padding: 7px 5px;
 }
 
 div.form-responses table th {
@@ -629,9 +631,6 @@ div.form-responses table td {
     background-color: #fff;
 }
 
-div.form-responses table tr:nth-child(even) td {
-    background-color: #fafafa;
-}
 
 .form-responses td:first-child {
   font-weight: bold;
@@ -645,18 +644,21 @@ div.form-responses table tr:nth-child(even) td {
   border-bottom: 1px solid #ddd;
 }
 
+.form-responses thead th {
+    font-weight: bold !important;
+    text-align: center !important;
+}
+
 table.data-table th {
     text-align: right;
     vertical-align: top;
     padding-right: 15px;
-    width: 150px;
     font-weight: normal;
     font-style: italic;
 }
 
 table.data-table td {
     text-align: left;
-    max-width: 600px;
 }
 
 div.comments {
@@ -674,9 +676,10 @@ p.report-explainer {
   border-left: 6px solid #333;
   padding: 5px;
   padding-left: 10px;
-  background-color: #f5f5f5;
+  background-color: #dddddd;
   color: #222;
   font-weight: bold;
+  margin-top: 40px;
 }
 
 div.line {
@@ -734,7 +737,7 @@ table.summary-table thead th {
     padding-bottom: 8px;
 }
 
-table.summary-table ul, ol {
+table.summary-table ul, table.summary-table ol {
   margin-top: 0.5em;
   margin-bottom: 0.5em;
   padding-left: 20px;
@@ -796,4 +799,56 @@ span.inlinerisk {
 .cover-logo {
   width: 500px;
   margin-bottom: 2em;
+}
+
+.permissions-used {
+  page-break-inside: auto !important;
+  break-inside: auto !important;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.permissions-used li {
+  page-break-inside: avoid;
+  break-inside: avoid;
+  margin-bottom: 0.2em;
+}
+
+.app-info-table, .permissions-used {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10.5pt;
+  margin: 1em 0;
+}
+
+.app-info-table th {
+  text-align: right;
+  color: #666;
+  font-weight: 500;
+  padding: 4px 10px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.app-info-table td {
+  padding: 4px 10px;
+  color: black;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.tag {
+  font-size: 9pt;
+  text-transform: uppercase;
+  color: #555;
+  background: #f0f0f0;
+  border-radius: 3px;
+  padding: 5px;
+  margin-left: 10px;
+  font-family: sans-serif;
+  letter-spacing: 0.5px;
+  width: auto;
+}
+
+.appid {
+    font-family: 'Courier New', Courier, monospace;
 }
