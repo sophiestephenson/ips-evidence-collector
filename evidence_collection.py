@@ -1196,10 +1196,10 @@ class TAQDeviceCompForm(FlaskForm):
 
 class TAQAccountsForm(FlaskForm):
     title = "Account and Password Management"
-    pwd_mgmt = StringField(TAQAccounts().questions['pwd_mgmt'])
+    pwd_mgmt = TextAreaField(TAQAccounts().questions['pwd_mgmt'])
     pwd_comp = RadioField(
         TAQAccounts().questions['pwd_comp'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    pwd_comp_which = StringField(TAQAccounts().questions['pwd_comp_which'])
+    pwd_comp_which = TextAreaField(TAQAccounts().questions['pwd_comp_which'])
 
 class TAQSharingForm(FlaskForm):
     title = "Account Sharing"
@@ -1209,7 +1209,7 @@ class TAQSharingForm(FlaskForm):
         TAQSharing().questions['phone_plan_admin'], choices=PERSON_CHOICES, default=PERSON_DEFAULT)
     share_accounts = RadioField(
         TAQSharing().questions['share_accounts'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
-    share_which = StringField(TAQSharing().questions['share_which'])
+    share_which = TextAreaField(TAQSharing().questions['share_which'])
 
 class TAQSmartHomeForm(FlaskForm):
     title = "Smart Home Devices"
@@ -1251,8 +1251,8 @@ class TAQForm(FlaskForm):
 
 class HomepageNoteForm(FlaskForm):
     title = "Overall Consultation Notes"
-    consultant_notes = StringField("Consultant Notes")
-    client_notes = StringField("Client Notes")
+    consultant_notes = TextAreaField("Consultant Notes")
+    client_notes = TextAreaField("Client Notes")
     submit = SubmitField("Save Notes")
 
 def create_printout(context):
