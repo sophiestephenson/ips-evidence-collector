@@ -1599,3 +1599,12 @@ def load_object_from_json(datatype: ConsultDataTypes):
         return ConsultNotesData(**json_data)
 
     return None
+
+def delete_client_data():
+
+    pprint("Deleting client data...")
+
+    for datatype in ConsultDataTypes:
+        fname = os.path.join(TMP_CONSULT_DATA_DIR, get_data_filename(datatype.value))
+        if os.path.exists(fname):
+            os.remove(fname)
