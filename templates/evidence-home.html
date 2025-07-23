@@ -64,7 +64,7 @@
                 <details>
                     <summary>
                     <span class="icon">▼</span>
-                        Scans ({{consultdata.scans|length}})
+                        Device Scans ({{consultdata.scans|length}})
                     </summary>
                     <div class="content">
                     <table class="summarytable">
@@ -119,7 +119,15 @@
                     </table></div>
                 </details>
                 {% else %}
-                <p><b>Scans</b>: None</p>
+                <details>
+                    <summary>
+                    <span class="icon">▼</span>
+                        Device Scans (0)
+                    </summary>
+                    <div class="content">
+                        No scans have been performed yet.
+                    </div>
+                </details>
                 {% endif %}
                 <br/>
                 <details>
@@ -164,7 +172,15 @@
                     </tbody>
                     </table>
                     {% else %}
-                    <p>None investigated.</p>
+                    <details>
+                        <summary>
+                        <span class="icon">▼</span>
+                            Account Checks (0)
+                        </summary>
+                        <div class="content">
+                            No accounts have been checked yet.
+                        </div>
+                    </details>
                     {% endif %}
                     </div>
                 </details>
