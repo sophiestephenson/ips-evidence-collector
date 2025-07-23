@@ -65,7 +65,7 @@ IOS_DUMPFILES = {
 TEST_APP_LIST = "static_data/android.test.apps_list"
 # TITLE = "Anti-IPS: Stop Intimate Partner Surveillance"
 
-TITLE = {"title": "IPV Spyware Discovery (ISDi){}".format(" (test)" if TEST else "")}
+TITLE = {"title": "Sherloc{}".format(" (test)" if TEST else "")}
 
 
 APP_FLAGS_FILE = "static_data/app-flags.csv"
