@@ -852,3 +852,12 @@ span.inlinerisk {
 .appid {
     font-family: 'Courier New', Courier, monospace;
 }
+
+#manualadd {
+    background-color: #777;
+    color: white;
+    padding: 6px 12px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    margin-left: 5px;
+}
