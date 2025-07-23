@@ -11,6 +11,7 @@ Collect evidence of IPS. Basic version collects this data from the phone:
 """
 import json
 import os
+import shutil
 from enum import Enum
 from pprint import pprint
 
@@ -31,7 +32,7 @@ from wtforms import (
 )
 from wtforms.validators import InputRequired
 
-import config
+from config import DUMP_DIR, SCREENSHOT_DIR
 from phone_scanner.db import create_mult_appinfo, create_scan
 from phone_scanner.privacy_scan_android import take_screenshot
 from web.view.index import get_device
@@ -1599,3 +1600,26 @@ def load_object_from_json(datatype: ConsultDataTypes):
         return ConsultNotesData(**json_data)
 
     return None
+
+def delete_client_data():
+
+    # Delete the consult data stored as json
+    print("Deleting consultation data...")
+    for datatype in ConsultDataTypes:
+        fname = os.path.join(TMP_CONSULT_DATA_DIR, get_data_filename(datatype.value))
+        if os.path.exists(fname):
+            os.remove(fname)
+
+    # Delete phone dumps
+    print("Deleting phone dumps...")
+    print(DUMP_DIR)
+    shutil.rmtree(DUMP_DIR)
+    os.makedirs(DUMP_DIR, exist_ok=True)
+
+    # Delete screenshots
+    print("Deleting screenshots...")
+    print(SCREENSHOT_DIR)
+    shutil.rmtree(SCREENSHOT_DIR)
+    os.makedirs(SCREENSHOT_DIR, exist_ok=True)
+
+    print("Client data deleted.")

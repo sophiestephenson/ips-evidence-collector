@@ -32,6 +32,7 @@ from evidence_collection import (
     TAQData,
     TAQForm,
     create_printout,
+    delete_client_data,
     get_scan_by_ser,
     get_scan_data,
     get_ser_from_scan_obj,
@@ -671,3 +672,10 @@ def evidence_printout():
     filename = create_printout(context)
     workingdir = os.path.abspath(os.getcwd())
     return send_from_directory(workingdir, filename)
+
+@app.route("/evidence/delete-data", methods=["GET"])
+def evidence_delete_data():
+
+    delete_client_data()
+    flash("Client data deleted successfully.", "success")
+    return redirect(url_for('evidence_home'))

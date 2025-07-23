@@ -2,14 +2,12 @@
 """
 The mainfile of ISDi repo.
 """
-import atexit
 import webbrowser
 from threading import Timer
 
 import config
 from phone_scanner import db
 from web import app, sa
-from cleanup import delete_client_data
 
 PORT = 6200 if not (config.TEST or config.DEBUG) else 6202
 HOST = "127.0.0.1" if config.DEBUG else "0.0.0.0"
@@ -35,4 +33,6 @@ if __name__ == "__main__":
     config.setup_logger()
     Timer(1, open_browser).start()
     app.run(host=HOST, port=PORT, debug=config.DEBUG, use_reloader=config.DEBUG)
-    atexit.register(delete_client_data)
+
+    # Use this to delete client data on exit
+    #atexit.register(delete_client_data)
