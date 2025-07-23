@@ -130,6 +130,7 @@ else:
 
 DUMP_DIR = THIS_DIR / "phone_dumps"
 SCRIPT_DIR = THIS_DIR / "scripts"
+SCREENSHOT_DIR = THIS_DIR / "webstatic" / "images" / "screenshots"
 
 DATE_STR = "%Y-%m-%d %I:%M %p"
 ERROR_LOG = []

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-The mainfile of ISDi repo. 
+The mainfile of ISDi repo.
 """
 import atexit
 import webbrowser
@@ -9,7 +9,7 @@ from threading import Timer
 import config
 from phone_scanner import db
 from web import app, sa
-from evidence_collection import delete_client_data
+from cleanup import delete_client_data
 
 PORT = 6200 if not (config.TEST or config.DEBUG) else 6202
 HOST = "127.0.0.1" if config.DEBUG else "0.0.0.0"
@@ -19,6 +19,7 @@ def open_browser():
     """
     if not config.TEST:
         webbrowser.open('http://127.0.0.1:' + str(PORT), new=0, autoraise=True)
+
 
 if __name__ == "__main__":
     import sys
