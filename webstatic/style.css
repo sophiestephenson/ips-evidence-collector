@@ -861,3 +861,12 @@ span.inlinerisk {
     border-radius: 4px;
     margin-left: 5px;
 }
+
+table.content-notes {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table.content-notes th {
+    width: 25%;
+}
