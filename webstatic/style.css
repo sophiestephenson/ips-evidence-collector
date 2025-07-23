@@ -85,6 +85,7 @@ details {
   details[open] div.content {
     color: black;
     padding: 10px 30px;
+    padding-bottom: 30px;
   }
 
   details[open] div.subform {
@@ -869,4 +870,9 @@ table.content-notes {
 
 table.content-notes th {
     width: 25%;
+}
+
+td.buttons-in-details {
+    padding-right: 10px;
+    padding-top: 10px;
 }
