@@ -208,7 +208,8 @@
             </div>
             <br/>
             <br/>
-            <div><span class="primarybutton"><a onclick="$('#loading').show();" href="{{ url_for('evidence_printout') }}" class="btn btn-default">Generate Summary</a></span></div>
+            <div><span class="primarybutton"><a onclick="$('#loading').show();" href="{{ url_for('evidence_printout') }}" class="btn btn-success">Generate Summary</a></span></div>
+            <div><span class="primarybutton"><a onclick="return confirm('Are you sure you want to delete all client data? This cannot be undone.')" href="{{ url_for('evidence_delete_data') }}" class="btn btn-danger">Delete Client Data</a></span></div>
             <div id="loading" style="display:none;"><img src="../../../webstatic/images/waiting.gif" alt="" /></div>
         </div>
     </div>
