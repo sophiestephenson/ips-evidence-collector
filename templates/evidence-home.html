@@ -45,6 +45,9 @@
                     <div class="content">
                         Risks identified:
 
+                        {% if consultdata.taq.all_risks|length == 0 %}
+                        None.
+                        {% else %}
                         <div class="risks">
                             <ul>
                             {% for risk in consultdata.taq.all_risks %}
@@ -57,6 +60,7 @@
                                 
                             </ul>
                         </div>
+                        {% endif %}
                     </div>
                 </details>
                 <br/>
@@ -129,7 +133,9 @@
                     </div>
                 </details>
                 {% endif %}
+
                 <br/>
+                {% if consultdata.accounts %}
                 <details>
                     <summary>
                     <span class="icon">▼</span>
@@ -137,7 +143,6 @@
                     </summary>
 
                     <div class="content">
-                    {% if consultdata.accounts %}
                     <table class="summarytable">
                         <tbody>
                         <tr><th>Nickname</th>
@@ -171,6 +176,8 @@
                         {% endfor %}
                     </tbody>
                     </table>
+                    </div>
+                </details>
                     {% else %}
                     <details>
                         <summary>
@@ -182,8 +189,6 @@
                         </div>
                     </details>
                     {% endif %}
-                    </div>
-                </details>
 
                  <h3>Overall Consultation Notes</h3>
                 <form action method="post" class="form" role="form">
