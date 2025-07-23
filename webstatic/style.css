@@ -538,10 +538,10 @@ span .badge .badge-danger {
 }
 
 tr.form-question > th {
-    width: 50%;
+    width: 40%;
     vertical-align: top;
     padding-top: 5px;
-    font-weight: normal;
+    font-weight: normal !important;
 }
 
 tr.form-question > td > select {
