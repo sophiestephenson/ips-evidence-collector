@@ -175,6 +175,9 @@ class PasswordCheck(DictInitClass):
     questions = {
         "know": "Does the person of concern know the password for this account?",
         "guess": "Do you believe the person of concern could guess the password?",
+        "federated": "Do you log into this account using a federated login (e.g., Google, Facebook, Apple)?",
+        "federated_which": "What other account do you use to log in?",
+        "federated_comp": "Do you believe the person of concern has access to the federated account?",
     }
     attrs = list(questions.keys())
 
@@ -197,6 +200,13 @@ class PasswordCheck(DictInitClass):
             new_risk = Risk(
                 risk = "Potential password compromise",
                 description = "The client believes the person of concern could guess the password for this account. If they guess correctly, it would enable them to log in. (Note: If two-factor authentication is enabled, they would still need to bypass the second factor.)"
+            )
+            risks.append(new_risk)
+
+        if self.federated_comp == "yes":
+            new_risk = Risk(
+                risk = "Compromised federated account",
+                description = "By compromising the federated account, the person of concern could log into this account without needing to know the password."
             )
             risks.append(new_risk)
 
@@ -1061,6 +1071,9 @@ class SuspiciousLoginsForm(FlaskForm):
 class PasswordForm(FlaskForm):
     know = RadioField(PasswordCheck().questions["know"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     guess = RadioField(PasswordCheck().questions["guess"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    federated = RadioField(PasswordCheck().questions["federated"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    federated_which = TextAreaField(PasswordCheck().questions["federated_which"])
+    federated_comp = RadioField(PasswordCheck().questions["federated_comp"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
 
 class RecoveryForm(FlaskForm):
     phone_present = RadioField(RecoverySettings().questions["phone_present"], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
