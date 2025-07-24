@@ -335,7 +335,7 @@
 {% for scan in scans %}
 <div class="pagebreak"></div>
 <div class="new-page">
-    <h1>Device Scan {{loop.index}}: {{scan.device_nickname}} </h1>
+    <h1>Device Scan {{loop.index}} of {{scans|length}}: {{scan.device_nickname}} </h1>
     <hr />
     {% if scan.manual %}
     <p>*Note: This scan was done manually. Automated scan was not possible, so suspicious apps were identified by the consultant and added by hand.*</p>
@@ -665,7 +665,7 @@
 
     {% for account in accounts %}
     <div class="account-check">
-    <h2  class="separator">Account Check {{loop.index}}: {{account.platform}}{% if account.platform != account.account_nickname %} (Nickname: {{account.account_nickname}}){% endif %}</h2>
+    <h2  class="separator">Account Check {{loop.index}}  of {{accounts|length}}: {{account.platform}}{% if account.platform != account.account_nickname %} (Nickname: {{account.account_nickname}}){% endif %}</h2>
 
     <table class="printout_columns">
         <tbody>
