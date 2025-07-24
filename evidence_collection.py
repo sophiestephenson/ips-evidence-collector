@@ -393,6 +393,8 @@ class AppInfo(Dictable):
         self.app_name = app_name
         if self.app_name.strip() == "":
             self.app_name = title
+        if self.title.strip() == "":
+            self.title = app_name
         if self.app_name.strip() == "" or self.app_name.strip() == "App":
             self.app_name = appId
             self.title = appId
@@ -838,11 +840,11 @@ class ScanData(Dictable):
 
         # sort all_apps by title, with system apps at the end,
         # checked apps at the top, and flagged investigated apps at the top top
-        all_apps.sort(key=lambda x: x['title'].lower())
-        all_apps.sort(key=lambda x: len(x['flags']) > 0, reverse=True)
-        all_apps.sort(key=lambda x: 'system-app' in x['flags'] and len(x['flags']) == 1)
-        all_apps.sort(key=lambda x: x['investigate'], reverse=True)
         self.all_apps = [AppInfo(**app, device_hmac_serial=serial) for app in all_apps]
+        self.all_apps.sort(key=lambda x: x.title.lower())
+        self.all_apps.sort(key=lambda x: len(x.flags) > 0, reverse=True)
+        self.all_apps.sort(key=lambda x: 'system-app' in x.flags and len(x.flags) == 1)
+        self.all_apps.sort(key=lambda x: x.investigate, reverse=True)
 
         self.selected_apps = [AppInfo(**app, device_hmac_serial=serial) for app in selected_apps]
 
@@ -1489,7 +1491,7 @@ def get_scan_data(device, device_owner):
 
         rooted, rooted_reason = sc.isrooted(ser)
         scan_d['is_rooted'] = rooted
-        scan_d['rooted_reasons'] = json.dumps(rooted_reason)
+        scan_d['rooted_reasons'] = rooted_reason
 
         scanid = create_scan(scan_d)
 
