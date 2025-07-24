@@ -218,18 +218,7 @@ def evidence_scan_start(device_type, device_nickname, force_rescan):
             if form.manualadd.data:
 
                 # if it's a manual add, create a new scan object and redirect to the manual add page
-                current_scan = ScanData(
-                    device_type=form.data["device_type"],
-                    device_nickname=form.data["device_nickname"],
-                    serial="MANADD-" + str(hash(form.data["device_nickname"])),
-                    manual=True
-                )
-                current_scan.id = len(all_scan_data)
-                all_scan_data.append(current_scan)
-                save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
-
-                return redirect(url_for('evidence_scan_manualadd',
-                                        ser=current_scan.serial))
+                return redirect(url_for('evidence_scan_manualadd'))
 
             # clean up the submitted data
             clean_data = remove_unwanted_data(form.data)
@@ -378,18 +367,31 @@ def evidence_scan_select(ser, show_rescan):
 
         return redirect(url_for('evidence_scan_select'), ser=ser)
 
+@app.route("/evidence/scan/manualadd/", methods={'GET', 'POST'}, defaults={'ser': None})
 @app.route("/evidence/scan/manualadd/<string:ser>", methods={'GET', 'POST'})
 def evidence_scan_manualadd(ser):
 
-    all_scan_data = load_object_from_json(ConsultDataTypes.SCANS.value)
-    current_scan = get_scan_by_ser(ser, all_scan_data)
-    assert current_scan.serial == ser
+    current_scan = ScanData()
 
-    manual_add_apps = [{"app_name": app.title, "spyware": "spyware" in app.flags} for app in current_scan.selected_apps]
+    # If we passed a serial number, load the scan data for that serial
+    if ser:
+        all_scan_data = load_object_from_json(ConsultDataTypes.SCANS.value)
+        current_scan = get_scan_by_ser(ser, all_scan_data)
+        assert current_scan.serial == ser
+    else:
+        current_scan.manual = True
+
+    manual_add_apps = [{"app_name": app.title, "spyware": "spyware" in app.flags} 
+                       for app in current_scan.selected_apps]
 
     form = ManualAddPageForm(apps = manual_add_apps,
                              device_nickname=current_scan.device_nickname,
-                             device_type=current_scan.device_type)
+                             device_manufacturer=current_scan.device_manufacturer,
+                             device_model=current_scan.device_model,
+                             device_version=current_scan.device_version,
+                             device_serial=current_scan.serial,
+                             is_rooted="yes" if current_scan.is_rooted else "none",
+                             rooted_reasons=current_scan.rooted_reasons)
 
     ### IF IT'S A GET:
     if request.method == 'GET':
@@ -418,10 +420,20 @@ def evidence_scan_manualadd(ser):
                 return render_template('main.html', **context)
 
             elif form.validate():
-                # TODO take data and do something with it
+                # Get scan details that were manually added
+                current_scan.device_nickname = form.data['device_nickname']
+                current_scan.device_model = form.data['device_model']
+                current_scan.device_version = form.data['device_version']
+                current_scan.device_manufacturer = form.data['device_manufacturer']
+                current_scan.is_rooted = form.data['is_rooted'] == 'yes'
+                current_scan.rooted_reasons = form.data['rooted_reasons']
 
-                pprint(form.data)
+                # Input serial or make a fake one if needed
+                current_scan.serial = form.data['device_serial']
+                if current_scan.serial.strip() == "":
+                    current_scan.serial = "MANADD-" + current_scan.device_nickname.replace(" ", "-")
 
+                # Add apps that were manually added to selected_apps and all_apps
                 selected_apps = []
                 for a in form.data['apps']:
                     flags = []

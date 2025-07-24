@@ -1176,7 +1176,12 @@ class ManualAppSelectForm(FlaskForm):
 class ManualAddPageForm(FlaskForm):
     title = "Manual App Investigation: Select Apps"
     device_nickname = StringField("Device Nickname", validators=[InputRequired()])
-    device_type = RadioField('Device type', choices=DEVICE_TYPE_CHOICES, validators=[InputRequired()])
+    device_version = StringField("Device Version")
+    device_model = StringField("Device Model", validators=[InputRequired()])
+    device_manufacturer = StringField("Device Manufacturer")
+    device_serial = StringField("Device Serial Number")
+    is_rooted = RadioField("Is the device rooted?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    rooted_reasons = TextAreaField("Reasons rooting is suspected (if applicable).")
     apps = FieldList(FormField(ManualAppSelectForm))
     addline = SubmitField("Add a new app")
     submit = SubmitField("Submit")

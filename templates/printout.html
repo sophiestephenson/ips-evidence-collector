@@ -356,18 +356,14 @@
                         <tr>
                             <th>Device Specifications</th>
                             <td>
-                                {% if scan.manual %}
-                                <i>Not available for a manual scan</i>
-                                {% else %}
                                 {{scan.device_manufacturer}} {{scan.device_model}}, Version {{scan.device_version}}
-                                {% endif %}
                             </td>
                         </tr>
                         <tr>
                             <th>Serial Number</th>
                             <td>
-                                {% if scan.manual %}
-                                <i>Not available for a manual scan</i>
+                                {% if scan.serial %}
+                                <i>Not entered.</i>
                                 {% else %}
                                 {{scan.serial}}
                                 {% endif %}

@@ -219,7 +219,15 @@
 
                          
                         <h3>Screenshots</h3>
-                            <button id="{{app.appId}}" type="button" onclick="getScreenshot(this.id, '{{device}}', '{{scan_data.adb_serial}}')" value="screenshot" class="btn btn-secondary">Take screenshot</button>
+                        <table>
+                            <tbody>
+                                <tr>
+                                <td colspan="2">
+                                <button id="{{app.appId}}" type="button" onclick="getScreenshot(this.id, '{{device}}', '{{scan_data.adb_serial}}')" value="screenshot" class="btn btn-secondary">Take screenshot</button>
+                                </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </details>
                 <br>

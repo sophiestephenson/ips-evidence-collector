@@ -26,8 +26,18 @@
             <hr>
             <form action method="post" class="form" role="form">
                 {{ form.hidden_tag() }}
-                {{ render_text_field(form.device_nickname) }}
-                {{ render_select(form.device_type) }}
+                <table>
+                    <tbody>
+                            {{ render_text_field(form.device_nickname) }}
+                            {{ render_text_field(form.device_manufacturer) }}
+                            {{ render_text_field(form.device_model) }}
+                            {{ render_text_field(form.device_version) }}
+                            {{ render_text_field(form.device_serial) }}
+                            {{render_select(form.is_rooted) }}
+                            {{ render_text_field(form.rooted_reasons) }}
+                        </tr>
+                    </tbody>
+                </table>
                 <br>
                 <br>
                 <p>List app names below:</p>
