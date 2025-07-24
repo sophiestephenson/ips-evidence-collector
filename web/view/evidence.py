@@ -514,8 +514,8 @@ def evidence_scan_investigate(ser):
 def evidence_account_default():
 
     # consider adding a place to save the num scans later if it becomes a pain to load it
-    accounts = load_json_data(ConsultDataTypes.ACCOUNTS.value)
-    if accounts is list:
+    accounts = load_object_from_json(ConsultDataTypes.ACCOUNTS.value)
+    if isinstance(accounts, list):
         new_id = len(accounts)
     else:
         new_id = 0
