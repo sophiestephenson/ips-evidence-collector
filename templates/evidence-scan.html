@@ -195,10 +195,13 @@
                             {{nested.install_info.hidden_tag()}}
                             <table>
                                 <tbody>
-                                    {% for subform in [nested.install_info.knew_installed, nested.install_info.installed, nested.install_info.coerced] %}
-                                    {{ render_select(subform) }}
-                                    {% endfor %}
-
+                                    {% if 'system-app' not in app.flags %}
+                                        {% for subform in [nested.install_info.knew_installed, nested.install_info.installed, nested.install_info.coerced] %}
+                                        {{ render_select(subform) }}
+                                        {% endfor %}
+                                    {% else %}
+                                        {{ render_select(nested.install_info.knew_installed) }}
+                                    {% endif %}
                                 </tbody>
                             </table>
                         </div>

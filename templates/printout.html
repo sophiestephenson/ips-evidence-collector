@@ -574,11 +574,19 @@
                                     </tr>
                                     <tr>
                                         <th>{{formquestions["apps"]["install_info"]["installed"]}}</th>
+                                        {% if 'system-app' not in app.flags %}
                                         <td>{{select_text[app.install_info.installed]}}</td>
+                                        {% else %}
+                                        <td><i>System app, not applicable.</i></td>
+                                        {% endif %}
                                     </tr>
                                     <tr>
                                         <th>{{formquestions["apps"]["install_info"]["coerced"]}}</th>
+                                        {% if 'system-app' not in app.flags %}
                                         <td>{{select_text[app.install_info.coerced]}}</td>
+                                        {% else %}
+                                        <td><i>System app, not applicable.</i></td>
+                                        {% endif %}
                                     </tr>
                         </tbody>
                     </table>
