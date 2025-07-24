@@ -3,6 +3,14 @@ input[type=radio] {
     margin: 2px;
 }
 
+input[type=text] {
+    width: 100%;
+    padding: 5px;
+    margin: 5px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+}
+
 a.appid {
     color: unset;
 }
@@ -185,7 +193,11 @@ div.progress-bar {
 
 textarea {
     width: 100%;
+    padding: 5px;
     margin: 5px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    height: 75px;
 }
 
 div.result-overview {
@@ -290,10 +302,6 @@ div.app-info th {
 }
 
 input[type="file"] {
-    margin: 5px 0px;
-}
-
-textarea {
     margin: 5px 0px;
 }
 
@@ -538,10 +546,10 @@ span .badge .badge-danger {
 }
 
 tr.form-question > th {
-    width: 50%;
+    width: 40%;
     vertical-align: top;
     padding-top: 5px;
-    font-weight: normal;
+    font-weight: normal !important;
 }
 
 tr.form-question > td > select {
@@ -851,4 +859,27 @@ span.inlinerisk {
 
 .appid {
     font-family: 'Courier New', Courier, monospace;
+}
+
+#manualadd {
+    background-color: #777;
+    color: white;
+    padding: 6px 12px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    margin-left: 5px;
+}
+
+table.content-notes {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table.content-notes th {
+    width: 25%;
+}
+
+td.buttons-in-details {
+    padding-right: 10px;
+    padding-top: 10px;
 }

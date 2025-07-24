@@ -24,22 +24,36 @@
             {% endfor %}
             <br>
             <div>
-                <a href="{{ url_for('evidence_taq') }}" class="btn btn-default">TAQ Page</a>
-                <a href="{{ url_for('evidence_scan_start') }}" class="btn btn-default">Scan a device</a>
-                <a href="{{ url_for('evidence_account_default') }}" class="btn btn-default">Add an account</a>
-                <a href="{{ url_for('evidence_screenshots') }}" class="btn btn-default">View all screenshots</a>
+                <h2>Consultation Actions</h2>
+                <div>
+                    <a href="{{ url_for('evidence_taq') }}" class="btn btn-secondary">Edit TAQ</a>
+                    <a href="{{ url_for('evidence_scan_start') }}" class="btn btn-secondary">Scan a Device</a>
+                    <a href="{{ url_for('evidence_account_default') }}" class="btn btn-secondary">Add an Account</a>
+                    <a href="{{ url_for('evidence_screenshots') }}" class="btn btn-secondary">Manage Screenshots</a>
+                </div>
+                <br/>
+                
+                <div>
+                    <a onclick="$('#loading').show();" href="{{ url_for('evidence_printout') }}" class="btn btn-success">Generate Evidentiary Document</a>
+                    
+                    <a onclick="return confirm('Are you sure you want to delete all client data? This cannot be undone.')" href="{{ url_for('evidence_delete_data') }}" class="btn btn-danger">Delete Client Data</a>
+                </div>
+                <div id="loading" style="display:none;"><img src="../../../webstatic/images/waiting.gif" alt="" /></div>
+
+
 
                 <br><br>
-                <h3>Consultation Summary</h3>
+                <hr/>
+                <h2>Consultation Summary</h2>
                 <p><b>Client Name:</b> {{consultdata.setup.client}}</p>
                 <p><b>Consultation Date:</b> {{consultdata.setup.date}}</p>
                 <br/>
-                <details>
+                <details open>
                     <summary>
                     <span class="icon">▼</span>
                     TAQ
                     {% if consultdata.taq.marked_done %}
-                    <span style="margin-left: 5px">✅</span>
+                    <span style="margin-left: 5px">✅</span> 
                     {% endif %}
                     </summary>
                     <div class="content">
@@ -65,7 +79,7 @@
                 </details>
                 <br/>
                 {% if consultdata.scans %}
-                <details>
+                <details open>
                     <summary>
                     <span class="icon">▼</span>
                         Device Scans ({{consultdata.scans|length}})
@@ -107,7 +121,7 @@
                             </td>
                             {% if scan.manual %}
                             <td>
-                                <a href="{{ url_for('evidence_scan_manualadd', ser=scan.serial) }}" class="btn btn-default">Select</a>
+                                <a href="{{ url_for('evidence_scan_manualadd', ser=scan.serial) }}" class="btn btn-default">Edit</a>
                             </td>
                             {% else %} 
                             <td>
@@ -117,13 +131,16 @@
                             <td>
                                 <a href="{{ url_for('evidence_scan_investigate', ser=scan.serial) }}" class="btn btn-default">Investigate</a>
                             </td>
+                            <td>
+                                <a href="{{ url_for('evidence_delete_scan', ser=scan.serial) }}" class="btn btn-danger" onclick="return confirm('Are you sure you? This cannot be undone.')">Delete</a>
+                            </td>
                         </tr> 
                         {% endfor %}
                         </tbody>
                     </table></div>
                 </details>
                 {% else %}
-                <details>
+                <details open>
                     <summary>
                     <span class="icon">▼</span>
                         Device Scans (0)
@@ -136,7 +153,7 @@
 
                 <br/>
                 {% if consultdata.accounts %}
-                <details>
+                <details open>
                     <summary>
                     <span class="icon">▼</span>
                     Account Checks ({{consultdata.accounts|length}})
@@ -172,6 +189,9 @@
                             <td>
                                 <a href="{{ url_for('evidence_account', id=loop.index0) }}" class="btn btn-default">Edit</a>
                             </td>
+                            <td>
+                                <a href="{{ url_for('evidence_delete_account', id=loop.index0) }}" class="btn btn-danger" onclick="return confirm('Are you sure you? This cannot be undone.')">Delete</a>
+                            </td>
                         </tr> 
                         {% endfor %}
                     </tbody>
@@ -179,7 +199,7 @@
                     </div>
                 </details>
                     {% else %}
-                    <details>
+                    <details open>
                         <summary>
                         <span class="icon">▼</span>
                             Account Checks (0)
@@ -190,27 +210,34 @@
                     </details>
                     {% endif %}
 
-                 <h3>Overall Consultation Notes</h3>
-                <form action method="post" class="form" role="form">
-                    {{ form.hidden_tag() }}
-                    {{ wtf.form_errors(form) }}
+                <br/>
+                <details open>
+                    <summary>
+                        <span class="icon">▼</span>
+                        Overall Consultation Notes
+                    </summary>
+                    <div class="content">
+                        <form action method="post" class="form" role="form">
+                            {{ form.hidden_tag() }}
+                            {{ wtf.form_errors(form) }}
 
-                    <table>
-                        <tbody>
-                            {{render_text_field(form.consultant_notes)}}
-                            {{render_text_field(form.client_notes)}}
-                        </tbody>
-                    </table>
+                            <table class="content-notes">
+                                <tbody>
+                                    {{render_text_field(form.consultant_notes)}}
+                                    {{render_text_field(form.client_notes)}}
+                                </tbody>
+                            </table>
 
-                <div><span class="primarybutton">{{form.submit}}</span></div>
-                </form>
+                        <div><span class="primarybutton">{{form.submit}}</span></div>
+                        </form>
+                        <br/>
+                        <br/>
+                    </div>
+                </details>
 
             </div>
             <br/>
             <br/>
-            <div><span class="primarybutton"><a onclick="$('#loading').show();" href="{{ url_for('evidence_printout') }}" class="btn btn-success">Generate Summary</a></span></div>
-            <div><span class="primarybutton"><a onclick="return confirm('Are you sure you want to delete all client data? This cannot be undone.')" href="{{ url_for('evidence_delete_data') }}" class="btn btn-danger">Delete Client Data</a></span></div>
-            <div id="loading" style="display:none;"><img src="../../../webstatic/images/waiting.gif" alt="" /></div>
         </div>
     </div>
 </div>

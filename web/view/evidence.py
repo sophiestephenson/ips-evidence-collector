@@ -15,6 +15,12 @@ from flask_bootstrap import Bootstrap
 
 import config
 from evidence_collection import (
+    DEVICE_TYPE_CHOICES,
+    LEGAL_CHOICES,
+    PERSON_CHOICES,
+    PWD_CHOICES,
+    TWO_FACTOR_CHOICES,
+    YES_NO_UNSURE_CHOICES,
     AccountCompromiseForm,
     AccountInvestigation,
     AppInvestigationForm,
@@ -189,7 +195,8 @@ def evidence_taq():
            defaults={'device_type': '', 'device_nickname': '', 'force_rescan': False})
 @app.route("/evidence/scan/<device_type>/<device_nickname>", methods={'GET', 'POST'},
            defaults={'force_rescan': False})
-@app.route("/evidence/scan/<device_type>/<device_nickname>/force-rescan-<force_rescan>", methods={'GET', 'POST'})
+@app.route("/evidence/scan/<device_type>/<device_nickname>/force-rescan", methods={'GET', 'POST'},
+           defaults={'force_rescan': True})
 def evidence_scan_start(device_type, device_nickname, force_rescan):
 
     # always assume we are starting with a fresh scan
@@ -217,18 +224,7 @@ def evidence_scan_start(device_type, device_nickname, force_rescan):
             if form.manualadd.data:
 
                 # if it's a manual add, create a new scan object and redirect to the manual add page
-                current_scan = ScanData(
-                    device_type=form.data["device_type"],
-                    device_nickname=form.data["device_nickname"],
-                    serial="MANADD-" + str(hash(form.data["device_nickname"])),
-                    manual=True
-                )
-                current_scan.id = len(all_scan_data)
-                all_scan_data.append(current_scan)
-                save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
-
-                return redirect(url_for('evidence_scan_manualadd',
-                                        ser=current_scan.serial))
+                return redirect(url_for('evidence_scan_manualadd'))
 
             # clean up the submitted data
             clean_data = remove_unwanted_data(form.data)
@@ -268,7 +264,11 @@ def evidence_scan_start(device_type, device_nickname, force_rescan):
                                         all_apps=all_apps)
 
                 current_scan.id = len(all_scan_data)
-                all_scan_data.append(current_scan)
+                
+                # Add the scan to the list of all scans,
+                # replacing any previous scan with the same serial number
+                # or adding a new scan if it doesn't exist
+                update_scan_by_ser(current_scan, all_scan_data)
 
                 save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
                 return redirect(url_for('evidence_scan_select', ser=current_scan.serial))
@@ -337,7 +337,7 @@ def evidence_scan_select(ser, show_rescan):
             # get selected apps from the form data
             to_investigate_ids = [app["appId"] for app in form.data['apps'] if app['investigate']]
 
-            # remove apps we no longer want to investigate,
+            # Remove apps we no longer want to investigate,
             # while maintaining info from previous investigations
             current_scan.selected_apps = [app for app in current_scan.selected_apps if app.appId in to_investigate_ids]
 
@@ -345,9 +345,17 @@ def evidence_scan_select(ser, show_rescan):
             # TODO: Do we need the "investigate" marker?
             for a in current_scan.all_apps:
                 if a.appId in to_investigate_ids:
-                    if not a.investigate:
+
+                    # If this wasn't marked for investigation,
+                    # or if it was but we don't have it in selected_apps,
+                    # then add it to selected_apps
+                    matching_apps = [app for app in current_scan.selected_apps if app.appId == a.appId]
+                    if not a.investigate or len(matching_apps) == 0:
                         current_scan.selected_apps.append(a)
-                        a.investigate = True
+
+                    # Mark that we investigated this app
+                    a.investigate = True
+
                 else:
                     a.investigate = False
 
@@ -365,18 +373,31 @@ def evidence_scan_select(ser, show_rescan):
 
         return redirect(url_for('evidence_scan_select'), ser=ser)
 
+@app.route("/evidence/scan/manualadd/", methods={'GET', 'POST'}, defaults={'ser': None})
 @app.route("/evidence/scan/manualadd/<string:ser>", methods={'GET', 'POST'})
 def evidence_scan_manualadd(ser):
 
-    all_scan_data = load_object_from_json(ConsultDataTypes.SCANS.value)
-    current_scan = get_scan_by_ser(ser, all_scan_data)
-    assert current_scan.serial == ser
+    current_scan = ScanData()
 
-    manual_add_apps = [{"app_name": app.title, "spyware": "spyware" in app.flags} for app in current_scan.selected_apps]
+    # If we passed a serial number, load the scan data for that serial
+    if ser:
+        all_scan_data = load_object_from_json(ConsultDataTypes.SCANS.value)
+        current_scan = get_scan_by_ser(ser, all_scan_data)
+        assert current_scan.serial == ser
+    else:
+        current_scan.manual = True
+
+    manual_add_apps = [{"app_name": app.title, "spyware": "spyware" in app.flags} 
+                       for app in current_scan.selected_apps]
 
     form = ManualAddPageForm(apps = manual_add_apps,
                              device_nickname=current_scan.device_nickname,
-                             device_type=current_scan.device_type)
+                             device_manufacturer=current_scan.device_manufacturer,
+                             device_model=current_scan.device_model,
+                             device_version=current_scan.device_version,
+                             device_serial=current_scan.serial,
+                             is_rooted="yes" if current_scan.is_rooted else "none",
+                             rooted_reasons=current_scan.rooted_reasons)
 
     ### IF IT'S A GET:
     if request.method == 'GET':
@@ -405,15 +426,27 @@ def evidence_scan_manualadd(ser):
                 return render_template('main.html', **context)
 
             elif form.validate():
-                # TODO take data and do something with it
+                # Get scan details that were manually added
+                current_scan.device_nickname = form.data['device_nickname']
+                current_scan.device_model = form.data['device_model']
+                current_scan.device_version = form.data['device_version']
+                current_scan.device_manufacturer = form.data['device_manufacturer']
+                current_scan.is_rooted = form.data['is_rooted'] == 'yes'
+                current_scan.rooted_reasons = form.data['rooted_reasons']
 
-                pprint(form.data)
+                # Input serial or make a fake one if needed
+                current_scan.serial = form.data['device_serial']
+                if current_scan.serial.strip() == "":
+                    current_scan.serial = "MANADD-" + current_scan.device_nickname.replace(" ", "-")
 
+                # Add apps that were manually added to selected_apps and all_apps
                 selected_apps = []
                 for a in form.data['apps']:
                     flags = []
                     if a['spyware']:
-                        flags = ['spyware']
+                        flags.append('spyware')
+                    if a['dualuse']:
+                        flags.append('dual-use')
                     if a['app_name'].strip() != "":
                         selected_apps.append({
                             "title": a['app_name'],
@@ -509,8 +542,8 @@ def evidence_scan_investigate(ser):
 def evidence_account_default():
 
     # consider adding a place to save the num scans later if it becomes a pain to load it
-    accounts = load_json_data(ConsultDataTypes.ACCOUNTS.value)
-    if accounts is list:
+    accounts = load_object_from_json(ConsultDataTypes.ACCOUNTS.value)
+    if isinstance(accounts, list):
         new_id = len(accounts)
     else:
         new_id = 0
@@ -664,9 +697,20 @@ def evidence_printout():
     context["taq"] = consult_data.taq.to_dict()
     context["accounts"] = [acct.to_dict() for acct in consult_data.accounts]
 
-
     # Need url_root to load screenshots
     context["url_root"] = request.url_root
+
+    # Enable quick access of the text that maps to the saved Select responses
+    context["select_text"] = dict()
+    for question_tups in [YES_NO_UNSURE_CHOICES,
+                          PERSON_CHOICES,
+                          PWD_CHOICES,
+                          LEGAL_CHOICES,
+                          DEVICE_TYPE_CHOICES,
+                          TWO_FACTOR_CHOICES]:
+        for abbrv, full_text in question_tups:
+            if abbrv.strip() != "":
+                context["select_text"][abbrv] = full_text
 
     # create the printout document
     filename = create_printout(context)
@@ -678,4 +722,36 @@ def evidence_delete_data():
 
     delete_client_data()
     flash("Client data deleted successfully.", "success")
+    return redirect(url_for('evidence_home'))
+
+@app.route("/evidence/delete/account/<int:id>", methods=["GET"])
+def evidence_delete_account(id):
+
+    accounts = load_object_from_json(ConsultDataTypes.ACCOUNTS.value)
+    for account in accounts:
+        if account.account_id == id:
+
+            # If we find the right account, delete it and save updated data
+            accounts.remove(account)
+            save_data_as_json(accounts, ConsultDataTypes.ACCOUNTS.value)
+            flash("Account deleted successfully.", "success")
+            return redirect(url_for('evidence_home'))
+
+    flash("Account not found.", "warning")
+    return redirect(url_for('evidence_home'))
+
+
+@app.route("/evidence/delete/scan/<string:ser>", methods=["GET"])
+def evidence_delete_scan(ser):
+
+    all_scan_data = load_object_from_json(ConsultDataTypes.SCANS.value)
+    current_scan = get_scan_by_ser(ser, all_scan_data)
+
+    if current_scan and current_scan.serial == ser:
+        all_scan_data.remove(current_scan)
+        save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
+        flash("Scan deleted successfully.", "success")
+    else:
+        flash("Scan not found.", "warning")
+
     return redirect(url_for('evidence_home'))

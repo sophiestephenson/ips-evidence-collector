@@ -32,6 +32,7 @@ from wtforms import (
 )
 from wtforms.validators import InputRequired
 
+import config
 from config import DUMP_DIR, SCREENSHOT_DIR
 from phone_scanner.db import create_mult_appinfo, create_scan
 from phone_scanner.privacy_scan_android import take_screenshot
@@ -54,9 +55,10 @@ ACCOUNTS = ["Google", "iCloud", "Microsoft", "Lyft", "Uber", "Doordash", "Grubhu
 EMPTY_CHOICE = [('', 'Nothing selected')]
 YES_NO_UNSURE_CHOICES = EMPTY_CHOICE + [('yes', 'Yes'), ('no', 'No'), ('unsure', 'Unsure')]
 YES_NO_CHOICES = EMPTY_CHOICE + [('yes', 'Yes'), ('no', 'No')]
-PERSON_CHOICES = [('me', 'Me'), ('poc', 'Person of concern'), ('other', 'Someone else'), ('unsure', 'Unsure')]
+PERSON_CHOICES = [('me', 'Me'), ('poc', 'Person of concern'), ('someoneelse', 'Someone else'), ('unsure', 'Unsure')]
+PWD_CHOICES = [('online', 'Online notes'), ('paper', 'Paper notes'), ('pwd_manager', 'Password manager'), ('other_pwd', 'Other (please explain)'), ('none', 'No specific method')]
 
-LEGAL_CHOICES = [('ro', 'Restraining order'), ('div', 'Divorce or other family court'), ('cl', 'Criminal case'), ('other', 'Other')]
+LEGAL_CHOICES = [('ro', 'Restraining order'), ('div', 'Divorce or other family court'), ('cl', 'Criminal case'), ('other_legal', 'Other')]
 DEVICE_TYPE_CHOICES = EMPTY_CHOICE + [('android', 'Android'), ('ios', 'iOS')]
 #two_factor_choices = [empty_choice] + [(x.lower(), x) for x in second_factors]
 TWO_FACTOR_CHOICES = EMPTY_CHOICE + [(x.lower(), x) for x in SECOND_FACTORS] + [('none', 'None')]
@@ -154,14 +156,14 @@ class SuspiciousLogins(DictInitClass):
         if self.recognize == 'yes':
             new_risk = Risk(
                 risk = "Unrecognized devices",
-                description = "There are unrecognized devices currently logged into this account. These devices are: {}.".format(self.describe_logins)
+                description = "There are unrecognized devices currently logged into this account."
             )
             risks.append(new_risk)
 
         if self.activity_log == 'yes':
             new_risk = Risk(
                 risk = "Suspicious logins",
-                description = "There are suspicious logins that do not appear to have come from the client. Description: {}.".format(self.describe_activity)
+                description = "There are suspicious logins to this account that do not appear to have come from the client."
             )
             risks.append(new_risk)
 
@@ -358,7 +360,7 @@ class PermissionInfo(DictInitClass):
         if self.access == 'yes':
             new_risk = Risk(
                 risk="Data leakage",
-                description="This app is sharing data with the person of concern. Investigation assessment: {}.".format(self.describe)
+                description="This app is sharing data with the person of concern."
             )
             risks.append(new_risk)
 
@@ -391,6 +393,8 @@ class AppInfo(Dictable):
         self.app_name = app_name
         if self.app_name.strip() == "":
             self.app_name = title
+        if self.title.strip() == "":
+            self.title = app_name
         if self.app_name.strip() == "" or self.app_name.strip() == "App":
             self.app_name = appId
             self.title = appId
@@ -537,8 +541,9 @@ class TAQDevices(DictInitClass):
 
 class TAQAccounts(DictInitClass):
     questions = {'pwd_mgmt': "How do you manage passwords?",
+                 'pwd_mgmt-describe': "Please provide more details on how you manage passwords.",
                  'pwd_comp': "Do you believe the person of concern knows, or could guess, any of your passwords?",
-                 'pwd_comp_which': "Which ones?"}
+                 'pwd_comp_which': "Which passwords do you believe are compromised, and why?"}
     attrs = list(questions.keys())
 
     def generate_risk_report(self) -> RiskReport:
@@ -552,7 +557,7 @@ class TAQAccounts(DictInitClass):
         if self.pwd_comp == 'yes':
             new_risk = Risk(
                 risk="Password compromise",
-                description="The client believes the person of concern knows, or could guess, the following passwords: {}. Knowing these passwords could allow them access and/or manipulate the client's accounts.".format(self.pwd_comp_which)
+                description="Someone who knows account passwords may be able to access and/or manipulate those accounts."
             )
             risks.append(new_risk)
 
@@ -579,7 +584,7 @@ class TAQSharing(DictInitClass):
         if self.share_phone_plan == 'yes':
             new_risk = Risk(
                 risk="Shared phone plan",
-                description="A shared phone plan may leak a variety of information, possibly including call history, message history (but not message content), contacts, and sometimes location. The account administrator of the client's phone plan, {}, has even more privileged access to this information.".format(self.phone_plan_admin)
+                description="A shared phone plan may leak a variety of information, possibly including call history, message history (but not message content), contacts, and sometimes location. The account administrator of the client's phone plan has even more privileged access to this information."
             )
             # Going to need to reformat the administrator here bc it'll probably say 'poc' not spelled out
             risks.append(new_risk)
@@ -587,7 +592,7 @@ class TAQSharing(DictInitClass):
         if self.share_accounts == 'yes':
             new_risk = Risk(
                 risk="Shared accounts",
-                description="The client has shared accounts with the person of concern. Any information on those accounts can be assumed to be known by the person of concern. Shared accounts: {}.".format(self.share_which)
+                description="The client has shared accounts with the person of concern. Any information on those accounts can be assumed to be known by the person of concern."
             )
             risks.append(new_risk)
 
@@ -832,7 +837,15 @@ class ScanData(Dictable):
         self.device_manufacturer = device_manufacturer
         self.is_rooted = is_rooted
         self.rooted_reasons = rooted_reasons
+
+        # sort all_apps by title, with system apps at the end,
+        # checked apps at the top, and flagged investigated apps at the top top
         self.all_apps = [AppInfo(**app, device_hmac_serial=serial) for app in all_apps]
+        self.all_apps.sort(key=lambda x: x.title.lower())
+        self.all_apps.sort(key=lambda x: len(x.flags) > 0, reverse=True)
+        self.all_apps.sort(key=lambda x: 'system-app' in x.flags and len(x.flags) == 1)
+        self.all_apps.sort(key=lambda x: x.investigate, reverse=True)
+
         self.selected_apps = [AppInfo(**app, device_hmac_serial=serial) for app in selected_apps]
 
         self.generate_risk_report()
@@ -850,7 +863,7 @@ class ScanData(Dictable):
         if self.is_rooted:
             new_risk = Risk(
                 risk="Evidence of jailbreaking",
-                description="The devices is jailbroken, giving the person of concern nearly unbounded access to the device and the client's activity on the device. Reasons jailbreaking is susptected: {}.".format(self.rooted_reasons)
+                description="The device may be jailbroken, giving the person of concern nearly unbounded access to the device and the client's activity on the device."
             )
             risks.append(new_risk)
 
@@ -942,7 +955,11 @@ def get_scan_by_ser(ser, all_scan_data: list[ScanData]):
 
 
 def update_scan_by_ser(new_scan: ScanData, all_scan_data: list[ScanData]):
-
+    """
+    Adds new_scan to all_scan_data.
+    If new_scan matches serial numbers of an existing scan, it replaces that scan.
+    Otherwise, it appends the new scan to the list.
+    """
 
     for i in range(len(all_scan_data)):
         scan = all_scan_data[i]
@@ -952,6 +969,7 @@ def update_scan_by_ser(new_scan: ScanData, all_scan_data: list[ScanData]):
             all_scan_data[i] = new_scan
             return all_scan_data
 
+    # Otherwise, just append the new scan
     all_scan_data.append(new_scan)
     return all_scan_data
 
@@ -1154,11 +1172,17 @@ class AppSelectPageForm(FlaskForm):
 class ManualAppSelectForm(FlaskForm):
     app_name = StringField("App Name")
     spyware = BooleanField("Appears to be a spyware app?")
+    dualuse = BooleanField("Appears to be a dual-use app?")
 
 class ManualAddPageForm(FlaskForm):
     title = "Manual App Investigation: Select Apps"
     device_nickname = StringField("Device Nickname", validators=[InputRequired()])
-    device_type = RadioField('Device type', choices=DEVICE_TYPE_CHOICES, validators=[InputRequired()])
+    device_version = StringField("Device Version")
+    device_model = StringField("Device Model", validators=[InputRequired()])
+    device_manufacturer = StringField("Device Manufacturer")
+    device_serial = StringField("Device Serial Number")
+    is_rooted = RadioField("Is the device rooted?", choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    rooted_reasons = TextAreaField("Reasons rooting is suspected (if applicable).")
     apps = FieldList(FormField(ManualAppSelectForm))
     addline = SubmitField("Add a new app")
     submit = SubmitField("Submit")
@@ -1197,7 +1221,8 @@ class TAQDeviceCompForm(FlaskForm):
 
 class TAQAccountsForm(FlaskForm):
     title = "Account and Password Management"
-    pwd_mgmt = TextAreaField(TAQAccounts().questions['pwd_mgmt'])
+    pwd_mgmt = RadioField(TAQAccounts().questions['pwd_mgmt'], choices=PWD_CHOICES)
+    pwd_mgmt_describe = TextAreaField(TAQAccounts().questions['pwd_mgmt-describe'])
     pwd_comp = RadioField(
         TAQAccounts().questions['pwd_comp'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     pwd_comp_which = TextAreaField(TAQAccounts().questions['pwd_comp_which'])
@@ -1477,7 +1502,7 @@ def get_scan_data(device, device_owner):
 
         rooted, rooted_reason = sc.isrooted(ser)
         scan_d['is_rooted'] = rooted
-        scan_d['rooted_reasons'] = json.dumps(rooted_reason)
+        scan_d['rooted_reasons'] = rooted_reason
 
         scanid = create_scan(scan_d)
 

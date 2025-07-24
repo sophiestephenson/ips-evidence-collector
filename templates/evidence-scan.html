@@ -140,7 +140,7 @@
                     {{ nested.hidden_tag() }}
                     <div class="content">
                         <div class="app-info">
-                            <h4>App information</h4>
+                            <h3>App information</h3>
                             <table>
                                 {% set app = scan_data.selected_apps[outer_loop.index0] %}
                                 <tr><th valign="top">App name</th><td>
@@ -189,9 +189,8 @@
                             </table>
                         </div>
                         <hr>
-                            <button id="{{app.appId}}" type="button" onclick="getScreenshot(this.id, '{{device}}', '{{scan_data.adb_serial}}')" value="screenshot">Screenshot</button>
-                        <h4>Questionnaires</h4>
-                        <h5>{{nested.install_info.label}}</h5>
+                        <h3>Questionnaires</h3>
+                        <h4>{{nested.install_info.label}}</h4>
                         <div class="subform">
                             {{nested.install_info.hidden_tag()}}
                             <table>
@@ -204,7 +203,7 @@
                             </table>
                         </div>
 
-                        <h5>Permission check</h5>
+                        <h4 style="font-weight: bold;">Permission Check</h4>
                         <div class="subform">
                             {{ nested.permission_info.hidden_tag() }}
                             <table>
@@ -215,8 +214,20 @@
                             </table>
                         </div>
 
-                        <h5>{{nested.notes.label}}</h5>
+                        <h4>{{nested.notes.label}}</h4>
                         <div class="subform notes">{{ nested.notes }}</div>
+
+                         
+                        <h3>Screenshots</h3>
+                        <table>
+                            <tbody>
+                                <tr>
+                                <td colspan="2">
+                                <button id="{{app.appId}}" type="button" onclick="getScreenshot(this.id, '{{device}}', '{{scan_data.adb_serial}}')" value="screenshot" class="btn btn-secondary">Take screenshot</button>
+                                </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </details>
                 <br>
@@ -227,7 +238,7 @@
                 <br>
                 <br>
                 {% if step==1 %}
-                <div><span class="secondarybutton"><a href="{{ url_for('evidence_home') }}" class="btn btn-default">Abort Scan</a></span></div>
+                <div><span class="secondarybutton"><a href="{{ url_for('evidence_home') }}" class="btn btn-warning">Abort Scan</a></span></div>
                 {% endif %}
 
                 {% if step==2 %}

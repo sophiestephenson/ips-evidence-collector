@@ -54,8 +54,10 @@
                                                     form.suspicious_logins.describe_activity.id) }}
                                     {{ render_text_field(form.suspicious_logins.describe_activity, ishidden=True) }}
                                     <tr>
-                                        <button id="account{{sessiondata.account_id}}_suspicious_logins" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot">Android Screenshot</button>
-                                        <button id="account{{sessiondata.account_id}}_suspicious_logins" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot">iOS Screenshot</button>
+                                        <td colspan="2" class="buttons-in-details">
+                                            <button id="account{{sessiondata.account_id}}_suspicious_logins" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot" class="btn btn-secondary">Android Screenshot</button>
+                                            <button id="account{{sessiondata.account_id}}_suspicious_logins" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot" class="btn btn-secondary">iOS Screenshot</button>
+                                        </td>
                                     </tr>
                                     <tr><div id="loading" style="display:none;"><img src="../../../webstatic/images/waiting.gif" alt="" /></div></tr>
                                     </tbody>
@@ -93,10 +95,6 @@
                             <div class="subform">
                                 <table>
                                     <tbody>
-                                    <tr>
-                                        <button id="account{{sessiondata.account_id}}_recovery_settings" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot">Android Screenshot</button>
-                                        <button id="account{{sessiondata.account_id}}_recovery_settings" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot">iOS Screenshot</button>
-                                    </tr>
                                     {{ render_select(form.recovery_settings.phone_present, "phonerecovery") }}
                                     </tbody>
                                 </table>
@@ -128,6 +126,14 @@
                                     {{ render_text_field(form.recovery_settings.email, ishidden=True) }}
                                     </tbody>
                                 </table>
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                        <td colspan="2" class="buttons-in-details">
+                                        <button id="account{{sessiondata.account_id}}_recovery_settings" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot" class="btn btn-secondary">Android Screenshot</button>
+                                        <button id="account{{sessiondata.account_id}}_recovery_settings" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot" class="btn btn-secondary">iOS Screenshot</button>
+                                        </td>
+                                    </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -157,9 +163,15 @@
                                     {{ render_select(form.two_factor_settings.second_factor_access, 
                                                      form.two_factor_settings.describe.id) }}
                                     {{ render_text_field(form.two_factor_settings.describe, ishidden=True) }}
+                                    </tbody>
+                                </table>
+                                <table>
+                                    <tbody>
                                     <tr>
-                                        <button id="account{{sessiondata.account_id}}_two_factor_settings" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot">Android Screenshot</button>
-                                        <button id="account{{sessiondata.account_id}}_two_factor_settings" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot">iOS Screenshot</button>
+                                        <td colspan="2" class="buttons-in-details">
+                                        <button id="account{{sessiondata.account_id}}_two_factor_settings" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot" class="btn btn-secondary">Android Screenshot</button>
+                                        <button id="account{{sessiondata.account_id}}_two_factor_settings" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot" class="btn btn-secondary">iOS Screenshot</button>
+                                        </td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -189,9 +201,15 @@
                                     {{ render_select(form.security_questions.know, 
                                                      form.security_questions.which.id) }}
                                     {{ render_text_field(form.security_questions.which, ishidden=True) }}
+                                    </tbody>
+                                </table>
+                                <table>
+                                    <tbody>
                                     <tr>
-                                        <button id="account{{sessiondata.account_id}}_security_questions" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot">Android Screenshot</button>
-                                        <button id="account{{sessiondata.account_id}}_security_questions" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot">iOS Screenshot</button>
+                                        <td colspan="2" class="buttons-in-details">
+                                        <button id="account{{sessiondata.account_id}}_security_questions" type="button" onclick="getScreenshot(this.id, 'android', '{{android_ser}}')" value="screenshot" class="btn btn-secondary">Android Screenshot</button>
+                                        <button id="account{{sessiondata.account_id}}_security_questions" type="button" onclick="getScreenshot(this.id, 'ios', '{{ios_ser}}')" value="screenshot" class="btn btn-secondary">iOS Screenshot</button>
+                                        </td>
                                     </tr>
                                      </tbody>
                                 </table>

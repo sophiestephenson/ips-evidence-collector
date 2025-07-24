@@ -65,7 +65,7 @@ IOS_DUMPFILES = {
 TEST_APP_LIST = "static_data/android.test.apps_list"
 # TITLE = "Anti-IPS: Stop Intimate Partner Surveillance"
 
-TITLE = {"title": "IPV Spyware Discovery (ISDi){}".format(" (test)" if TEST else "")}
+TITLE = {"title": "Sherloc{}".format(" (test)" if TEST else "")}
 
 
 APP_FLAGS_FILE = "static_data/app-flags.csv"
@@ -204,11 +204,13 @@ def error():
 def create_screenshot_fname(context, adb_ser="misc"):
     # Verify the directory exists and create it if not
     subfolder = context.replace(" ", "")
-    dir_path = os.path.join("webstatic", "images", "screenshots", hmac_serial(adb_ser), subfolder)
+    dir_path = os.path.join(THIS_DIR, "webstatic", "images", "screenshots", hmac_serial(adb_ser), subfolder)
     os.makedirs(dir_path, exist_ok=True)
 
     # Create a filename with the current time and context
     curr_time = datetime.now().strftime('%d-%m-%Y_%H-%M-%S')
     fname = os.path.join(dir_path, curr_time + '.png')
+
+    print("This is the filename: {}".format(fname))
 
     return fname

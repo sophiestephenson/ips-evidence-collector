@@ -135,24 +135,29 @@ def take_screenshot(ser, fname=None):
     #     keycode(ser, 'power'); keycode(ser, 'menu') # Wakes the screen up
     if not fname:
         fname = "tmp_screencap.png"
+
     cli = thiscli(ser)
-    cmd = "{} shell screencap -p | perl -pe 's/\\x0D\\x0A/\\x0A/g' > '{}'".format(cli, fname)
+    cmd = "{} exec-out screencap -p | perl -pe 's/\\x0D\\x0A/\\x0A/g'".format(cli)
+    if os.name == 'posix':  # Formatting for posix systems
+        cmd = "{} exec-out screencap -p".format(cli)
 
-    if os.name == 'posix': # Formatting for posix systems
-        cmd = "{} shell screencap -p > '{}'".format(cli, fname)
-
-    
     try:
-        subprocess.run(shlex.split(cmd), check=True)
-        return add_image(fname.replace("webstatic/", ""), nocache=True)
+        # This command spits out the screenshot to stdout, which we capture
+        # and write to the file.
+        result = subprocess.run(shlex.split(cmd), check=True, stdout=subprocess.PIPE)
+        with open(fname, 'wb') as f:
+            f.write(result.stdout)
+
+        # Return the image that will be inserted into the HTML.
+        return add_image(fname.split("webstatic/", 1)[-1], nocache=True)
+
     except subprocess.CalledProcessError as e:
         print(f"Command failed with exit code {e.returncode}: {e.output}")
         return "<div class='screenshotfail'>Screenshot failed with exit code {}</div>".format(e.returncode)
+
     except Exception as e:
         print(e)
         return "<div class='screenshotfail'>Screenshot failed with exception {}</div>".format(e)
-
-    
 
 
 def wait(t):
