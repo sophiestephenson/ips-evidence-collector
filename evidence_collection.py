@@ -32,6 +32,7 @@ from wtforms import (
 )
 from wtforms.validators import InputRequired
 
+import config
 from config import DUMP_DIR, SCREENSHOT_DIR
 from phone_scanner.db import create_mult_appinfo, create_scan
 from phone_scanner.privacy_scan_android import take_screenshot
@@ -832,7 +833,15 @@ class ScanData(Dictable):
         self.device_manufacturer = device_manufacturer
         self.is_rooted = is_rooted
         self.rooted_reasons = rooted_reasons
+
+        # sort all_apps by title, with system apps at the end,
+        # checked apps at the top, and flagged investigated apps at the top top
+        all_apps.sort(key=lambda x: x['title'].lower())
+        all_apps.sort(key=lambda x: len(x['flags']) > 0, reverse=True)
+        all_apps.sort(key=lambda x: 'system-app' in x['flags'] and len(x['flags']) == 1)
+        all_apps.sort(key=lambda x: x['investigate'], reverse=True)
         self.all_apps = [AppInfo(**app, device_hmac_serial=serial) for app in all_apps]
+
         self.selected_apps = [AppInfo(**app, device_hmac_serial=serial) for app in selected_apps]
 
         self.generate_risk_report()
