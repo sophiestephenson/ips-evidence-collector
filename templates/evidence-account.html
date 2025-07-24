@@ -76,9 +76,9 @@
                             <div class="subform">
                                 <table>
                                     <tbody>
-                                    {% for subform in [form.password_check.know, form.password_check.guess] %}
-                                    {{ render_select(subform) }}
-                                    {% endfor %}
+                                    {{ render_select(form.password_check.last_updated) }}
+                                    {{ render_select(form.password_check.know) }}
+                                    {{ render_select(form.password_check.guess) }}
                                     {{ render_select(form.password_check.federated, "federated") }}
                                     </tbody>
                                 </table>
