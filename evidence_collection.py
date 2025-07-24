@@ -55,10 +55,10 @@ ACCOUNTS = ["Google", "iCloud", "Microsoft", "Lyft", "Uber", "Doordash", "Grubhu
 EMPTY_CHOICE = [('', 'Nothing selected')]
 YES_NO_UNSURE_CHOICES = EMPTY_CHOICE + [('yes', 'Yes'), ('no', 'No'), ('unsure', 'Unsure')]
 YES_NO_CHOICES = EMPTY_CHOICE + [('yes', 'Yes'), ('no', 'No')]
-PERSON_CHOICES = [('me', 'Me'), ('poc', 'Person of concern'), ('other', 'Someone else'), ('unsure', 'Unsure')]
-PWD_CHOICES = [('online', 'Online notes'), ('paper', 'Paper notes'), ('pwd_manager', 'Password manager'), ('other', 'Other (please explain)'), ('none', 'No specific method')]
+PERSON_CHOICES = [('me', 'Me'), ('poc', 'Person of concern'), ('someoneelse', 'Someone else'), ('unsure', 'Unsure')]
+PWD_CHOICES = [('online', 'Online notes'), ('paper', 'Paper notes'), ('pwd_manager', 'Password manager'), ('other_pwd', 'Other (please explain)'), ('none', 'No specific method')]
 
-LEGAL_CHOICES = [('ro', 'Restraining order'), ('div', 'Divorce or other family court'), ('cl', 'Criminal case'), ('other', 'Other')]
+LEGAL_CHOICES = [('ro', 'Restraining order'), ('div', 'Divorce or other family court'), ('cl', 'Criminal case'), ('other_legal', 'Other')]
 DEVICE_TYPE_CHOICES = EMPTY_CHOICE + [('android', 'Android'), ('ios', 'iOS')]
 #two_factor_choices = [empty_choice] + [(x.lower(), x) for x in second_factors]
 TWO_FACTOR_CHOICES = EMPTY_CHOICE + [(x.lower(), x) for x in SECOND_FACTORS] + [('none', 'None')]
@@ -584,7 +584,7 @@ class TAQSharing(DictInitClass):
         if self.share_phone_plan == 'yes':
             new_risk = Risk(
                 risk="Shared phone plan",
-                description="A shared phone plan may leak a variety of information, possibly including call history, message history (but not message content), contacts, and sometimes location. The account administrator of the client's phone plan, {}, has even more privileged access to this information.".format(self.phone_plan_admin)
+                description="A shared phone plan may leak a variety of information, possibly including call history, message history (but not message content), contacts, and sometimes location. The account administrator of the client's phone plan has even more privileged access to this information."
             )
             # Going to need to reformat the administrator here bc it'll probably say 'poc' not spelled out
             risks.append(new_risk)

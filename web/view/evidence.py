@@ -15,6 +15,12 @@ from flask_bootstrap import Bootstrap
 
 import config
 from evidence_collection import (
+    DEVICE_TYPE_CHOICES,
+    LEGAL_CHOICES,
+    PERSON_CHOICES,
+    PWD_CHOICES,
+    TWO_FACTOR_CHOICES,
+    YES_NO_UNSURE_CHOICES,
     AccountCompromiseForm,
     AccountInvestigation,
     AppInvestigationForm,
@@ -691,9 +697,20 @@ def evidence_printout():
     context["taq"] = consult_data.taq.to_dict()
     context["accounts"] = [acct.to_dict() for acct in consult_data.accounts]
 
-
     # Need url_root to load screenshots
     context["url_root"] = request.url_root
+
+    # Enable quick access of the text that maps to the saved Select responses
+    context["select_text"] = dict()
+    for question_tups in [YES_NO_UNSURE_CHOICES,
+                          PERSON_CHOICES,
+                          PWD_CHOICES,
+                          LEGAL_CHOICES,
+                          DEVICE_TYPE_CHOICES,
+                          TWO_FACTOR_CHOICES]:
+        for abbrv, full_text in question_tups:
+            if abbrv.strip() != "":
+                context["select_text"][abbrv] = full_text
 
     # create the printout document
     filename = create_printout(context)

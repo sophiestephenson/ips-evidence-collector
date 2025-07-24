@@ -178,7 +178,11 @@
                             {% for q in formquestions["taq"]["devices"] %}
                             <tr>
                                 <th>{{formquestions["taq"]["devices"][q]}}</th>
-                                <td>{{taq["devices"][q]|capitalize}}</td>
+                                {% if select_text[taq["devices"][q]] %}
+                                <td>{{select_text[taq["devices"][q]]}}</td>
+                                {% else %}
+                                <td>{{taq["devices"][q]}}</td>
+                                {% endif %}
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -216,13 +220,27 @@
                             {% for q in formquestions["taq"]["accounts"] %}
                             <tr>
                                 <th>{{formquestions["taq"]["accounts"][q]}}</th>
+                                {% if select_text[taq["accounts"][q]] %}
+                                <td>{{select_text[taq["accounts"][q]]}}</td>
+                                {% else %}
                                 <td>{{taq["accounts"][q]}}</td>
+                                {% endif %}
                             </tr>
                             {% endfor %}
                             {% for q in formquestions["taq"]["sharing"] %}
                             <tr>
                                 <th>{{formquestions["taq"]["sharing"][q]}}</th>
+                                {% if taq["sharing"][q] is not string %}
+                                <td>
+                                    {% for item in taq["sharing"][q] %}
+                                    {{select_text[item]}}{% if not loop.last %}, {% endif %}
+                                    {% endfor %}
+                                </td>
+                                {% elif select_text[taq["sharing"][q]] %}
+                                <td>{{select_text[taq["sharing"][q]]}}</td>
+                                {% else %}
                                 <td>{{taq["sharing"][q]}}</td>
+                                {% endif %}
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -265,7 +283,17 @@
                             {% for q in formquestions["taq"]["smarthome"] %}
                             <tr>
                                 <th>{{formquestions["taq"]["smarthome"][q]}}</th>
+                                {% if taq["smarthome"][q] is not string %}
+                                <td>
+                                    {% for item in taq["smarthome"][q] %}
+                                    {{select_text[item]}}{% if not loop.last %}, {% endif %}
+                                    {% endfor %}
+                                </td>
+                                {% elif select_text[taq["smarthome"][q]] %}
+                                <td>{{select_text[taq["smarthome"][q]]}}</td>
+                                {% else %}
                                 <td>{{taq["smarthome"][q]}}</td>
+                                {% endif %}
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -301,7 +329,11 @@
                             {% for q in formquestions["taq"]["kids"] %}
                             <tr>
                                 <th>{{formquestions["taq"]["kids"][q]}}</th>
+                                {% if select_text[taq["kids"][q]] %}
+                                <td>{{select_text[taq["kids"][q]]}}</td>
+                                {% else %}
                                 <td>{{taq["kids"][q]}}</td>
+                                {% endif %}
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -538,17 +570,15 @@
                             <tbody>
                                     <tr>
                                         <th>{{formquestions["apps"]["install_info"]["knew_installed"]}}</th>
-                                        <td>{{app.install_info.knew_installed |
-                                        capitalize}}</td>
+                                        <td>{{select_text[app.install_info.knew_installed]}}</td>
                                     </tr>
                                     <tr>
                                         <th>{{formquestions["apps"]["install_info"]["installed"]}}</th>
-                                        <td>{{app.install_info.installed | capitalize}}</td>
+                                        <td>{{select_text[app.install_info.installed]}}</td>
                                     </tr>
                                     <tr>
                                         <th>{{formquestions["apps"]["install_info"]["coerced"]}}</th>
-                                        <td>{{app.install_info.coerced |
-                                        capitalize}}</td>
+                                        <td>{{select_text[app.install_info.coerced]}}</td>
                                     </tr>
                         </tbody>
                     </table>
@@ -576,8 +606,7 @@
                             <tbody>
                                     <tr>
                                         <th>{{formquestions["apps"]["permission_info"]["access"]}}</th>
-                                        <td>{{app.permission_info.access |
-                                        capitalize}}</td>
+                                        <td>{{select_text[app.permission_info.access]}}</td>
                                     </tr>
                                     <tr>
                                         <th>{{formquestions["apps"]["permission_info"]["describe"]}}</th>
@@ -683,7 +712,11 @@
                                 {% for q in formquestions["accounts"]["suspicious_logins"] %}
                                 <tr>
                                     <th>{{formquestions["accounts"]["suspicious_logins"][q]}}</th>
-                                    <td>{{account["suspicious_logins"][q]|capitalize}}</td>
+                                    {% if select_text[account["suspicious_logins"][q]] %}
+                                    <td>{{select_text[account["suspicious_logins"][q]]}}</td>
+                                    {% else %}
+                                    <td>{{account["suspicious_logins"][q]}}</td>
+                                    {% endif %}
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -726,7 +759,11 @@
                             {% for q in formquestions["accounts"]["password_check"] %}
                             <tr>
                                 <th>{{formquestions["accounts"]["password_check"][q]}}</th>
-                                <td>{{account["password_check"][q]|capitalize}}</td>
+                                    {% if select_text[account["password_check"][q]] %}
+                                    <td>{{select_text[account["password_check"][q]]}}</td>
+                                    {% else %}
+                                    <td>{{account["password_check"][q]}}</td>
+                                    {% endif %}
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -756,7 +793,11 @@
                             {% for q in formquestions["accounts"]["recovery_settings"] %}
                             <tr>
                                 <th>{{formquestions["accounts"]["recovery_settings"][q]}}</th>
-                                <td>{{account["recovery_settings"][q]|capitalize}}</td>
+                                    {% if select_text[account["recovery_settings"][q]] %}
+                                    <td>{{select_text[account["recovery_settings"][q]]}}</td>
+                                    {% else %}
+                                    <td>{{account["recovery_settings"][q]}}</td>
+                                    {% endif %}
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -797,7 +838,11 @@
                             {% for q in formquestions["accounts"]["two_factor_settings"] %}
                             <tr>
                                 <th>{{formquestions["accounts"]["two_factor_settings"][q]}}</th>
-                                <td>{{account["two_factor_settings"][q]|capitalize}}</td>
+                                    {% if select_text[account["two_factor_settings"][q]] %}
+                                    <td>{{select_text[account["two_factor_settings"][q]]}}</td>
+                                    {% else %}
+                                    <td>{{account["two_factor_settings"][q]}}</td>
+                                    {% endif %}
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -838,7 +883,11 @@
                             {% for q in formquestions["accounts"]["security_questions"] %}
                             <tr>
                                 <th>{{formquestions["accounts"]["security_questions"][q]}}</th>
-                                <td>{{account["security_questions"][q]|capitalize}}</td>
+                                    {% if select_text[account["security_questions"][q]] %}
+                                    <td>{{select_text[account["security_questions"][q]]}}</td>
+                                    {% else %}
+                                    <td>{{account["security_questions"][q]}}</td>
+                                    {% endif %}
                             </tr>
                             {% endfor %}
                         </tbody>
