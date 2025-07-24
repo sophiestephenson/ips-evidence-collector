@@ -156,14 +156,14 @@ class SuspiciousLogins(DictInitClass):
         if self.recognize == 'yes':
             new_risk = Risk(
                 risk = "Unrecognized devices",
-                description = "There are unrecognized devices currently logged into this account. These devices are: {}.".format(self.describe_logins)
+                description = "There are unrecognized devices currently logged into this account."
             )
             risks.append(new_risk)
 
         if self.activity_log == 'yes':
             new_risk = Risk(
                 risk = "Suspicious logins",
-                description = "There are suspicious logins that do not appear to have come from the client. Description: {}.".format(self.describe_activity)
+                description = "There are suspicious logins to this account that do not appear to have come from the client."
             )
             risks.append(new_risk)
 
@@ -360,7 +360,7 @@ class PermissionInfo(DictInitClass):
         if self.access == 'yes':
             new_risk = Risk(
                 risk="Data leakage",
-                description="This app is sharing data with the person of concern. Investigation assessment: {}.".format(self.describe)
+                description="This app is sharing data with the person of concern."
             )
             risks.append(new_risk)
 
@@ -592,7 +592,7 @@ class TAQSharing(DictInitClass):
         if self.share_accounts == 'yes':
             new_risk = Risk(
                 risk="Shared accounts",
-                description="The client has shared accounts with the person of concern. Any information on those accounts can be assumed to be known by the person of concern. Shared accounts: {}.".format(self.share_which)
+                description="The client has shared accounts with the person of concern. Any information on those accounts can be assumed to be known by the person of concern."
             )
             risks.append(new_risk)
 
@@ -863,7 +863,7 @@ class ScanData(Dictable):
         if self.is_rooted:
             new_risk = Risk(
                 risk="Evidence of jailbreaking",
-                description="The devices is jailbroken, giving the person of concern nearly unbounded access to the device and the client's activity on the device. Reasons jailbreaking is susptected: {}.".format(self.rooted_reasons)
+                description="The device may be jailbroken, giving the person of concern nearly unbounded access to the device and the client's activity on the device."
             )
             risks.append(new_risk)
 
