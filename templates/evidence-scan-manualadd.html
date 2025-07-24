@@ -24,6 +24,7 @@
             <br>
             <h2>{{form.title}}</h2>
             <hr>
+            <h3>Device Information</h3>
             <form action method="post" class="form" role="form">
                 {{ form.hidden_tag() }}
                 <table>
@@ -40,13 +41,26 @@
                 </table>
                 <br>
                 <br>
-                <p>List app names below:</p>
-                <ul>
+                <h3>Apps for Investigation</h3>
+                <div>
                     {% for app in form.apps %}
-                    <li>{{ app.hidden_tag() }}{{app.app_name}} <br> {{app.spyware.label}} {{app.spyware}}</li>
+                        <table class="subform">
+                            <tbody>
+                                {{render_text_field(app.app_name)}}
+                                <tr>
+                                    <th>{{app.spyware.label}}</th>
+                                    <td>{{app.spyware}}</td>
+                                </tr>
+                                <tr>
+                                    <th>{{app.dualuse.label}}</th>
+                                    <td>{{app.dualuse}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                         <br/>  
                     {% endfor %}
-                    <li><div><span class="secondarybutton">{{form.addline}}</span></div></li>
-                </ul>
+                    <div><span class="secondarybutton">{{form.addline}}</span></div>
+                </div>
                 <br>
                 <br>
                 <br>

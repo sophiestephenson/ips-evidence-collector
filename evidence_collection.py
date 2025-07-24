@@ -1172,6 +1172,7 @@ class AppSelectPageForm(FlaskForm):
 class ManualAppSelectForm(FlaskForm):
     app_name = StringField("App Name")
     spyware = BooleanField("Appears to be a spyware app?")
+    dualuse = BooleanField("Appears to be a dual-use app?")
 
 class ManualAddPageForm(FlaskForm):
     title = "Manual App Investigation: Select Apps"

@@ -438,7 +438,9 @@ def evidence_scan_manualadd(ser):
                 for a in form.data['apps']:
                     flags = []
                     if a['spyware']:
-                        flags = ['spyware']
+                        flags.append('spyware')
+                    if a['dualuse']:
+                        flags.append('dual-use')
                     if a['app_name'].strip() != "":
                         selected_apps.append({
                             "title": a['app_name'],
