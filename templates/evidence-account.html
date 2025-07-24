@@ -69,18 +69,29 @@
                     <details>
                         <summary>
                         <span class="icon">▼</span>
-                        <b>{{ form.password_check.label  }}</b>
+                        <b>Passwords and Login Methods</b>
                         </summary>
                         {{form.password_check.hidden_tag()}}
                         <div class="content">
                             <div class="subform">
                                 <table>
                                     <tbody>
-                                    {% for subform in [form.password_check.know, form.password_check.guess] %}
-                                    {{ render_select(subform) }}
-                                    {% endfor %}
+                                    {{ render_select(form.password_check.last_updated) }}
+                                    {{ render_select(form.password_check.know) }}
+                                    {{ render_select(form.password_check.guess) }}
+                                    {{ render_select(form.password_check.federated, "federated") }}
                                     </tbody>
                                 </table>
+                                <table id="wrapper-federated" 
+                                       {% if form.password_check.federated.data != "yes" %} 
+                                       style="display:none;" 
+                                       {% endif %}
+                                        >
+                                    <tbody>
+                                        {{ render_text_field(form.password_check.federated_which) }}
+                                        {{ render_select(form.password_check.federated_comp) }}
+                                    </tbody>
+                                 </table>
                             </div>
                         </div>
                     </details>

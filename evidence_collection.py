@@ -56,7 +56,7 @@ EMPTY_CHOICE = [('', 'Nothing selected')]
 YES_NO_UNSURE_CHOICES = EMPTY_CHOICE + [('yes', 'Yes'), ('no', 'No'), ('unsure', 'Unsure')]
 YES_NO_CHOICES = EMPTY_CHOICE + [('yes', 'Yes'), ('no', 'No')]
 PERSON_CHOICES = [('me', 'Me'), ('poc', 'Person of concern'), ('someoneelse', 'Someone else'), ('unsure', 'Unsure')]
-PWD_CHOICES = [('online', 'Online notes'), ('paper', 'Paper notes'), ('pwd_manager', 'Password manager'), ('other_pwd', 'Other (please explain)'), ('none', 'No specific method')]
+PWD_CHOICES = [('online', 'Online notes'), ('paper', 'Paper notes'), ('pwd_manager', 'Password manager'), ('photo', "Take a photo of it"), ('other_pwd', 'Other'), ('none', 'No specific method')]
 
 LEGAL_CHOICES = [('ro', 'Restraining order'), ('div', 'Divorce or other family court'), ('cl', 'Criminal case'), ('other_legal', 'Other')]
 DEVICE_TYPE_CHOICES = EMPTY_CHOICE + [('android', 'Android'), ('ios', 'iOS')]
@@ -173,8 +173,12 @@ class SuspiciousLogins(DictInitClass):
 
 class PasswordCheck(DictInitClass):
     questions = {
+        "last_updated": "When did you last update this password (approximately)?",
         "know": "Does the person of concern know the password for this account?",
         "guess": "Do you believe the person of concern could guess the password?",
+        "federated": "Do you log into this account using a federated login (e.g., Google, Facebook, Apple)?",
+        "federated_which": "What other account do you use to log in?",
+        "federated_comp": "Do you believe the person of concern has access to the federated account?",
     }
     attrs = list(questions.keys())
 
@@ -197,6 +201,13 @@ class PasswordCheck(DictInitClass):
             new_risk = Risk(
                 risk = "Potential password compromise",
                 description = "The client believes the person of concern could guess the password for this account. If they guess correctly, it would enable them to log in. (Note: If two-factor authentication is enabled, they would still need to bypass the second factor.)"
+            )
+            risks.append(new_risk)
+
+        if self.federated_comp == "yes":
+            new_risk = Risk(
+                risk = "Compromised federated account",
+                description = "By compromising the federated account, the person of concern could log into this account without needing to know the password."
             )
             risks.append(new_risk)
 
@@ -515,7 +526,11 @@ class RiskReport(Dictable):
 class TAQDevices(DictInitClass):
     questions = {
         'live_together': "Do you live with the person of concern?",
-        'physical_access': "Has the person of concern had physical access to your devices at any point in time?"
+        'purchase_device': "Did the person of concern purchase and/or set up any of your devices?",
+        'purchase_device_which': "Which devices did the person of concern purchase and/or set up?",
+        'physical_access': "Has the person of concern had physical access to your devices at any point in time?",
+        'physical_access_which': "To which devices has the person of concern had physical access?",
+        'device_pin': "Can the person of concern unlock any of these devices with PIN, password, or biometrics?",
     }
     attrs = list(questions.keys())
 
@@ -527,11 +542,13 @@ class TAQDevices(DictInitClass):
         risks = list()
 
         # Both indicate the same thing: physical access to devices.
-        if self.live_together.lower() == 'yes' or self.physical_access.lower() == 'yes':
+        if self.live_together.lower() == 'yes' or self.physical_access.lower() == 'yes' or self.purchase_device.lower() == 'yes':
             new_risk = Risk(
                 risk="Physical access to devices",
                 description="A person with physical access to devices might be able to install apps, adjust device configurations, and access or manipulate accounts logged in on that device."
             )
+            if self.device_pin.lower() == 'yes':
+                new_risk.description += " They can also unlock the device with a PIN, password, or biometrics, which would allow them to access all data on the device."
             risks.append(new_risk)
 
         self.risk_report = RiskReport(risk_details=risks)
@@ -540,8 +557,8 @@ class TAQDevices(DictInitClass):
 
 
 class TAQAccounts(DictInitClass):
-    questions = {'pwd_mgmt': "How do you manage passwords?",
-                 'pwd_mgmt-describe': "Please provide more details on how you manage passwords.",
+    questions = {'pwd_mgmt': "How do you remember your passwords?",
+                 'pwd_mgmt-describe': "Please provide more details on how you remember your passwords.",
                  'pwd_comp': "Do you believe the person of concern knows, or could guess, any of your passwords?",
                  'pwd_comp_which': "Which passwords do you believe are compromised, and why?"}
     attrs = list(questions.keys())
@@ -1056,8 +1073,12 @@ class SuspiciousLoginsForm(FlaskForm):
     describe_activity = TextAreaField(SuspiciousLogins().questions["describe_activity"])
 
 class PasswordForm(FlaskForm):
+    last_updated = TextAreaField(PasswordCheck().questions["last_updated"])
     know = RadioField(PasswordCheck().questions["know"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     guess = RadioField(PasswordCheck().questions["guess"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    federated = RadioField(PasswordCheck().questions["federated"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    federated_which = TextAreaField(PasswordCheck().questions["federated_which"])
+    federated_comp = RadioField(PasswordCheck().questions["federated_comp"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
 
 class RecoveryForm(FlaskForm):
     phone_present = RadioField(RecoverySettings().questions["phone_present"], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
@@ -1216,8 +1237,14 @@ class TAQDeviceCompForm(FlaskForm):
     title = "Device Compromise Indicators"
     live_together = RadioField(
         TAQDevices().questions['live_together'], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+    purchase_device = RadioField(
+        TAQDevices().questions['purchase_device'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)           
+    purchase_device_which = TextAreaField(TAQDevices().questions['purchase_device_which'])
     physical_access = RadioField(
         TAQDevices().questions['physical_access'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    physical_access_which = TextAreaField(TAQDevices().questions['physical_access_which'])
+    device_pin = RadioField(
+        TAQDevices().questions['device_pin'], choices=YES_NO_UNSURE_CHOICES)
 
 class TAQAccountsForm(FlaskForm):
     title = "Account and Password Management"

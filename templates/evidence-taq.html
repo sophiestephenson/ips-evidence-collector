@@ -54,7 +54,13 @@
                             <table>
                                 <tbody>
                                     {{ render_select(form.devices.live_together) }}
-                                    {{ render_select(form.devices.physical_access) }}
+                                    {{ render_select(form.devices.purchase_device, 
+                                        form.devices.purchase_device_which.id) }}
+                                    {{ render_text_field(form.devices.purchase_device_which, ishidden=True) }}
+                                    {{ render_select(form.devices.physical_access, 
+                                        form.devices.physical_access_which.id) }}
+                                    {{ render_text_field(form.devices.physical_access_which, ishidden=True) }}
+                                    {{ render_select(form.devices.device_pin) }}
                                 </tbody>
                             </table>
                         </div>
