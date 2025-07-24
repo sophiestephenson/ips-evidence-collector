@@ -342,7 +342,7 @@ def evidence_scan_select(ser, show_rescan):
             # get selected apps from the form data
             to_investigate_ids = [app["appId"] for app in form.data['apps'] if app['investigate']]
 
-            # remove apps we no longer want to investigate,
+            # Remove apps we no longer want to investigate,
             # while maintaining info from previous investigations
             current_scan.selected_apps = [app for app in current_scan.selected_apps if app.appId in to_investigate_ids]
 
@@ -350,9 +350,17 @@ def evidence_scan_select(ser, show_rescan):
             # TODO: Do we need the "investigate" marker?
             for a in current_scan.all_apps:
                 if a.appId in to_investigate_ids:
-                    if not a.investigate:
+
+                    # If this wasn't marked for investigation,
+                    # or if it was but we don't have it in selected_apps,
+                    # then add it to selected_apps
+                    matching_apps = [app for app in current_scan.selected_apps if app.appId == a.appId]
+                    if not a.investigate or len(matching_apps) == 0:
                         current_scan.selected_apps.append(a)
-                        a.investigate = True
+
+                    # Mark that we investigated this app
+                    a.investigate = True
+
                 else:
                     a.investigate = False
 
