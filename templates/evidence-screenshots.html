@@ -29,6 +29,7 @@
             <div class="scroll-screenshots"> {# Class = scroll apps? #}
 
             <h3>App Investigation Screenshots</h3>
+            {% if form.app_screenshots|length > 0 %}
             <table class="screenshots">
                 <tbody>
                     {% for subform in form.app_screenshots %}
@@ -50,8 +51,13 @@
                     {% endfor %}
                 </tbody>
             </table>
+            {% else %}
+            <div>No screenshots captured.</div>
+            <br/>
+            {% endif %}
 
             <h3>Account Investigation Screenshots</h3>
+            {% if form.acct_screenshots|length > 0 %}
             <table class="screenshots">
                 <tbody>
                     {% for subform in form.acct_screenshots %}
@@ -71,6 +77,11 @@
                     {% endfor %}
                 </tbody>
             </table>
+            {% else %}
+            <div>No screenshots captured.</div>
+            <br/>
+            {% endif %}
+
             </div>
             <br/>
             <br/>
