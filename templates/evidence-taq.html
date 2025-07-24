@@ -71,7 +71,8 @@
                         <div class="subform">
                             <table>
                                 <tbody>
-                                    {{ render_text_field(form.accounts.pwd_mgmt) }}
+                                    {{ render_select(form.accounts.pwd_mgmt) }}
+                                    {{ render_text_field(form.accounts.pwd_mgmt_describe) }}
                                     {{ render_select(form.accounts.pwd_comp, 
                                                      form.accounts.pwd_comp_which.id) }}
                                     {{ render_text_field(form.accounts.pwd_comp_which, ishidden=True) }}

@@ -56,6 +56,7 @@ EMPTY_CHOICE = [('', 'Nothing selected')]
 YES_NO_UNSURE_CHOICES = EMPTY_CHOICE + [('yes', 'Yes'), ('no', 'No'), ('unsure', 'Unsure')]
 YES_NO_CHOICES = EMPTY_CHOICE + [('yes', 'Yes'), ('no', 'No')]
 PERSON_CHOICES = [('me', 'Me'), ('poc', 'Person of concern'), ('other', 'Someone else'), ('unsure', 'Unsure')]
+PWD_CHOICES = [('online', 'Online notes'), ('paper', 'Paper notes'), ('pwd_manager', 'Password manager'), ('other', 'Other (please explain)'), ('none', 'No specific method')]
 
 LEGAL_CHOICES = [('ro', 'Restraining order'), ('div', 'Divorce or other family court'), ('cl', 'Criminal case'), ('other', 'Other')]
 DEVICE_TYPE_CHOICES = EMPTY_CHOICE + [('android', 'Android'), ('ios', 'iOS')]
@@ -538,8 +539,9 @@ class TAQDevices(DictInitClass):
 
 class TAQAccounts(DictInitClass):
     questions = {'pwd_mgmt': "How do you manage passwords?",
+                 'pwd_mgmt-describe': "Please provide more details on how you manage passwords.",
                  'pwd_comp': "Do you believe the person of concern knows, or could guess, any of your passwords?",
-                 'pwd_comp_which': "Which ones?"}
+                 'pwd_comp_which': "Which passwords do you believe are compromised, and why?"}
     attrs = list(questions.keys())
 
     def generate_risk_report(self) -> RiskReport:
@@ -553,7 +555,7 @@ class TAQAccounts(DictInitClass):
         if self.pwd_comp == 'yes':
             new_risk = Risk(
                 risk="Password compromise",
-                description="The client believes the person of concern knows, or could guess, the following passwords: {}. Knowing these passwords could allow them access and/or manipulate the client's accounts.".format(self.pwd_comp_which)
+                description="Someone who knows account passwords may be able to access and/or manipulate those accounts."
             )
             risks.append(new_risk)
 
@@ -1206,7 +1208,8 @@ class TAQDeviceCompForm(FlaskForm):
 
 class TAQAccountsForm(FlaskForm):
     title = "Account and Password Management"
-    pwd_mgmt = TextAreaField(TAQAccounts().questions['pwd_mgmt'])
+    pwd_mgmt = RadioField(TAQAccounts().questions['pwd_mgmt'], choices=PWD_CHOICES)
+    pwd_mgmt_describe = TextAreaField(TAQAccounts().questions['pwd_mgmt-describe'])
     pwd_comp = RadioField(
         TAQAccounts().questions['pwd_comp'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     pwd_comp_which = TextAreaField(TAQAccounts().questions['pwd_comp_which'])
