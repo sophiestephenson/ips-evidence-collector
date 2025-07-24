@@ -85,7 +85,6 @@ details {
   details[open] div.content {
     color: black;
     padding: 10px 30px;
-    padding-bottom: 30px;
   }
 
   details[open] div.subform {
