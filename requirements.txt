@@ -4,6 +4,7 @@ banal==1.0.6
 click==8.1.7
 dataset==1.6.2
 decorator==5.1.1
+filelock==3.17.0
 Flask==3.1.0
 Flask-Migrate==4.0.7
 Flask-SQLAlchemy==3.0.5
