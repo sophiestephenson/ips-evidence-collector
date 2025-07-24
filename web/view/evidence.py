@@ -189,7 +189,8 @@ def evidence_taq():
            defaults={'device_type': '', 'device_nickname': '', 'force_rescan': False})
 @app.route("/evidence/scan/<device_type>/<device_nickname>", methods={'GET', 'POST'},
            defaults={'force_rescan': False})
-@app.route("/evidence/scan/<device_type>/<device_nickname>/force-rescan-<force_rescan>", methods={'GET', 'POST'})
+@app.route("/evidence/scan/<device_type>/<device_nickname>/force-rescan", methods={'GET', 'POST'},
+           defaults={'force_rescan': True})
 def evidence_scan_start(device_type, device_nickname, force_rescan):
 
     # always assume we are starting with a fresh scan
@@ -268,7 +269,11 @@ def evidence_scan_start(device_type, device_nickname, force_rescan):
                                         all_apps=all_apps)
 
                 current_scan.id = len(all_scan_data)
-                all_scan_data.append(current_scan)
+                
+                # Add the scan to the list of all scans,
+                # replacing any previous scan with the same serial number
+                # or adding a new scan if it doesn't exist
+                update_scan_by_ser(current_scan, all_scan_data)
 
                 save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
                 return redirect(url_for('evidence_scan_select', ser=current_scan.serial))

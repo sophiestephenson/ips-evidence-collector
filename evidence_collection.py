@@ -955,7 +955,11 @@ def get_scan_by_ser(ser, all_scan_data: list[ScanData]):
 
 
 def update_scan_by_ser(new_scan: ScanData, all_scan_data: list[ScanData]):
-
+    """
+    Adds new_scan to all_scan_data.
+    If new_scan matches serial numbers of an existing scan, it replaces that scan.
+    Otherwise, it appends the new scan to the list.
+    """
 
     for i in range(len(all_scan_data)):
         scan = all_scan_data[i]
@@ -965,6 +969,7 @@ def update_scan_by_ser(new_scan: ScanData, all_scan_data: list[ScanData]):
             all_scan_data[i] = new_scan
             return all_scan_data
 
+    # Otherwise, just append the new scan
     all_scan_data.append(new_scan)
     return all_scan_data
 
