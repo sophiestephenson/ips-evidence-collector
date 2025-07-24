@@ -131,6 +131,9 @@
                             <td>
                                 <a href="{{ url_for('evidence_scan_investigate', ser=scan.serial) }}" class="btn btn-default">Investigate</a>
                             </td>
+                            <td>
+                                <a href="{{ url_for('evidence_delete_scan', ser=scan.serial) }}" class="btn btn-danger" onclick="return confirm('Are you sure you? This cannot be undone.')">Delete</a>
+                            </td>
                         </tr> 
                         {% endfor %}
                         </tbody>

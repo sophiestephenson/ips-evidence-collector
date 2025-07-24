@@ -720,3 +720,19 @@ def evidence_delete_account(id):
 
     flash("Account not found.", "warning")
     return redirect(url_for('evidence_home'))
+
+
+@app.route("/evidence/delete/scan/<string:ser>", methods=["GET"])
+def evidence_delete_scan(ser):
+
+    all_scan_data = load_object_from_json(ConsultDataTypes.SCANS.value)
+    current_scan = get_scan_by_ser(ser, all_scan_data)
+
+    if current_scan and current_scan.serial == ser:
+        all_scan_data.remove(current_scan)
+        save_data_as_json(all_scan_data, ConsultDataTypes.SCANS.value)
+        flash("Scan deleted successfully.", "success")
+    else:
+        flash("Scan not found.", "warning")
+
+    return redirect(url_for('evidence_home'))
