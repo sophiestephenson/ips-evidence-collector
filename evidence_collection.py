@@ -530,7 +530,7 @@ class TAQDevices(DictInitClass):
         risks = list()
 
         # Both indicate the same thing: physical access to devices.
-        if self.live_together.lower() == 'yes' or self.physical_access.lower() == 'yes':
+        if self.live_together.lower() == 'yes' or self.physical_access.lower() == 'yes' or self.purchase_device.lower() == 'yes':
             new_risk = Risk(
                 risk="Physical access to devices",
                 description="A person with physical access to devices might be able to install apps, adjust device configurations, and access or manipulate accounts logged in on that device."
