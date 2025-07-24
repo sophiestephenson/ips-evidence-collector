@@ -704,3 +704,19 @@ def evidence_delete_data():
     delete_client_data()
     flash("Client data deleted successfully.", "success")
     return redirect(url_for('evidence_home'))
+
+@app.route("/evidence/delete/account/<int:id>", methods=["GET"])
+def evidence_delete_account(id):
+
+    accounts = load_object_from_json(ConsultDataTypes.ACCOUNTS.value)
+    for account in accounts:
+        if account.account_id == id:
+
+            # If we find the right account, delete it and save updated data
+            accounts.remove(account)
+            save_data_as_json(accounts, ConsultDataTypes.ACCOUNTS.value)
+            flash("Account deleted successfully.", "success")
+            return redirect(url_for('evidence_home'))
+
+    flash("Account not found.", "warning")
+    return redirect(url_for('evidence_home'))
