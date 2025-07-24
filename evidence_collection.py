@@ -515,7 +515,10 @@ class RiskReport(Dictable):
 class TAQDevices(DictInitClass):
     questions = {
         'live_together': "Do you live with the person of concern?",
-        'physical_access': "Has the person of concern had physical access to your devices at any point in time?"
+        'purchase_device': "Did the person of concern purchase and/or set up any of your devices?",
+        'purchase_device_which': "Which devices did the person of concern purchase and/or set up?",
+        'physical_access': "Has the person of concern had physical access to your devices at any point in time?",
+        'physical_access_which': "To which devices has the person of concern had physical access?",
     }
     attrs = list(questions.keys())
 
@@ -1216,8 +1219,12 @@ class TAQDeviceCompForm(FlaskForm):
     title = "Device Compromise Indicators"
     live_together = RadioField(
         TAQDevices().questions['live_together'], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
+    purchase_device = RadioField(
+        TAQDevices().questions['purchase_device'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)           
+    purchase_device_which = TextAreaField(TAQDevices().questions['purchase_device_which'])
     physical_access = RadioField(
         TAQDevices().questions['physical_access'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
+    physical_access_which = TextAreaField(TAQDevices().questions['physical_access_which'])
 
 class TAQAccountsForm(FlaskForm):
     title = "Account and Password Management"
