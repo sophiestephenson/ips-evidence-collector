@@ -577,12 +577,14 @@ div.scroll-screenshots {
 table.screenshots > tbody > tr > td {
     vertical-align: top;
     overflow: visible;
+    margin-bottom: auto;;
 }
 
 table.screenshots > tbody > tr > th {
     padding-bottom: 40px;
-    vertical-align: middle;
     text-align: center;
+    margin-bottom: auto;
+    vertical-align: top;
 }
 
 table.screenshots > tbody > tr > th > label {
@@ -855,6 +857,7 @@ span.inlinerisk {
   font-family: sans-serif;
   letter-spacing: 0.5px;
   width: auto;
+  font-style: normal;
 }
 
 .appid {
@@ -882,4 +885,27 @@ table.content-notes th {
 td.buttons-in-details {
     padding-right: 10px;
     padding-top: 10px;
+}
+
+div.screenshot-metadata {
+    font-size: 9pt;
+    padding: 10px;
+    margin-top: 5px;
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.screenshot-metadata th {
+  text-align: right;
+  color: #666;
+  font-weight: 500;
+  padding: 0px 10px;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.screenshot-metadata td {
+  padding: 0px 10px;
+  color: black;
+  vertical-align: top;
 }
