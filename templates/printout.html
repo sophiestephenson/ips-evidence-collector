@@ -8,7 +8,7 @@
 
         h2 {font-size: 16pt; }
         h3 {font-size: 13pt; }
-        h4 {font-style: italic; font-weight: normal;}
+        h4 {font-style: italic; font-weight: 600px;}
 
         .app-padding-top {padding-top: 12mm;}
 
@@ -421,6 +421,21 @@
                             </tr>
                         </tbody>
                     </table>
+                </th>
+
+                <td>
+                    {% for risk in scan.risk_report.risk_details %}
+                    {% if "app" not in risk.risk %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                        <span><b>{{risk.risk}}</b>: {{risk.description}}</span>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr> 
+                <th>
                     <h3>Screenshots <span class="tag">&#9881; System-captured</span></h3>
                     {% if scan.screenshot_files|length > 0 %}
                     <table>
@@ -464,16 +479,6 @@
                     <p>None taken.</p>
                     {% endif %}
                 </th>
-                <td>
-                    {% for risk in scan.risk_report.risk_details %}
-                    {% if "app" not in risk.risk %}
-                    <div class="appsummary">
-                        <span>&#9888;&#65039;</span> 
-                        <span><b>{{risk.risk}}</b>: {{risk.description}}</span>
-                    </div>
-                    {% endif %}
-                    {% endfor %}
-                </td>
             </tr>
         </tbody>
     </table>
