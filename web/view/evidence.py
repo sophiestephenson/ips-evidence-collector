@@ -256,6 +256,8 @@ def evidence_scan_start(device_type, device_nickname, force_rescan):
                     suspicious_apps_dict[i]["investigate"] = True
 
                 all_apps = suspicious_apps_dict + other_apps_dict
+                for a in all_apps:
+                    a["device_serial_udid"] = ser
 
                 # Create current scan object with this info
                 current_scan = ScanData(scan_id=len(all_scan_data),
@@ -320,7 +322,7 @@ def evidence_scan_select(ser, show_rescan):
             num_sys_apps = len([app for app in current_scan.all_apps if 'system-app' in app.flags]),
             show_rescan = show_rescan,
             serial=current_scan.serial,
-            adb_serial=current_scan.adb_serial
+            serial_or_udid=current_scan.serial_or_udid
         )
         print("-"*80)
         print(context['device'])
