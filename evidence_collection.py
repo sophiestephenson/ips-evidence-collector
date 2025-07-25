@@ -12,6 +12,7 @@ Collect evidence of IPS. Basic version collects this data from the phone:
 import json
 import os
 import shutil
+import subprocess
 from enum import Enum
 from pprint import pprint
 
@@ -1692,3 +1693,45 @@ def delete_client_data():
     os.makedirs(SCREENSHOT_DIR, exist_ok=True)
 
     print("Client data deleted.")
+
+def get_screenshot_metadata(fname):
+    """
+    Uses exiftool (bash) to get metadata for our PNG screenshots.
+    Available metadata:
+        - ExifToolVersion
+        - FileName
+        - Directory
+        - FileSize
+        - FileModifyDate
+        - FileAccessDate
+        - FileInodeChangeDate
+        - FilePermissions
+        - FileType
+        - FileTypeExtension
+        - MIMEType
+        - ImageWidth
+        - ImageHeight
+        - BitDepth
+        - ColorType
+        - Compression
+        - Filter
+        - Interlace
+        - SRGBRendering
+        - SignificantBits
+        - ImageSize
+        - Megapixels
+    """
+
+    data_to_get = ["FileModifyDate"]
+
+    metadata = dict()
+
+    for item in data_to_get:
+        result = subprocess.run(
+            ["exiftool", "-" + item, fname],
+            capture_output=True, text=True
+        )
+        data = result.stdout.split(":", 1)[-1].strip()
+        metadata[item] = data
+
+    return metadata

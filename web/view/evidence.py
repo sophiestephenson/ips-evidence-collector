@@ -41,6 +41,7 @@ from evidence_collection import (
     delete_client_data,
     get_scan_by_ser,
     get_scan_data,
+    get_screenshot_metadata,
     get_ser_from_scan_obj,
     get_serial,
     load_json_data,
@@ -659,6 +660,9 @@ def evidence_screenshots():
                     "section": section.screenshot_label
                 })
                 # Would be good to capture the phone that took the screenshot
+
+    for screenshot in rooted_screenshot_info + account_screenshot_info + app_screenshot_info:
+        pprint(get_screenshot_metadata(screenshot["fname"]))
 
     form = MultScreenshotEditForm(root_screenshots=rooted_screenshot_info,
                                   app_screenshots=app_screenshot_info,
