@@ -33,7 +33,6 @@ from evidence_collection import (
     ManualAddPageForm,
     MultScreenshotEditForm,
     ScanData,
-    ScreenshotInfo,
     SetupForm,
     StartForm,
     TAQData,
@@ -622,30 +621,15 @@ def evidence_account(id):
 @app.route("/evidence/screenshots", methods=['GET', 'POST'])
 def evidence_screenshots():
 
-    # compile all screenshot filenames
+    # compile all screenshot info
     rooted_screenshot_info = []
     app_screenshot_info = []
     scans = load_object_from_json(ConsultDataTypes.SCANS.value)
     for scan in scans:
-        for fname in scan.screenshot_files:
-            screenshot_info = ScreenshotInfo(
-                fname=fname,
-                context="root",
-                device_nickname=scan.device_nickname,
-                device_serial=scan.serial,
-            )
-            rooted_screenshot_info.append(screenshot_info.to_dict())
+        rooted_screenshot_info.extend(scan.get_screenshot_info())
+
         for a in scan.all_apps:
-            for fname in a.screenshot_files:
-                screenshot_info = ScreenshotInfo(
-                    fname=fname,
-                    context="app",
-                    app_id=a.appId,
-                    app_name=a.app_name,
-                    device_nickname=scan.device_nickname,
-                    device_serial=scan.serial
-                )
-                app_screenshot_info.append(screenshot_info.to_dict())
+            app_screenshot_info.extend(a.get_screenshot_info())
 
     account_screenshot_info = []
     accounts = load_object_from_json(ConsultDataTypes.ACCOUNTS.value)
@@ -654,16 +638,14 @@ def evidence_screenshots():
                         account.recovery_settings,
                         account.two_factor_settings,
                         account.security_questions]:
-            for fname in section.screenshot_files:
-                screenshot_info = ScreenshotInfo(
-                    fname=fname,
-                    context="account",
-                    account_nickname=account.account_nickname,
-                    account_section=section.screenshot_label
-                )
+            account_screenshot_info.extend(section.get_screenshot_info())
 
-    for screenshot in rooted_screenshot_info + account_screenshot_info + app_screenshot_info:
-        pprint(screenshot["metadata"])
+    pprint("Rooted screenshots:")
+    pprint(rooted_screenshot_info)
+    pprint("App screenshots:")
+    pprint(app_screenshot_info)
+    pprint("Account screenshots:")
+    pprint(account_screenshot_info)
 
     form = MultScreenshotEditForm(root_screenshots=rooted_screenshot_info,
                                   app_screenshots=app_screenshot_info,
@@ -707,6 +689,7 @@ def evidence_printout():
     )
 
     consult_data.prepare_reports()
+    consult_data.prepare_screenshots()
 
     context = consult_data.to_dict()
 

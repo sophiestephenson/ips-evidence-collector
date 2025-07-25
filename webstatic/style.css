@@ -577,12 +577,14 @@ div.scroll-screenshots {
 table.screenshots > tbody > tr > td {
     vertical-align: top;
     overflow: visible;
+    margin-bottom: auto;;
 }
 
 table.screenshots > tbody > tr > th {
     padding-bottom: 40px;
-    vertical-align: middle;
     text-align: center;
+    margin-bottom: auto;
+    vertical-align: top;
 }
 
 table.screenshots > tbody > tr > th > label {
