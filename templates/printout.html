@@ -221,7 +221,13 @@
                             {% for q in formquestions["taq"]["accounts"] %}
                             <tr>
                                 <th>{{formquestions["taq"]["accounts"][q]}}</th>
-                                {% if select_text[taq["accounts"][q]] %}
+                                {% if taq["accounts"][q] is not string %}
+                                <td>
+                                    {% for item in taq["accounts"][q] %}
+                                    {{select_text[item]}}{% if not loop.last %}, {% endif %}
+                                    {% endfor %}
+                                </td>
+                                {% elif select_text[taq["accounts"][q]] %}
                                 <td>{{select_text[taq["accounts"][q]]}}</td>
                                 {% else %}
                                 <td>{{taq["accounts"][q]}}</td>
