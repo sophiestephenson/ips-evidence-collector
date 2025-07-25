@@ -409,7 +409,7 @@ class AppInfo(Dictable):
                  permissions=[],
                  install_info=dict(),
                  notes=dict(),
-                 device_hmac_serial="",
+                 device_serial_udid="",
                  **kwargs):
 
         self.title = title
@@ -452,16 +452,16 @@ class AppInfo(Dictable):
         self.install_info = InstallInfo(install_info)
         self.notes = Notes(notes)
 
-        self.device_hmac_serial = device_hmac_serial
+        self.device_serial_udid = device_serial_udid
 
         #self.report, self.is_concerning = self.generate_app_report()
 
     def _get_screenshot_files(self):
         """
         Returns a list of screenshot filenames for this app.
-        They will be under webstatic/images/screenshots/<device_hmac_serial>/<appId>/
+        They will be under webstatic/images/screenshots/<device_serial_udid>/<appId>/
         """
-        screenshot_dir = os.path.join("webstatic", "images", "screenshots", self.device_hmac_serial, self.appId)
+        screenshot_dir = os.path.join("webstatic", "images", "screenshots", self.device_serial_udid, self.appId)
         if os.path.exists(screenshot_dir):
             # get full filepaths
             files = os.listdir(screenshot_dir)
@@ -480,7 +480,7 @@ class AppInfo(Dictable):
             context="app",
             app_id=self.appId,
             app_name=self.app_name,
-            device_serial=self.device_hmac_serial
+            device_serial=self.device_serial_udid
         ) for fname in self.screenshot_files]
 
         return self.screenshot_info
@@ -914,9 +914,9 @@ class ScanData(Dictable):
     def _get_screenshot_files(self):
         '''
         Returns a list of screenshot filenames for this scan (just for rooting).
-        They will be under webstatic/images/screenshots/<device_hmac_serial>/rooting/
+        They will be under webstatic/images/screenshots/<device_serial_udid>/rooting/
         '''
-        screenshot_dir = os.path.join("webstatic", "images", "screenshots", self.serial, "rooting")
+        screenshot_dir = os.path.join("webstatic", "images", "screenshots", self.serial_or_udid, "rooting")
         if os.path.exists(screenshot_dir):
             # get full filepaths
             files = os.listdir(screenshot_dir)

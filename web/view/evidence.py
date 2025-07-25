@@ -256,6 +256,8 @@ def evidence_scan_start(device_type, device_nickname, force_rescan):
                     suspicious_apps_dict[i]["investigate"] = True
 
                 all_apps = suspicious_apps_dict + other_apps_dict
+                for a in all_apps:
+                    a["device_serial_udid"] = ser
 
                 # Create current scan object with this info
                 current_scan = ScanData(scan_id=len(all_scan_data),
