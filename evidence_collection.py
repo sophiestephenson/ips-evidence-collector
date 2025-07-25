@@ -93,8 +93,6 @@ class Dictable:
 # Base class for nested classes where we'll input data as dict (for ease)
 class DictInitClass(Dictable):
     attrs = []
-    screenshot_label = ""
-    get_screenshots = False  # Only true for classes we use within account investigation
 
     def __init__(self, datadict=dict()):
         for k in self.attrs:
@@ -103,7 +101,15 @@ class DictInitClass(Dictable):
             else:
                 setattr(self, k, "")
 
-        if self.get_screenshots:
+
+class AccountSection(DictInitClass):
+    screenshot_label = ""
+
+    def __init__(self, datadict=dict(), get_screenshots=True):
+
+        super(AccountSection, self).__init__(datadict)
+
+        if get_screenshots:
             self.screenshot_files = self._get_screenshot_files(datadict.get('account_id', 0))
             self.screenshot_info = [ScreenshotInfo(
                 fname=fname,
@@ -139,7 +145,7 @@ class DictInitClass(Dictable):
             return screenshot_files
         return []
 
-class SuspiciousLogins(DictInitClass):
+class SuspiciousLogins(AccountSection):
     questions = {
         'recognize': "Do you see any unrecognized devices that are logged into this account?",
         'describe_logins': "Which devices do you not recognize?",
@@ -148,7 +154,6 @@ class SuspiciousLogins(DictInitClass):
     }
     attrs = list(questions.keys())
     screenshot_label = "suspicious_logins"
-    get_screenshots = True
 
     def generate_risk_report(self):
         '''
@@ -176,7 +181,7 @@ class SuspiciousLogins(DictInitClass):
 
         return self.risk_report
 
-class PasswordCheck(DictInitClass):
+class PasswordCheck(AccountSection):
     questions = {
         "last_updated": "When did you last update this password (approximately)?",
         "know": "Does the person of concern know the password for this account?",
@@ -186,6 +191,10 @@ class PasswordCheck(DictInitClass):
         "federated_comp": "Do you believe the person of concern has access to the federated account?",
     }
     attrs = list(questions.keys())
+
+    def __init__(self, datadict=dict()):
+        super(PasswordCheck, self).__init__(datadict=datadict,
+                                            get_screenshots=False)
 
     def generate_risk_report(self):
         '''
@@ -220,7 +229,7 @@ class PasswordCheck(DictInitClass):
 
         return self.risk_report
 
-class RecoverySettings(DictInitClass):
+class RecoverySettings(AccountSection):
     questions = {
         'phone_present': "Is there a recovery phone number set for this account?",
         'phone': "What is the recovery phone number?",
@@ -231,7 +240,6 @@ class RecoverySettings(DictInitClass):
     }
     attrs = list(questions.keys())
     screenshot_label = "recovery_settings"
-    get_screenshots = True
 
     def generate_risk_report(self):
         '''
@@ -251,7 +259,7 @@ class RecoverySettings(DictInitClass):
 
         return self.risk_report
 
-class TwoFactorSettings(DictInitClass):
+class TwoFactorSettings(AccountSection):
     questions = {
         'enabled': "Is two-factor authentication enabled for this account?",
         'second_factor_type': "What type of two-factor authentication is it?",
@@ -260,7 +268,6 @@ class TwoFactorSettings(DictInitClass):
     }
     attrs = list(questions.keys())
     screenshot_label = "two_factor_settings"
-    get_screenshots = True
 
     def generate_risk_report(self):
         '''
@@ -289,7 +296,7 @@ class TwoFactorSettings(DictInitClass):
         return self.risk_report
 
 
-class SecurityQuestions(DictInitClass):
+class SecurityQuestions(AccountSection):
     questions = {
         'present': "Does the account use security questions?",
         'know': "Do you believe the person of concern knows the answer to any of these questions?",
@@ -297,7 +304,6 @@ class SecurityQuestions(DictInitClass):
     }
     attrs = list(questions.keys())
     screenshot_label = "security_questions"
-    get_screenshots = True
 
     def generate_risk_report(self):
         '''
