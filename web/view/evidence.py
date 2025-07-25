@@ -314,11 +314,13 @@ def evidence_scan_select(ser, show_rescan):
             nickname = current_scan.device_nickname,
             title=config.TITLE,
             all_apps = [app.to_dict() for app in current_scan.all_apps],
-            isrooted = current_scan.is_rooted,
+            is_rooted = current_scan.is_rooted,
             rooted_reasons = current_scan.rooted_reasons,
             step = 2,
             num_sys_apps = len([app for app in current_scan.all_apps if 'system-app' in app.flags]),
-            show_rescan = show_rescan
+            show_rescan = show_rescan,
+            serial=current_scan.serial,
+            adb_serial=current_scan.adb_serial
         )
         print("-"*80)
         print(context['device'])
