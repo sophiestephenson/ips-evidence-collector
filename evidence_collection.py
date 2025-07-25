@@ -1402,11 +1402,11 @@ class TAQDeviceCompForm(FlaskForm):
         TAQDevices().questions['physical_access'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     physical_access_which = TextAreaField(TAQDevices().questions['physical_access_which'])
     device_pin = RadioField(
-        TAQDevices().questions['device_pin'], choices=YES_NO_UNSURE_CHOICES)
+        TAQDevices().questions['device_pin'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
 
 class TAQAccountsForm(FlaskForm):
     title = "Account and Password Management"
-    pwd_mgmt = RadioField(TAQAccounts().questions['pwd_mgmt'], choices=PWD_CHOICES)
+    pwd_mgmt = SelectMultipleField(TAQAccounts().questions['pwd_mgmt'], choices=PWD_CHOICES)
     pwd_mgmt_describe = TextAreaField(TAQAccounts().questions['pwd_mgmt-describe'])
     pwd_comp = RadioField(
         TAQAccounts().questions['pwd_comp'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)

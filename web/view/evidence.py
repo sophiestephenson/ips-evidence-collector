@@ -143,7 +143,7 @@ def evidence_home():
             return redirect(url_for('evidence_home'))
 
         elif not form.validate():
-            flash("Form validation error - are you missing required fields?", 'error')
+            flash("Form validation error. Raw error: {}".format(form.errors), 'error')
             return render_template('main.html', **context)
 
 
@@ -184,7 +184,7 @@ def evidence_taq():
             return redirect(url_for('evidence_home'))
 
         elif not form.validate():
-            flash("Form validation error - are you missing required fields?", 'error')
+            flash("Form validation error. Raw error: {}".format(form.errors), 'error')
             return redirect(url_for('evidence_taq'))
 
     return redirect(url_for('evidence_taq'))
@@ -283,7 +283,7 @@ def evidence_scan_start(device_type, device_nickname, force_rescan):
                                         device_nickname=form.data["device_nickname"]))
 
         elif not form.validate():
-            flash("Form validation error - are you missing required fields?", 'error')
+            flash("Form validation error. Raw error: {}".format(form.errors), 'error')
 
     return redirect(url_for('evidence_scan_start'))
 
@@ -373,7 +373,7 @@ def evidence_scan_select(ser, show_rescan):
             return redirect(url_for('evidence_scan_investigate', ser=ser))
 
         if not form.validate():
-            flash("Form validation error - are you missing required fields?", 'error')
+            flash("Form validation error. Raw error: {}".format(form.errors), 'error')
 
         return redirect(url_for('evidence_scan_select'), ser=ser)
 
@@ -473,7 +473,7 @@ def evidence_scan_manualadd(ser):
                 return redirect(url_for('evidence_scan_investigate', ser=current_scan.serial))
 
             if not form.validate():
-                flash("Form validation error - are you missing required fields?", 'error')
+                flash("Form validation error. Raw error: {}".format(form.errors), 'error')
 
             return redirect(url_for('evidence_scan_manualadd', ser=ser))
 
@@ -535,7 +535,7 @@ def evidence_scan_investigate(ser):
             return redirect(url_for('evidence_home'))
 
         elif not form.validate():
-            flash("Form validation error - are you missing required fields?", 'error')
+            flash("Form validation error. Raw error: {}".format(form.errors), 'error')
             return redirect(url_for('evidence_scan_investigate', ser=ser))
 
     return redirect(url_for('evidence_scan_investigate', ser=ser))
@@ -617,7 +617,7 @@ def evidence_account(id):
             return redirect(url_for('evidence_home'))
 
         if not form.validate():
-            flash("Form validation error - are you missing required fields?", 'error')
+            flash("Form validation error. Raw error: {}".format(form.errors), 'error')
             pprint(form.errors)
 
 @app.route("/evidence/screenshots", methods=['GET', 'POST'])
