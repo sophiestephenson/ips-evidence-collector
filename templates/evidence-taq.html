@@ -77,7 +77,7 @@
                         <div class="subform">
                             <table>
                                 <tbody>
-                                    {{ render_select(form.accounts.pwd_mgmt) }}
+                                    {{ render_multiselect(form.accounts.pwd_mgmt) }}
                                     {{ render_text_field(form.accounts.pwd_mgmt_describe) }}
                                     {{ render_select(form.accounts.pwd_comp, 
                                                      form.accounts.pwd_comp_which.id) }}

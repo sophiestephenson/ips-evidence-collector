@@ -172,6 +172,7 @@ def evidence_taq():
 
     # Submit the form
     if request.method == 'POST':
+        pprint(form.data)
 
         if form.is_submitted() and form.validate():
 
@@ -184,7 +185,7 @@ def evidence_taq():
             return redirect(url_for('evidence_home'))
 
         elif not form.validate():
-            flash("Form validation error - are you missing required fields?", 'error')
+            flash("Form validation error - are you missing required fields? Error: {}".format(form.errors), 'error')
             return redirect(url_for('evidence_taq'))
 
     return redirect(url_for('evidence_taq'))

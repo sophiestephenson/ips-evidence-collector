@@ -1396,17 +1396,17 @@ class TAQDeviceCompForm(FlaskForm):
     live_together = RadioField(
         TAQDevices().questions['live_together'], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
     purchase_device = RadioField(
-        TAQDevices().questions['purchase_device'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)           
+        TAQDevices().questions['purchase_device'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     purchase_device_which = TextAreaField(TAQDevices().questions['purchase_device_which'])
     physical_access = RadioField(
         TAQDevices().questions['physical_access'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     physical_access_which = TextAreaField(TAQDevices().questions['physical_access_which'])
     device_pin = RadioField(
-        TAQDevices().questions['device_pin'], choices=YES_NO_UNSURE_CHOICES)
+        TAQDevices().questions['device_pin'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
 
 class TAQAccountsForm(FlaskForm):
     title = "Account and Password Management"
-    pwd_mgmt = RadioField(TAQAccounts().questions['pwd_mgmt'], choices=PWD_CHOICES)
+    pwd_mgmt = SelectMultipleField(TAQAccounts().questions['pwd_mgmt'], choices=PWD_CHOICES)
     pwd_mgmt_describe = TextAreaField(TAQAccounts().questions['pwd_mgmt-describe'])
     pwd_comp = RadioField(
         TAQAccounts().questions['pwd_comp'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
