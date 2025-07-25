@@ -632,7 +632,8 @@ def evidence_screenshots():
                 "fname": fname,
                 "type": "root",
                 "device_nickname": scan.device_nickname,
-                "device_serial": scan.serial
+                "device_serial": scan.serial,
+                "metadata": get_screenshot_metadata(fname)
             })
         for a in scan.all_apps:
             for fname in a.screenshot_files:
@@ -642,7 +643,8 @@ def evidence_screenshots():
                     "app_id": a.appId,
                     "app_name": a.app_name,
                     "device_serial": scan.serial,
-                    "device_nickname": scan.device_nickname
+                    "device_nickname": scan.device_nickname,
+                    "metadata": get_screenshot_metadata(fname)
                 })
 
     account_screenshot_info = []
@@ -657,7 +659,8 @@ def evidence_screenshots():
                     "fname": fname,
                     "type": "account",
                     "account_nickname": account.account_nickname,
-                    "section": section.screenshot_label
+                    "section": section.screenshot_label,
+                    "metadata": get_screenshot_metadata(fname)
                 })
                 # Would be good to capture the phone that took the screenshot
 

@@ -43,6 +43,13 @@
                                     <li><i>Device nickname:</i> {{screenshot.device_nickname}}</li>
                                     <li><i>Device serial:</i> {{screenshot.device_serial}}</li>
                                     <li><i>Filename:</i> {{screenshot.fname}}</li>
+                                    <li><i>Metadata:</i>
+                                        <ul>
+                                        {% for k, v in screenshot.metadata.items() %}
+                                        <li>{{k}} = {{v}}</li>
+                                        {% endfor %}
+                                        </ul>
+                                    </li>
                                 </ul>
                             </td>
                         </tr>
@@ -71,6 +78,13 @@
                                     <li><i>Device nickname:</i> {{app.device_nickname}}</li>
                                     <li><i>Device serial:</i> {{app.device_serial}}</li>
                                     <li><i>Filename:</i> {{app.fname}}</li>
+                                    <li><i>Metadata:</i>
+                                        <ul>
+                                        {% for k, v in app.metadata.items() %}
+                                        <li>{{k}} = {{v}}</li>
+                                        {% endfor %}
+                                        </ul>
+                                    </li>
                                 </ul>
                             </td>
                         </tr>
@@ -97,6 +111,13 @@
                                         <li><i>Account nickname:</i> {{acct.account_nickname}}</li>
                                         <li><i>Section:</i> {{acct.section}}</li>
                                         <li><i>Filename:</i> {{acct.fname}}</li>
+                                        <li><i>Metadata:</i>
+                                            <ul>
+                                            {% for k, v in acct.metadata.items() %}
+                                            <li>{{k}} = {{v}}</li>
+                                            {% endfor %}
+                                            </ul>
+                                        </li>
                                     </ul>
                                 </td>
                             </tr>
