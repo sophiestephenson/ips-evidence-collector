@@ -865,7 +865,23 @@ class ScanData(Dictable):
 
         self.selected_apps = [AppInfo(**app, device_hmac_serial=serial) for app in selected_apps]
 
+        self.screenshot_files = self._get_screenshot_files(serial)
+
         self.generate_risk_report()
+
+    def _get_screenshot_files(self, hmac_serial):
+        """
+        Returns a list of screenshot filenames for this scan (just for rooting).
+        They will be under webstatic/images/screenshots/<device_hmac_serial>/rooting/
+        """
+        screenshot_dir = os.path.join("webstatic", "images", "screenshots", hmac_serial, "rooting")
+        if os.path.exists(screenshot_dir):
+            # get full filepaths
+            files = os.listdir(screenshot_dir)
+            full_fnames = [os.path.join(screenshot_dir, f) for f in files]
+            full_fnames.sort()
+            return full_fnames
+        return list()
 
     def generate_risk_report(self):
         '''
