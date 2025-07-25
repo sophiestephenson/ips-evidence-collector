@@ -421,14 +421,29 @@
                         </tbody>
                     </table>
                     {% if scan.screenshot_files|length > 0 %}
-                        <div class="screenshot-container"><span>
+                    <table>
+                        <tbody>
                         {% for fname in scan.screenshot_files %}
-                            <div class="form-screenshot">
-                                <img height='400px' src="{{url_root}}{{fname}}"/>
-                            </div>
-                        {% endfor %}
-                        </span>
-                        </div>
+                            <tr>
+                                <th>
+                                    <div class="form-screenshot">
+                                        <img height='400px' src="{{url_root}}{{fname}}"/>
+                                    </div>
+                                </th>
+                                <td>
+                                    <br/>
+                                    <div class="screenshot-metadata">Screenshot metadata:
+                                        <ul>
+                                        {% for k, v in scan.screenshot_info[loop.index0].metadata.items() %}
+                                            <li>{{k}} = {{v}}</li>
+                                        {% endfor %}
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                     {% endif %}
                 </th>
                 <td>
