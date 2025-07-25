@@ -420,6 +420,16 @@
                             </tr>
                         </tbody>
                     </table>
+                    {% if scan.screenshot_files|length > 0 %}
+                        <div class="screenshot-container"><span>
+                        {% for fname in scan.screenshot_files %}
+                            <div class="form-screenshot">
+                                <img height='400px' src="{{url_root}}{{fname}}"/>
+                            </div>
+                        {% endfor %}
+                        </span>
+                        </div>
+                    {% endif %}
                 </th>
                 <td>
                     {% for risk in scan.risk_report.risk_details %}
