@@ -8,6 +8,7 @@
 
         h2 {font-size: 16pt; }
         h3 {font-size: 13pt; }
+        h4 {font-style: italic; font-weight: normal;}
 
         .app-padding-top {padding-top: 12mm;}
 
@@ -420,9 +421,14 @@
                             </tr>
                         </tbody>
                     </table>
+                    <h3>Screenshots <span class="tag">&#9881; System-captured</span></h3>
                     {% if scan.screenshot_files|length > 0 %}
                     <table>
                         <tbody>
+                            <tr>
+                                <th>
+                                </th>
+                            </tr>
                         {% for fname in scan.screenshot_files %}
                             <tr>
                                 <th>
@@ -446,9 +452,16 @@
                                     </div>
                                 </td>
                             </tr>
+                        </tbody>
+                        </table>
+                        </th>
+                        </tr>
+                        <tr><th><table><tbody>
                             {% endfor %}
                         </tbody>
                     </table>
+                    {% else %}
+                    <p>None taken.</p>
                     {% endif %}
                 </th>
                 <td>
@@ -684,15 +697,43 @@
             </tr>
             <tr>
                 <th>
-                <h3>Screenshots Taken {% if not scan.manual %}<span class="tag">&#9881; System-captured</span>{%endif%}</h3>
+                <h3>Screenshots {% if not scan.manual %}<span class="tag">&#9881; System-captured</span>{%endif%}</h3>
                 {% if app.screenshot_files|length > 0 %}
-                    <div class="screenshot-container"><span>
+                    <div class="screenshot-container">
+                <table>
+                    <tbody>
                     {% for fname in app.screenshot_files %}
-                        <div class="form-screenshot">
-                            <img height='400px' src="{{url_root}}{{fname}}"/>
+                            <tr>
+                                <th>
+                                    <div class="form-screenshot">
+                                        <img height='400px' src="{{url_root}}{{fname}}"/>
+                                    </div>
+                                </th>
+                                <td>
+                                    <br/>
+                                    <div class="screenshot-metadata">Screenshot Metadata:
+                                        <table>
+                                            <tbody>
+                                                {% for k, v in app.screenshot_info[loop.index0].metadata.items() %}
+                                                <tr>
+                                                    <th>{{k}}</th>
+                                                    <td>{{v}}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        </table>
                         </div>
+                        </th>
+                        </tr>
+                        <tr><th><div class="screenshot-container"><table><tbody>
                     {% endfor %}
-                    </span>
+                    </tbody>
+                    </table>
                     </div>
                 {% else %}
                 <div>None.</div>
@@ -772,14 +813,44 @@
             </tr>
             {% if account["suspicious_logins"]["screenshot_files"]|length > 0 %}
             <tr>
-                <th><div class="screenshot-container">
-                <span>
+                <th>
+                    <h4>Screenshots <span class="tag">&#9881; System-captured</span></h4>
+                    <div class="screenshot-container">
+                <table>
+                    <tbody>
                 {% for fname in account["suspicious_logins"]["screenshot_files"] %}
-                    <div class="form-screenshot">
-                        <img height='400px' src="{{url_root}}{{fname}}"/>
-                    </div>
+                            <tr>
+                                <th>
+                                    <div class="form-screenshot">
+                                        <img height='400px' src="{{url_root}}{{fname}}"/>
+                                    </div>
+                                </th>
+                                <td>
+                                    <br/>
+                                    <div class="screenshot-metadata">Screenshot Metadata:
+                                        <table>
+                                            <tbody>
+                                                {% for k, v in account["suspicious_logins"]["screenshot_info"][loop.index0]["metadata"].items() %}
+                                                <tr>
+                                                    <th>{{k}}</th>
+                                                    <td>{{v}}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        </table>
+                        </div>
+                        </th>
+                        </tr>
+                        <tr><th><div class="screenshot-container"><table><tbody>
                 {% endfor %}
-                </div></span></th>
+                </tbody>
+                </table>
+                </div></th>
             </tr>
             {% endif %}
 
@@ -853,13 +924,46 @@
             </tr>
             {% if account["recovery_settings"]["screenshot_files"]|length > 0 %}
             <tr>
-                <th><div class="screenshot-container"><span>
+                <th>
+                    <h4>Screenshots <span class="tag">&#9881; System-captured</span></h4>
+                    <div class="screenshot-container">
+                    
+                <table>
+                    <tbody>
                 {% for fname in account["recovery_settings"]["screenshot_files"] %}
-                    <div class="form-screenshot">
-                        <img height='400px' src="{{url_root}}{{fname}}"/>
-                    </div>
+                   <tr>
+                                <th>
+                                    <div class="form-screenshot">
+                                        <img height='400px' src="{{url_root}}{{fname}}"/>
+                                    </div>
+                                </th>
+                                <td>
+                                    <br/>
+                                    <div class="screenshot-metadata">Screenshot Metadata:
+                                        <table>
+                                            <tbody>
+                                                {% for k, v in account["recovery_settings"]["screenshot_info"][loop.index0]["metadata"].items() %}
+                                                <tr>
+                                                    <th>{{k}}</th>
+                                                    <td>{{v}}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        </table>
+                        </div>
+                        </th>
+                        </tr>
+                        <tr><th><div class="screenshot-container"><table><tbody>
                 {% endfor %}
-                </div></span></th>
+                </tbody>
+                </table>
+                </div>
+            </th>
             </tr>
             {% endif %}
             <tr>
@@ -898,13 +1002,43 @@
             </tr>
             {% if account["two_factor_settings"]["screenshot_files"]|length > 0 %}
             <tr>
-                <th><div class="screenshot-container"><span>
+                <th>
+                    <h4>Screenshots <span class="tag">&#9881; System-captured</span></h4>
+                    <div class="screenshot-container">
+                <table>
+                    <tbody>
                 {% for fname in account["two_factor_settings"]["screenshot_files"] %}
-                    <div class="form-screenshot">
-                        <img height='400px' src="{{url_root}}{{fname}}"/>
-                    </div>
+                    <tr>
+                                <th>
+                                    <div class="form-screenshot">
+                                        <img height='400px' src="{{url_root}}{{fname}}"/>
+                                    </div>
+                                </th>
+                                <td>
+                                    <br/>
+                                    <div class="screenshot-metadata">Screenshot Metadata:
+                                        <table>
+                                            <tbody>
+                                                {% for k, v in account["two_factor_settings"]["screenshot_info"][loop.index0]["metadata"].items() %}
+                                                <tr>
+                                                    <th>{{k}}</th>
+                                                    <td>{{v}}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        </table>
+                        </div>
+                        </th>
+                        </tr>
+                        <tr><th><div class="screenshot-container"><table><tbody>
                 {% endfor %}
-                </div></span></th>
+                </tbody></table>
+                </div></th>
             </tr>
             {% endif %}
             <tr>
@@ -944,13 +1078,44 @@
             {% if account["security_questions"]["screenshot_files"]|length > 0 %}
             <tr>
                 <th>
+                    <h4>Screenshots <span class="tag">&#9881; System-captured</span></h4>
                     <div class="screenshot-container">
-                    <span>{% for fname in account["security_questions"]["screenshot_files"] %}
-                        <div class="form-screenshot">
-                            <img height='400px' src="{{url_root}}{{fname}}"/>
+                
+                <table>
+                    <tbody>
+                        {% for fname in account["security_questions"]["screenshot_files"] %}
+                        <tr>
+                                <th>
+                                    <div class="form-screenshot">
+                                        <img height='400px' src="{{url_root}}{{fname}}"/>
+                                    </div>
+                                </th>
+                                <td>
+                                    <br/>
+                                    <div class="screenshot-metadata">Screenshot Metadata:
+                                        <table>
+                                            <tbody>
+                                                {% for k, v in account["security_questions"]["screenshot_info"][loop.index0]["metadata"].items() %}
+                                                <tr>
+                                                    <th>{{k}}</th>
+                                                    <td>{{v}}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        </table>
                         </div>
+                        </th>
+                        </tr>
+                        <tr><th><div class="screenshot-container"><table><tbody>
                     {% endfor %}
-                    </div></span>
+                    </tbody>
+                    </table>
+                    </div>
                 </th>
             </tr>
             {% endif %}

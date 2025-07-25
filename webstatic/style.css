@@ -855,6 +855,7 @@ span.inlinerisk {
   font-family: sans-serif;
   letter-spacing: 0.5px;
   width: auto;
+  font-style: normal;
 }
 
 .appid {
