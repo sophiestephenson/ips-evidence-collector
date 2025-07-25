@@ -393,12 +393,17 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Serial Number</th>
+                            <th>{% if scan.device_type == "ios" %}
+                                Unique Device Identifier (UDID) 
+                                {% else %}
+                                Serial Number
+                                {% endif %}
+                            </th>
                             <td>
-                                {% if scan.serial %}
+                                {% if not scan.serial_or_udid %}
                                 <i>Not entered.</i>
                                 {% else %}
-                                {{scan.serial}}
+                                <p class="serial-or-udid">{{scan.serial_or_udid}}</p>
                                 {% endif %}
                             </td>
                         </tr>

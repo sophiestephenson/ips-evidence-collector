@@ -48,7 +48,7 @@
             {% if device == "android" %}
             <p><b>Evidence of jailbreaking?</b> {{"Yes" if is_rooted else "No"}}. <b>Explanation:</b> {{rooted_reasons}}
                 {% if is_rooted %} 
-                <button id="rooting" type="button" onclick="getScreenshot(this.id, '{{device}}', '{{adb_serial}}')" value="screenshot" class="btn btn-secondary">Take screenshot</button>
+                <button id="rooting" type="button" onclick="getScreenshot(this.id, '{{device}}', '{{serial_or_udid}}')" value="screenshot" class="btn btn-secondary">Take screenshot</button>
                 {% endif %}
             </p>
                 
@@ -231,7 +231,7 @@
                             <tbody>
                                 <tr>
                                 <td colspan="2">
-                                <button id="{{app.appId}}" type="button" onclick="getScreenshot(this.id, '{{device}}', '{{scan_data.adb_serial}}')" value="screenshot" class="btn btn-secondary">Take screenshot</button>
+                                <button id="{{app.appId}}" type="button" onclick="getScreenshot(this.id, '{{device}}', '{{scan_data.serial_or_udid}}')" value="screenshot" class="btn btn-secondary">Take screenshot</button>
                                 </td>
                                 </tr>
                             </tbody>

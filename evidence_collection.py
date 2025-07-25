@@ -875,6 +875,7 @@ class ScanData(Dictable):
                  device_nickname="",
                  serial="",
                  adb_serial="",
+                 serial_or_udid="",  # TODO: Just use this one
                  device_model="",
                  device_version="",
                  device_manufacturer="",
@@ -889,7 +890,9 @@ class ScanData(Dictable):
         self.device_type = device_type
         self.device_nickname = device_nickname
         self.serial = serial
-        self.adb_serial = adb_serial
+        self.serial_or_udid = serial_or_udid
+        if self.serial_or_udid.strip() == "":
+            self.serial_or_udid = adb_serial
         self.device_model = device_model
         self.device_version = device_version
         self.device_manufacturer = device_manufacturer
@@ -898,13 +901,13 @@ class ScanData(Dictable):
 
         # sort all_apps by title, with system apps at the end,
         # checked apps at the top, and flagged investigated apps at the top top
-        self.all_apps = [AppInfo(**app, device_hmac_serial=serial) for app in all_apps]
+        self.all_apps = [AppInfo(**app) for app in all_apps]
         self.all_apps.sort(key=lambda x: x.title.lower())
         self.all_apps.sort(key=lambda x: len(x.flags) > 0, reverse=True)
         self.all_apps.sort(key=lambda x: 'system-app' in x.flags and len(x.flags) == 1)
         self.all_apps.sort(key=lambda x: x.investigate, reverse=True)
 
-        self.selected_apps = [AppInfo(**app, device_hmac_serial=serial) for app in selected_apps]
+        self.selected_apps = [AppInfo(**app) for app in selected_apps]
 
         self.generate_risk_report()
 
@@ -1666,7 +1669,7 @@ def get_scan_data(device, device_owner):
         scan_d = {
             'clientid': clientid,
             'serial': config.hmac_serial(ser),
-            'adb_serial': ser,
+            'serial_or_udid': ser,
             'device': device,
             'device_model': device_name_map.get('model', '<Unknown>').strip(),
             'device_version': device_name_map.get('version', '<Unknown>').strip(),
