@@ -28,6 +28,32 @@
 
             <div class="scroll-screenshots"> {# Class = scroll apps? #}
 
+            <h3>Device Jailbreak Screenshots</h3>
+            {% if form.root_screenshots|length > 0 %}
+            <table class="screenshots">
+                <tbody>
+                    {% for subform in form.root_screenshots %}
+                    {% set screenshot = rooted_screenshot_info[loop.index0] %}
+                        {{ subform.hidden_tag() }}
+                        <tr>
+                            <th class="screenshot-delete">{{subform.delete}} {{subform.delete.label}}</th>
+                            <th><img height='200px' src="{{url_root}}{{screenshot.fname}}"/></th>
+                            <td>
+                                <ul>
+                                    <li><i>Device nickname:</i> {{screenshot.device_nickname}}</li>
+                                    <li><i>Device serial:</i> {{screenshot.device_serial}}</li>
+                                    <li><i>Filename:</i> {{screenshot.fname}}</li>
+                                </ul>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div>No screenshots captured.</div>
+            <br/>
+            {% endif %}
+
             <h3>App Investigation Screenshots</h3>
             {% if form.app_screenshots|length > 0 %}
             <table class="screenshots">

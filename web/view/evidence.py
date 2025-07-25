@@ -622,9 +622,17 @@ def evidence_account(id):
 def evidence_screenshots():
 
     # compile all screenshot filenames
+    rooted_screenshot_info = []
     app_screenshot_info = []
     scans = load_object_from_json(ConsultDataTypes.SCANS.value)
     for scan in scans:
+        for fname in scan.screenshot_files:
+            rooted_screenshot_info.append({
+                "fname": fname,
+                "type": "root",
+                "device_nickname": scan.device_nickname,
+                "device_serial": scan.serial
+            })
         for a in scan.all_apps:
             for fname in a.screenshot_files:
                 app_screenshot_info.append({
@@ -652,7 +660,8 @@ def evidence_screenshots():
                 })
                 # Would be good to capture the phone that took the screenshot
 
-    form = MultScreenshotEditForm(app_screenshots=app_screenshot_info,
+    form = MultScreenshotEditForm(root_screenshots=rooted_screenshot_info,
+                                  app_screenshots=app_screenshot_info,
                                   acct_screenshots=account_screenshot_info)
 
     url_root = request.url_root
@@ -662,6 +671,7 @@ def evidence_screenshots():
         context = dict(
             task = "evidence-screenshots",
             title=config.TITLE,
+            rooted_screenshot_info = rooted_screenshot_info,
             app_screenshot_info = app_screenshot_info,
             account_screenshot_info = account_screenshot_info,
             form = form,
@@ -672,7 +682,7 @@ def evidence_screenshots():
 
     if request.method == 'POST' and form.is_submitted():
         # Delete all screenshots that were selected for deletion
-        for a in form.data["app_screenshots"] + form.data["acct_screenshots"]:
+        for a in form.data["app_screenshots"] + form.data["acct_screenshots"] + form.data["root_screenshots"]:
             if a["delete"] and os.path.exists(a["fname"]):
                 os.remove(a["fname"])
 

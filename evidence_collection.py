@@ -1244,6 +1244,7 @@ class ScreenshotEditForm(FlaskForm):
 
 class MultScreenshotEditForm(FlaskForm):
     title = "Screenshot Edit Form"
+    root_screenshots = FieldList(FormField(ScreenshotEditForm))
     app_screenshots = FieldList(FormField(ScreenshotEditForm))
     acct_screenshots = FieldList(FormField(ScreenshotEditForm))
     submit = SubmitField("Delete Selected Screenshots")
