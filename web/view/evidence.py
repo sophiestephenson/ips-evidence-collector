@@ -33,6 +33,7 @@ from evidence_collection import (
     ManualAddPageForm,
     MultScreenshotEditForm,
     ScanData,
+    ScreenshotInfo,
     SetupForm,
     StartForm,
     TAQData,
@@ -41,7 +42,6 @@ from evidence_collection import (
     delete_client_data,
     get_scan_by_ser,
     get_scan_data,
-    get_screenshot_metadata,
     get_ser_from_scan_obj,
     get_serial,
     load_json_data,
@@ -628,24 +628,24 @@ def evidence_screenshots():
     scans = load_object_from_json(ConsultDataTypes.SCANS.value)
     for scan in scans:
         for fname in scan.screenshot_files:
-            rooted_screenshot_info.append({
-                "fname": fname,
-                "type": "root",
-                "device_nickname": scan.device_nickname,
-                "device_serial": scan.serial,
-                "metadata": get_screenshot_metadata(fname)
-            })
+            screenshot_info = ScreenshotInfo(
+                fname=fname,
+                context="root",
+                device_nickname=scan.device_nickname,
+                device_serial=scan.serial,
+            )
+            rooted_screenshot_info.append(screenshot_info.to_dict())
         for a in scan.all_apps:
             for fname in a.screenshot_files:
-                app_screenshot_info.append({
-                    "fname": fname,
-                    "type": "app",
-                    "app_id": a.appId,
-                    "app_name": a.app_name,
-                    "device_serial": scan.serial,
-                    "device_nickname": scan.device_nickname,
-                    "metadata": get_screenshot_metadata(fname)
-                })
+                screenshot_info = ScreenshotInfo(
+                    fname=fname,
+                    context="app",
+                    app_id=a.appId,
+                    app_name=a.app_name,
+                    device_nickname=scan.device_nickname,
+                    device_serial=scan.serial
+                )
+                app_screenshot_info.append(screenshot_info.to_dict())
 
     account_screenshot_info = []
     accounts = load_object_from_json(ConsultDataTypes.ACCOUNTS.value)
@@ -655,17 +655,15 @@ def evidence_screenshots():
                         account.two_factor_settings,
                         account.security_questions]:
             for fname in section.screenshot_files:
-                account_screenshot_info.append({
-                    "fname": fname,
-                    "type": "account",
-                    "account_nickname": account.account_nickname,
-                    "section": section.screenshot_label,
-                    "metadata": get_screenshot_metadata(fname)
-                })
-                # Would be good to capture the phone that took the screenshot
+                screenshot_info = ScreenshotInfo(
+                    fname=fname,
+                    context="account",
+                    account_nickname=account.account_nickname,
+                    account_section=section.screenshot_label
+                )
 
     for screenshot in rooted_screenshot_info + account_screenshot_info + app_screenshot_info:
-        pprint(get_screenshot_metadata(screenshot["fname"]))
+        pprint(screenshot["metadata"])
 
     form = MultScreenshotEditForm(root_screenshots=rooted_screenshot_info,
                                   app_screenshots=app_screenshot_info,

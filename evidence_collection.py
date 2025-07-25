@@ -94,7 +94,7 @@ class Dictable:
 class DictInitClass(Dictable):
     attrs = []
     screenshot_label = ""
-    get_screenshots = False
+    get_screenshots = False  # Only true for classes we use within account investigation
 
     def __init__(self, datadict=dict()):
         for k in self.attrs:
@@ -105,6 +105,10 @@ class DictInitClass(Dictable):
 
         if self.get_screenshots:
             self.screenshot_files = self._get_screenshot_files(datadict.get('account_id', 0))
+            self.screenshot_info = [ScreenshotInfo(
+                fname=fname,
+                context="account"
+            ) for fname in self.screenshot_files]
 
     def _get_screenshot_files(self, account_id):
         """
@@ -442,6 +446,13 @@ class AppInfo(Dictable):
         self.notes = Notes(notes)
 
         self.screenshot_files = self._get_screenshot_files(device_hmac_serial)
+        self.screenshot_info = [ScreenshotInfo(
+            fname=fname,
+            context="app",
+            app_id=self.appId,
+            app_name=self.app_name,
+            device_serial=device_hmac_serial
+        ) for fname in self.screenshot_files]
 
         #self.report, self.is_concerning = self.generate_app_report()
 
@@ -867,6 +878,12 @@ class ScanData(Dictable):
         self.selected_apps = [AppInfo(**app, device_hmac_serial=serial) for app in selected_apps]
 
         self.screenshot_files = self._get_screenshot_files(serial)
+        self.screenshot_info = [ScreenshotInfo(
+            fname=fname,
+            context="root",
+            device_nickname=self.device_nickname,
+            device_serial=self.serial
+        ) for fname in self.screenshot_files]
 
         self.generate_risk_report()
 
@@ -975,6 +992,75 @@ class ConsultNotesData(Dictable):
                  **kwargs):
         self.consultant_notes = consultant_notes
         self.client_notes = client_notes
+
+class ScreenshotInfo(Dictable):
+    def __init__(self,
+                 fname="",
+                 context="",  # root, account, or app
+                 device_nickname=None,
+                 device_serial=None,
+                 app_id=None,
+                 app_name=None,
+                 account_nickname=None,
+                 account_section=None):
+        self.fname = fname
+        self.context = context
+
+        # For root and app screenshots
+        self.device_nickname = device_nickname
+        self.device_serial = device_serial
+
+        # Just for app screenshots
+        self.app_id = app_id
+        self.app_name = app_name
+
+        # Just for account screenshots
+        self.account_nickname = account_nickname
+        self.account_section = account_section
+
+        self.get_metadata()
+
+    def get_metadata(self):
+        """
+        Uses exiftool (bash) to get metadata for our PNG screenshots.
+        Available metadata:
+            - ExifToolVersion
+            - FileName
+            - Directory
+            - FileSize
+            - FileModifyDate
+            - FileAccessDate
+            - FileInodeChangeDate
+            - FilePermissions
+            - FileType
+            - FileTypeExtension
+            - MIMEType
+            - ImageWidth
+            - ImageHeight
+            - BitDepth
+            - ColorType
+            - Compression
+            - Filter
+            - Interlace
+            - SRGBRendering
+            - SignificantBits
+            - ImageSize
+            - Megapixels
+        """
+
+        data_to_get = ["FileModifyDate"]
+
+        self.metadata = dict()
+
+        for item in data_to_get:
+            result = subprocess.run(
+                ["exiftool", "-" + item, self.fname],
+                capture_output=True, text=True
+            )
+            data = result.stdout.split(":", 1)[-1].strip()
+            self.metadata[item] = data
+
+        return self.metadata
 
 
 def get_scan_by_ser(ser, all_scan_data: list[ScanData]):
@@ -1693,45 +1779,3 @@ def delete_client_data():
     os.makedirs(SCREENSHOT_DIR, exist_ok=True)
 
     print("Client data deleted.")
-
-def get_screenshot_metadata(fname):
-    """
-    Uses exiftool (bash) to get metadata for our PNG screenshots.
-    Available metadata:
-        - ExifToolVersion
-        - FileName
-        - Directory
-        - FileSize
-        - FileModifyDate
-        - FileAccessDate
-        - FileInodeChangeDate
-        - FilePermissions
-        - FileType
-        - FileTypeExtension
-        - MIMEType
-        - ImageWidth
-        - ImageHeight
-        - BitDepth
-        - ColorType
-        - Compression
-        - Filter
-        - Interlace
-        - SRGBRendering
-        - SignificantBits
-        - ImageSize
-        - Megapixels
-    """
-
-    data_to_get = ["FileModifyDate"]
-
-    metadata = dict()
-
-    for item in data_to_get:
-        result = subprocess.run(
-            ["exiftool", "-" + item, fname],
-            capture_output=True, text=True
-        )
-        data = result.stdout.split(":", 1)[-1].strip()
-        metadata[item] = data
-
-    return metadata
