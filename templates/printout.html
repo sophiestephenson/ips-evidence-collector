@@ -58,7 +58,7 @@
                         <div>The following risks were identified based on the client's responses to the Technology Assessment Questionnaire:
                             <ul>
                                     {% for risk in taq["all_risks"] %}
-                                    <li><span class="inlinerisk"><span>&#9888;&#65039;</span> <b>{{risk.risk}}</b></span>: {{risk.description}}.</li>
+                                    <li><span class="inlinerisk"><span>&#9888;&#65039;</span> <b>{{risk.risk}}</b></span>: {{risk.description}}</li>
                                     {% endfor %}
                             </ul>
                         </div>
@@ -88,7 +88,7 @@
                             {% if scan.risk_report.risk_present %}
                                 <ul>
                                     {% for risk in scan.risk_report.risk_details %}
-                                    <li><span class="inlinerisk"><span>&#9888;&#65039;</span> <b>{{risk.risk}}</b></span>: {{risk.description}}.</li>
+                                    <li><span class="inlinerisk"><span>&#9888;&#65039;</span> <b>{{risk.risk}}</b></span>: {{risk.description}}</li>
                                     {% endfor %}
                                 </ul>
                             {% else %}
@@ -125,7 +125,7 @@
                             {% if account.risk_report.risk_present %}
                                 <ul>
                                     {% for risk in account.risk_report.risk_details %}
-                                    <li><span class="inlinerisk"><span>&#9888;&#65039;</span> <b>{{risk.risk}}</b></span>: {{risk.description}}.</li>
+                                    <li><span class="inlinerisk"><span>&#9888;&#65039;</span> <b>{{risk.risk}}</b></span>: {{risk.description}}</li>
                                     {% endfor %}
                                 </ul>
                             {% else %}
