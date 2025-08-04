@@ -916,3 +916,11 @@ div.screenshot-metadata {
     margin: 0px;
     font-weight: 600px;
 }
+
+span.signature {
+    border-bottom: black 1px solid;
+    margin-left: 10px;
+    width: 300px;
+    display: inline-block;
+    height: 1em;
+}
