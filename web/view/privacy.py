@@ -38,7 +38,7 @@ def privacy():
 @app.route("/privacy/<device>/<cmd>/<context>/<ser>", methods=["GET"])
 def privacy_scan(device, cmd, context, ser):
     print(ser)
-    if(device == "ios"):
+    if device == "ios":
         res = iosScreenshot(ser, context, nocache=True)
     else:
         res = do_privacy_check(ser, cmd, context)
@@ -75,7 +75,4 @@ def iosScreenshot(ser, context, nocache = False):
         print(e)
         return "<div class='screenshotfail'>Screenshot failed with exception {}</div>".format(e)
 
-    return add_image(fname.replace("webstatic/", ""), nocache=True)
-def add_image(img, nocache=False):
-        return "<img height='400px' src='" + \
-            url_for('static', filename=img) + "'/>"
+    return "<img height='400px' src='" + url_for('static', filename=fname.split("webstatic/", 1)[-1]) + "'/>"
