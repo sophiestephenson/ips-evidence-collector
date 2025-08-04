@@ -201,10 +201,10 @@ def error():
         print(f"ERROR: {e}")
     return e.replace("\n", "<br/>")
 
-def create_screenshot_fname(context, adb_ser="misc"):
+def create_screenshot_fname(context, serial="misc"):
     # Verify the directory exists and create it if not
     subfolder = context.replace(" ", "")
-    dir_path = os.path.join(THIS_DIR, "webstatic", "images", "screenshots", hmac_serial(adb_ser), subfolder)
+    dir_path = os.path.join(THIS_DIR, "webstatic", "images", "screenshots", serial, subfolder)
     os.makedirs(dir_path, exist_ok=True)
 
     # Create a filename with the current time and context
