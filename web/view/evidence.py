@@ -1,4 +1,5 @@
 import os
+import time
 import traceback
 from datetime import datetime
 from pprint import pprint
@@ -681,6 +682,8 @@ def evidence_screenshots():
 @app.route("/evidence/printout", methods=["GET"])
 def evidence_printout():
 
+    start_time = time.perf_counter()
+
     consult_data = ConsultationData(
         setup=load_json_data(ConsultDataTypes.SETUP.value),
         taq=load_json_data(ConsultDataTypes.TAQ.value),
@@ -717,6 +720,11 @@ def evidence_printout():
     # create the printout document
     filename = create_printout(context)
     workingdir = os.path.abspath(os.getcwd())
+
+    end_time = time.perf_counter()
+    elapsed_time = end_time - start_time
+    print(f"Function executed in {elapsed_time:.6f} seconds")
+
     return send_from_directory(workingdir, filename)
 
 @app.route("/evidence/delete-data", methods=["GET"])
