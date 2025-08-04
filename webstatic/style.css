@@ -807,8 +807,12 @@ span.inlinerisk {
 }
 
 .cover-logo {
-  width: 500px;
+  width: 400px;
   margin-bottom: 2em;
+}
+
+.cover-logo-small {
+    margin-bottom: 2em;
 }
 
 .permissions-used {
