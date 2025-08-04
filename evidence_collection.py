@@ -114,26 +114,23 @@ class AccountSection(DictInitClass):
 
         # check if there are any screenshots at all
         screenshot_dir = os.path.join("webstatic", "images", "screenshots")
-        if os.path.exists(screenshot_dir):
-            screenshot_files = []
+        screenshot_files = []
 
+        if os.path.exists(screenshot_dir):
             # all subdirectories are device serials
-            all_children = [f for f in os.scandir(screenshot_dir)]
-            subdirs_full = [f for f in all_children if os.path.isdir(f)]
+            subdirs_full = [f for f in os.scandir(screenshot_dir) if os.path.isdir(f)]
             for dev_dir in subdirs_full:
 
                 # all subdirectories of the device directory are either apps or accounts
-                subdirs = [f for f in os.scandir(dev_dir)]
+                subdirs = [f for f in os.scandir(dev_dir)
+                           if f.name == "account{}_{}".format(self.account_id, self.screenshot_label)]
                 for subdir in subdirs:
-                    if subdir.name == "account{}_{}".format(self.account_id, self.screenshot_label):
-                        # add all files in that subdir
-                        files = os.listdir(subdir.path)
-                        full_fnames = [os.path.join(subdir, f) for f in files]
-                        full_fnames.sort()
-                        screenshot_files.extend(full_fnames)
-
-            return screenshot_files
-        return []
+                    files = os.listdir(subdir.path)
+                    full_fnames = [os.path.join(subdir, f) for f in files]
+                    full_fnames.sort()
+                    screenshot_files.extend(full_fnames)
+        
+        return screenshot_files
 
     def get_screenshot_info(self):
         '''
@@ -753,9 +750,6 @@ class RiskFactor():
 
 class ConsultationData(Dictable):
 
-    def generate_overall_summary(self):
-        return "TODO: WRITE CODE TO GENERATE AN OVERALL SUMMARY"
-
     def __init__(self,
                  setup = dict(),
                  taq = dict(),
@@ -793,8 +787,6 @@ class ConsultationData(Dictable):
             permission_info = PermissionInfo().questions,
             install_info = InstallInfo().questions
         )
-
-        self.overall_summary = self.generate_overall_summary()
 
     def prepare_reports(self):
         '''
