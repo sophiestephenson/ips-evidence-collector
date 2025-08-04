@@ -11,6 +11,7 @@ Collect evidence of IPS. Basic version collects this data from the phone:
 """
 import json
 import os
+import re
 import shutil
 import subprocess
 from enum import Enum
@@ -1825,3 +1826,61 @@ def delete_client_data():
     os.makedirs(SCREENSHOT_DIR, exist_ok=True)
 
     print("Client data deleted.")
+
+def get_all_screenshot_files():
+    '''
+    Gather all screenshot files at once. This will greatly speed up
+    compiling screenshot filenames.
+    '''
+
+    # Everything is in SCREENSHOT_DIR under a device serial number
+    # Need to get:
+    #   - Device jailbreak (<device ser>/rooting/)
+    #   - Device apps (<device ser>/<appid>/)
+    #   - Account sections (<any ser>/account<id>_<section>/)
+
+    screenshot_files = dict(
+        device_root = dict(),  # accessed by ser
+        apps = dict(),  # accessed by ser
+        account_sections = dict()  # accessed by account id as a string
+    )
+
+    account_pattern = re.compile(r"account\d+_[a-zA-Z_]+")
+
+    if os.path.exists(SCREENSHOT_DIR):
+
+        # go into all device dirs and subdirs
+        device_dirs = [f for f in os.scandir(SCREENSHOT_DIR) if os.path.isdir(f)]
+        for device_dir in device_dirs:
+            screenshot_dirs = [f for f in os.scandir(device_dir.path) if os.path.isdir(f)]
+
+            for screenshot_dir in screenshot_dirs:
+                pprint("Looking at {}".format(screenshot_dir.path))
+                # get all screenshot files from this directory
+                files = os.listdir(screenshot_dir.path)
+                full_fnames = [os.path.join(screenshot_dir, f) for f in files]
+                full_fnames.sort()
+
+                # save the fnames in the right place
+                if screenshot_dir.name == "rooting":
+                    screenshot_files["device_root"][device_dir.name] = full_fnames
+                    
+                elif account_pattern.match(screenshot_dir.name):
+                    fname_parts = screenshot_dir.name.split("_", 1)
+                    account_id_str = fname_parts[0][-1]
+                    account_section = fname_parts[1]
+
+                    if account_id_str not in list(screenshot_files["account_sections"].keys()):
+                        screenshot_files["account_sections"][account_id_str] = dict()
+
+                    if account_section not in list(screenshot_files["account_sections"][account_id_str].keys()):
+                        screenshot_files["account_sections"][account_id_str][account_section] = list()
+
+                    screenshot_files["account_sections"][account_id_str][account_section].extend(full_fnames)
+
+                else:
+                    screenshot_files["apps"][screenshot_dir.name] = full_fnames
+
+    pprint(screenshot_files)
+
+    return screenshot_files
