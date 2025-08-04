@@ -133,10 +133,15 @@ class AccountSection(DictInitClass):
         
         return screenshot_files
 
+    def set_screenshot_files(self, screenshot_files):
+        self.screenshot_files = screenshot_files
+
     def get_screenshot_info(self):
         '''
         Creates screenshot objects for all screenshot files related to this account section.
         '''
+        if not self.screenshot_files:
+            self.screenshot_files = list()
         self.screenshot_files = self._get_screenshot_files()
         self.screenshot_info = [ScreenshotInfo(
             fname=fname,
@@ -451,8 +456,7 @@ class AppInfo(Dictable):
         self.notes = Notes(notes)
 
         self.device_serial_udid = device_serial_udid
-
-        #self.report, self.is_concerning = self.generate_app_report()
+        self.screenshot_files = list()
 
     def _get_screenshot_files(self):
         """
@@ -467,6 +471,9 @@ class AppInfo(Dictable):
             full_fnames.sort()
             return full_fnames
         return list()
+
+    def set_screenshot_files(self, screenshot_files):
+        self.screenshot_files = screenshot_files
     
     def get_screenshot_info(self):
         '''
@@ -804,16 +811,29 @@ class ConsultationData(Dictable):
         Get all screenshot information about consultation data.
         Need to do this for scans, account sections, and apps.
         """
+
+        all_screenshots = get_all_screenshot_files()
+
+        device_root_screenshots = all_screenshots["device_root"]
+        app_screenshots = all_screenshots["apps"]
+        account_screenshots = all_screenshots["account_sections"]
+
         for scan in self.scans:
+            scan.set_screenshot_files(device_root_screenshots.get(scan.serial_or_udid, list()))
             scan.get_screenshot_info()
+
             for app in scan.selected_apps:
+                app.set_screenshot_files(app_screenshots.get(app.appId, list()))
                 app.get_screenshot_info()
+
         for account in self.accounts:
-            for section in [account.recovery_settings,
-                            account.security_questions,
-                            account.suspicious_logins,
-                            account.two_factor_settings]:
-                section.get_screenshot_info()
+            if str(account.account_id) in list(account_screenshots.keys()):
+                for section in [account.recovery_settings,
+                                account.security_questions,
+                                account.suspicious_logins,
+                                account.two_factor_settings]:
+                    section.set_screenshot_files(account_screenshots[str(account.account_id)][section.screenshot_label])
+                    section.get_screenshot_info()
 
 
 class AccountInvestigation(Dictable):
@@ -901,6 +921,7 @@ class ScanData(Dictable):
         self.all_apps.sort(key=lambda x: x.investigate, reverse=True)
 
         self.selected_apps = [AppInfo(**app) for app in selected_apps]
+        self.screenshot_files = list()
 
         self.generate_risk_report()
 
@@ -918,11 +939,13 @@ class ScanData(Dictable):
             return full_fnames
         return list()
 
+    def set_screenshot_files(self, screenshot_files):
+        self.screenshot_files = screenshot_files
+
     def get_screenshot_info(self):
         '''
         Creates screenshot objects for all screenshot files related to this device scan.
         '''
-        self.screenshot_files = self._get_screenshot_files()
         self.screenshot_info = [ScreenshotInfo(
             fname=fname,
             context="root",
@@ -1831,6 +1854,11 @@ def get_all_screenshot_files():
     '''
     Gather all screenshot files at once. This will greatly speed up
     compiling screenshot filenames.
+
+    Returns screenshot_files, a dict() with keys:
+        - device_root (accessed by serial)
+        - apps (accessed by app id)
+        - account_sections (accessed by account id (str), then section label)
     '''
 
     # Everything is in SCREENSHOT_DIR under a device serial number
@@ -1864,17 +1892,20 @@ def get_all_screenshot_files():
                 # save the fnames in the right place
                 if screenshot_dir.name == "rooting":
                     screenshot_files["device_root"][device_dir.name] = full_fnames
-                    
+
                 elif account_pattern.match(screenshot_dir.name):
                     fname_parts = screenshot_dir.name.split("_", 1)
                     account_id_str = fname_parts[0][-1]
                     account_section = fname_parts[1]
 
                     if account_id_str not in list(screenshot_files["account_sections"].keys()):
-                        screenshot_files["account_sections"][account_id_str] = dict()
+                        section_dict = dict()
+                        section_dict[SuspiciousLogins().screenshot_label] = list()
+                        section_dict[RecoverySettings().screenshot_label] = list()
+                        section_dict[TwoFactorSettings().screenshot_label] = list()
+                        section_dict[SecurityQuestions().screenshot_label] = list()
 
-                    if account_section not in list(screenshot_files["account_sections"][account_id_str].keys()):
-                        screenshot_files["account_sections"][account_id_str][account_section] = list()
+                        screenshot_files["account_sections"][account_id_str] = section_dict
 
                     screenshot_files["account_sections"][account_id_str][account_section].extend(full_fnames)
 

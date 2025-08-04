@@ -685,8 +685,6 @@ def evidence_printout():
 
     start_time = time.perf_counter()
 
-    get_all_screenshot_files()
-
     consult_data = ConsultationData(
         setup=load_json_data(ConsultDataTypes.SETUP.value),
         taq=load_json_data(ConsultDataTypes.TAQ.value),
@@ -698,7 +696,6 @@ def evidence_printout():
 
     consult_data.prepare_reports()
     consult_data.prepare_screenshots()
-
 
     context = consult_data.to_dict()
 
