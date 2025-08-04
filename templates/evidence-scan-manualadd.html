@@ -45,6 +45,7 @@
                 <div>
                     {% for app in form.apps %}
                         <table class="subform">
+                            {{ app.hidden_tag() }}
                             <tbody>
                                 {{render_text_field(app.app_name)}}
                                 <tr>
