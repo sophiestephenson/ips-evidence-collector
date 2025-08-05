@@ -1,0 +1,74 @@
+{% extends 'bootstrap/base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% from "_formhelpers.html" import render_select, render_text_field %}
+
+<script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+<script src="{{ url_for('static', filename='myjscript.js') }}?3"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/3.6.2/fetch.min.js"></script>
+
+{% block content %}
+
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <br>
+            {% for message in get_flashed_messages() %}
+            <div class="alert alert-warning">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                {{ message }}
+            </div>
+            {% endfor %}
+            <br>
+            <h2>{{form.title}}</h2>
+            <hr>
+            <h3>Device Information</h3>
+            <form action method="post" class="form" role="form">
+                {{ form.hidden_tag() }}
+                <table>
+                    <tbody>
+                            {{ render_text_field(form.device_nickname) }}
+                            {{ render_text_field(form.device_manufacturer) }}
+                            {{ render_text_field(form.device_model) }}
+                            {{ render_text_field(form.device_version) }}
+                            {{ render_text_field(form.device_serial) }}
+                            {{render_select(form.is_rooted) }}
+                            {{ render_text_field(form.rooted_reasons) }}
+                        </tr>
+                    </tbody>
+                </table>
+                <br>
+                <br>
+                <h3>Apps for Investigation</h3>
+                <div>
+                    {% for app in form.apps %}
+                        <table class="subform">
+                            {{ app.hidden_tag() }}
+                            <tbody>
+                                {{render_text_field(app.app_name)}}
+                                <tr>
+                                    <th>{{app.spyware.label}}</th>
+                                    <td>{{app.spyware}}</td>
+                                </tr>
+                                <tr>
+                                    <th>{{app.dualuse.label}}</th>
+                                    <td>{{app.dualuse}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                         <br/>  
+                    {% endfor %}
+                    <div><span class="secondarybutton">{{form.addline}}</span></div>
+                </div>
+                <br>
+                <br>
+                <br>
+                <div><span class="primarybutton">{{form.submit}}</span></div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

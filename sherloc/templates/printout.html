@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        /* margins for printing */
+        body  { padding: 5mm; font-size: 12pt; }
+        .new-page { padding-top: 5mm; }
+
+        h2 {font-size: 16pt; }
+        h3 {font-size: 13pt; }
+        h4 {font-style: italic; font-weight: 600px;}
+
+        .app-padding-top {padding-top: 12mm;}
+
+        body { font-family: 'Georgia', serif; }
+    </style>
+</head>
+
+<body>
+    <div class="cover-page">
+        <div class="cover-inner">
+            <h1 class="report-title">Investigation Report</h1>
+            <p class="report-subtitle">Prepared by the Madison Tech Clinic</p>
+            <div>
+                <img src="{{url_root}}webstatic/images/mtc-logo.png" alt="Madison Tech Clinic logo" class="cover-logo"> 
+                <img src="{{url_root}}webstatic/images/uw-logo-horizontal-color-web-digital.png" class="cover-logo" alt="UW-Madison logo"/>
+            </div>
+
+            <div class="cover-meta">
+
+            <p><b>Client Name:</b> {{setup.client}}</p>
+            <p><b>Consultation Start Time:</b> {{setup.date}}</p>
+
+            <hr/>
+            <br/>
+
+            <p>This report describes the findings of a Madison Tech Clinic consultation. The report was created using Sherloc {{sherloc_version}}, an investigative tool developed by the Madison Tech Clinic. Source code for Sherloc is available at <a href>https://github.com/sophiestephenson/ips-evidence-collector/releases</a>.</p>
+                
+            <p>Please see <a href>https://techclinic.cs.wisc.edu</a> or contact <a href>techclinic.madison@gmail.com</a> for more information about the Madison Tech Clinic, Sherloc, or this report.</p>
+
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+
+            <p>Consultant Signature: <span class="signature"></span></p>
+            </div>
+
+        </div>
+    </div>
+    <div class="pagebreak"></div>
+
+<div class="new-page"></div>
+    <h1>Summary of Findings</h1>
+    <hr/>
+    <div class="printout-summary">
+        <div class="overallsummary">
+            <p><i>The following are automated summaries generated deterministically from the content of this report.</i></p>
+
+            <h3 class="">Technology Assessment Questionnaire</h3> 
+                        {% if taq["all_risks"]|length > 0 %}
+                        <div>The following risks were identified based on the client's responses to the Technology Assessment Questionnaire:
+                            <ul>
+                                    {% for risk in taq["all_risks"] %}
+                                    <li><span class="inlinerisk"><span>&#9888;&#65039;</span> <b>{{risk.risk}}</b></span>: {{risk.description}}</li>
+                                    {% endfor %}
+                            </ul>
+                        </div>
+                            {% else %}
+                            <div>No risks identified.</div>
+                            {% endif %}
+    
+
+            <br/>
+            <h3 class="">{{scans|length}} Devices Scanned</h3>
+            {% if scans|length > 0 %}
+            <table class="summary-table">
+                    <thead>
+                        <tr>
+                        <th>Device</th>
+                        <th>Risks Identified</th>
+                    </tr>
+                    </thead>
+                <tbody>
+                    {% for scan in scans%}
+                    <tr>
+                        <th>
+                            <div>{{scan.device_manufacturer}} {{scan.device_model}}, Version {{scan.device_version}}</div>
+                            <div>(Nickname: {{scan.device_nickname}})</div> 
+                        </th>
+                        <td>
+                            {% if scan.risk_report.risk_present %}
+                                <ul>
+                                    {% for risk in scan.risk_report.risk_details %}
+                                    <li><span class="inlinerisk"><span>&#9888;&#65039;</span> <b>{{risk.risk}}</b></span>: {{risk.description}}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                            <div>No risks identified.</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {%endfor%}
+                    <tr></tr>
+                </tbody>
+            </table>
+            {% else %}
+            <p>No devices were scanned during this appointment.</p>
+            {% endif %}
+
+            <br/>
+
+            <h3 class="">{{accounts|length}} Accounts Checked for Compromise</h3>
+            {% if accounts|length > 0 %}
+            <table class="summary-table">
+                    <thead>
+                        <tr>
+                            <th>Account</th>
+                            <th>Risks Identified</th>
+                        </tr>
+                    </thead>
+                <tbody>
+                    {% for account in accounts%}
+                    <tr>
+                        <th>
+                            {{account.platform}}{% if account.platform != account.account_nickname %} (Nickname: {{account.account_nickname}}){% endif %}
+                        </th>
+                        <td>
+                            {% if account.risk_report.risk_present %}
+                                <ul>
+                                    {% for risk in account.risk_report.risk_details %}
+                                    <li><span class="inlinerisk"><span>&#9888;&#65039;</span> <b>{{risk.risk}}</b></span>: {{risk.description}}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                            <div>No risks identified.</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {%endfor%}
+                    <tr></tr>
+                </tbody>
+            </table>
+            {% else %}
+            <p>No accounts were checked during this appointment.</p>
+            {% endif %}
+        </div>
+
+        <br/>
+
+        <h3 class="">Comments on the Consultation <span class="tag">&#9999;&#65039; Human-entered</span></h3>
+         <div class="form-responses">
+            <table>
+                <tbody>
+                    <tr>
+                        <th><i>Consultant Comments</i></th>
+                        <td>{{notes.consultant_notes}}</td>
+                    </tr>
+                    <tr>
+                        <th><i>Client Comments</i></th>
+                        <td>{{notes.client_notes}}</td>
+                    </tr>
+                </tbody>
+            </table>
+         </div>
+        
+    </div>
+
+<div class="pagebreak"></div>
+<div class="new-page">
+    <h1>Technology Assessment Questionnaire</h1>
+    <hr />
+    <p>A set of questions used to assess a client's technology risk factors.</p>
+
+
+    <table class="printout_columns">
+        <tbody>
+            <tr valign="top">
+                <th>    
+                    <h3>Risk of Device Compromise <span class="tag">&#9999;&#65039; Human-entered</span></h3>
+                    <div class="form-responses">
+                    <table>
+                        <thead>
+                            <tr>
+                            <th>Question</th>
+                            <th>Response</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for q in formquestions["taq"]["devices"] %}
+                            <tr>
+                                <th>{{formquestions["taq"]["devices"][q]}}</th>
+                                {% if select_text[taq["devices"][q]] %}
+                                <td>{{select_text[taq["devices"][q]]}}</td>
+                                {% else %}
+                                <td>{{taq["devices"][q]}}</td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                </th>
+                <td>
+                    {% for risk in taq["devices"]["risk_report"]["risk_details"] %}
+                    <div class="appsummary">
+                       <span>&#9888;&#65039;</span> 
+                       <span><b>{{risk["risk"]}}</b>: {{risk["description"]}}
+                       </span>
+                    </div>
+                    {% endfor %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+
+    <table class="printout_columns">
+        <tbody>
+            <tr valign="top">
+                <th>
+                    <h3>Risk of Account Compromise <span class="tag">&#9999;&#65039; Human-entered</span></h3>
+                    <div class="form-responses">
+                    <table>
+                        <thead>
+                            <tr>
+                            <th>Question</th>
+                            <th>Response</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for q in formquestions["taq"]["accounts"] %}
+                            <tr>
+                                <th>{{formquestions["taq"]["accounts"][q]}}</th>
+                                {% if taq["accounts"][q] is not string %}
+                                <td>
+                                    {% for item in taq["accounts"][q] %}
+                                    {{select_text[item]}}{% if not loop.last %}, {% endif %}
+                                    {% endfor %}
+                                </td>
+                                {% elif select_text[taq["accounts"][q]] %}
+                                <td>{{select_text[taq["accounts"][q]]}}</td>
+                                {% else %}
+                                <td>{{taq["accounts"][q]}}</td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                            {% for q in formquestions["taq"]["sharing"] %}
+                            <tr>
+                                <th>{{formquestions["taq"]["sharing"][q]}}</th>
+                                {% if taq["sharing"][q] is not string %}
+                                <td>
+                                    {% for item in taq["sharing"][q] %}
+                                    {{select_text[item]}}{% if not loop.last %}, {% endif %}
+                                    {% endfor %}
+                                </td>
+                                {% elif select_text[taq["sharing"][q]] %}
+                                <td>{{select_text[taq["sharing"][q]]}}</td>
+                                {% else %}
+                                <td>{{taq["sharing"][q]}}</td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                </th>
+                <td>
+                    {% for risk in taq["accounts"]["risk_report"]["risk_details"] %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                       <span><b>{{risk["risk"]}}</b>: {{risk["description"]}}</span>
+                    </div>
+                    {% endfor %}
+                    {% for risk in taq["sharing"]["risk_report"]["risk_details"] %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                       <span><b>{{risk["risk"]}}</b>: {{risk["description"]}}</span>
+                    </div>
+                    {% endfor %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    
+    <table class="printout_columns">
+        <tbody>
+            <tr valign="top">
+                <th>
+                    <h3>Risks from Smart Home Devices <span class="tag">&#9999;&#65039; Human-entered</span></h3>
+                    <div class="form-responses">
+                    <table>
+                        <thead>
+                            <tr>
+                            <th>Question</th>
+                            <th>Response</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for q in formquestions["taq"]["smarthome"] %}
+                            <tr>
+                                <th>{{formquestions["taq"]["smarthome"][q]}}</th>
+                                {% if taq["smarthome"][q] is not string %}
+                                <td>
+                                    {% for item in taq["smarthome"][q] %}
+                                    {{select_text[item]}}{% if not loop.last %}, {% endif %}
+                                    {% endfor %}
+                                </td>
+                                {% elif select_text[taq["smarthome"][q]] %}
+                                <td>{{select_text[taq["smarthome"][q]]}}</td>
+                                {% else %}
+                                <td>{{taq["smarthome"][q]}}</td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                </th>
+                <td>
+                    {% for risk in taq["smarthome"]["risk_report"]["risk_details"] %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                       <span><b>{{risk["risk"]}}</b>: {{risk["description"]}}</span>
+                    </div>
+                    {% endfor %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <table class="printout_columns">
+        <tbody>
+            <tr valign="top">
+                <th>
+                    <h3>Risks from Children's Devices <span class="tag">&#9999;&#65039; Human-entered</span></h3>
+                    <div class="form-responses">
+                    <table>
+                        <thead>
+                            <tr>
+                            <th>Question</th>
+                            <th>Response</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for q in formquestions["taq"]["kids"] %}
+                            <tr>
+                                <th>{{formquestions["taq"]["kids"][q]}}</th>
+                                {% if select_text[taq["kids"][q]] %}
+                                <td>{{select_text[taq["kids"][q]]}}</td>
+                                {% else %}
+                                <td>{{taq["kids"][q]}}</td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                </th>
+                <td>
+                    {% for risk in taq["kids"]["risk_report"]["risk_details"] %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                       <span>
+                            <b>{{risk["risk"]}}</b>: {{risk["description"]}}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </td>
+            </tr>
+        </tbody>
+     </table>
+</div>
+
+{% if scans|length == 0 %}
+<div class="pagebreak"></div>
+<div class="new-page">
+    <h1>Device Scans</h1>
+    <hr />
+    <p>No devices were scanned during this appointment.</p>
+</div>
+{% endif %}
+
+{% for scan in scans %}
+<div class="pagebreak"></div>
+<div class="new-page">
+    <h1>Device Scan {{loop.index}} of {{scans|length}}: {{scan.device_nickname}} </h1>
+    <hr />
+    {% if scan.manual %}
+    <p>*Note: This scan was done manually. Automated scan was not possible, so suspicious apps were identified by the consultant and added by hand.*</p>
+    {% endif %}
+
+
+    <table class="printout_columns">
+        <tbody>
+            <tr>
+                <th>
+                <h3>Device Details {% if not scan.manual %}<span class="tag">&#9881; System-captured</span>{% else %}<span class="tag">&#9999;&#65039; Human-entered</span>{%endif%}</h3>
+                <table class="appinfo data-table app-info-table">
+                    <tbody>
+                        <tr>
+                            <th>Device Nickname</th>
+                            <td>{{scan.device_nickname}}</td>
+                        </tr>
+                        <tr>
+                            <th>Device Specifications</th>
+                            <td>
+                                {{scan.device_manufacturer}} {{scan.device_model}}, Version {{scan.device_version}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>{% if scan.device_type == "ios" %}
+                                Unique Device Identifier (UDID) 
+                                {% else %}
+                                Serial Number
+                                {% endif %}
+                            </th>
+                            <td>
+                                {% if not scan.serial_or_udid %}
+                                <i>Not entered.</i>
+                                {% else %}
+                                <p class="serial-or-udid">{{scan.serial_or_udid}}</p>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                </th>
+            </tr>
+            <tr valign="top">
+                <th>
+                    <h3>Jailbreak Assessment {% if not scan.manual %}<span class="tag">&#9881; System-captured</span>{%else%}<span class="tag">&#9999;&#65039; Human-entered</span>{%endif%}</h3>
+                    <table class="appinfo data-table app-info-table">
+                        <tbody>
+                            <tr>
+                                <th>Evidence of Jailbreaking?</th>
+                                <td>{{"Yes" if scan.is_rooted else "No"}}</td>
+                            </tr>
+                            <tr>
+                                <th>Description</th>
+                                <td>{{scan.rooted_reasons}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </th>
+
+                <td>
+                    {% for risk in scan.risk_report.risk_details %}
+                    {% if "app" not in risk.risk %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                        <span><b>{{risk.risk}}</b>: {{risk.description}}</span>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr> 
+                <th>
+                    <h3>Screenshots <span class="tag">&#9881; System-captured</span></h3>
+                    {% if scan.screenshot_files|length > 0 %}
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th>
+                                </th>
+                            </tr>
+                        {% for fname in scan.screenshot_files %}
+                            <tr>
+                                <th>
+                                    <div class="form-screenshot">
+                                        <img height='400px' src="{{url_root}}{{fname}}"/>
+                                    </div>
+                                </th>
+                                <td>
+                                    <br/>
+                                    <div class="screenshot-metadata">Screenshot Metadata:
+                                        <table>
+                                            <tbody>
+                                                {% for k, v in scan.screenshot_info[loop.index0].metadata.items() %}
+                                                <tr>
+                                                    <th>{{k}}</th>
+                                                    <td>{{v}}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        </table>
+                        </th>
+                        </tr>
+                        <tr><th><table><tbody>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p>None taken.</p>
+                    {% endif %}
+                </th>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Summary of Applications Checked</h3>
+    {% if scan.selected_apps|length > 0 %}
+    <ol>
+        {% for app in scan.selected_apps %}
+        <li>
+            <span class="appid">{{app.appId}}</span>
+            {% if app.title != app.appId %}
+             ({{app.title}})
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ol>
+    {% else %}
+    None.
+    {% endif %}
+    <br/>
+
+    {% if scan.selected_apps|length > 0 %}
+        {% for app in scan.selected_apps %}
+    <h2 class="separator">Application Check {{loop.index}}: 
+        {% if app.title != app.appId %}{{app.title}}
+        {% else %}<span class="appid">{{app.appId}}</span>
+        {% endif %}</h3>
+
+    
+    <table class="printout_columns">
+        <tbody>
+            <tr>
+                <th>
+                    <h3>App Information {% if not scan.manual %}<span class="tag">&#9881; System-captured</span>{%else%}<span class="tag">&#9999;&#65039; Human-entered</span>{%endif%}</h3>
+                    <table class="appinfo data-table app-info-table">
+                        <tbody>
+                            <tr>
+                                <th>App ID</th>
+                                <td>
+                                <span class="appid">{{app.appId}}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>App Title</th>
+                                <td>
+                                    {% if app.title != app.appId %} {{app.title}}
+                                    {% else %} <i>None provided.</i>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Date Installed</th>
+                                <td>
+                                    {% if app.install_time %}
+                                    {{app.install_time}}
+                                    {% else %}
+                                    <i>Unknown</i>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>App Description</th>
+                                <td>
+                                    {% if app.description %}
+                                    {{app.description}}
+                                    {% else %}
+                                    <i>None provided.</i>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Automated App Flags</th>
+                                <td>
+                                    {% for flag in app.flags %}
+                                        {% if flag == 'system-app' %}
+                                        <span class="flag">{{flag}}</span>
+                                        {% elif flag == 'spyware' or flag == 'regex-spy' %}
+                                        <span class="flag flag-danger">{{flag}}</span>
+                                        {% elif flag != '' %}
+                                        <span class="flag flag-warning">{{flag}}</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% if app.flags|length == 0 %}
+                                    None.
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </th>
+                <td>
+
+                <td>
+                    {% for risk in app.risk_report.risk_details %}
+                    {% if "spyware" in risk.risk %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                        <span><b>{{risk.risk}}</b>: {{risk.description}}</span>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <h3>Permissions Used {% if not scan.manual %}<span class="tag">&#9881; System-captured</span>{%endif%}</h3>
+                    {% if app.permission_info.permissions | length > 0 %}
+                    <ul class="permissions-used">
+                        {% for p in app.permission_info.permissions %}
+                        <li>{{p[0]}} ({{p[1]}})</li>
+                        {% if loop.index % 5 == 0 %}
+                    </ul>
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    <ul class="permissions-used">
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p>None.</p>
+                    {% endif %}
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    <h3>Installation Questionnaire <span class="tag">&#9999;&#65039; Human-entered</span></h3>
+                    <div class="form-responses">
+                        <table>
+                        <thead>
+                            <tr>
+                            <th>Question</th>
+                            <th>Response</th>
+                            </tr>
+                        </thead>
+                            <tbody>
+                                    <tr>
+                                        <th>{{formquestions["apps"]["install_info"]["knew_installed"]}}</th>
+                                        <td>{{select_text[app.install_info.knew_installed]}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>{{formquestions["apps"]["install_info"]["installed"]}}</th>
+                                        {% if 'system-app' not in app.flags %}
+                                        <td>{{select_text[app.install_info.installed]}}</td>
+                                        {% else %}
+                                        <td><i>System app, not applicable.</i></td>
+                                        {% endif %}
+                                    </tr>
+                                    <tr>
+                                        <th>{{formquestions["apps"]["install_info"]["coerced"]}}</th>
+                                        {% if 'system-app' not in app.flags %}
+                                        <td>{{select_text[app.install_info.coerced]}}</td>
+                                        {% else %}
+                                        <td><i>System app, not applicable.</i></td>
+                                        {% endif %}
+                                    </tr>
+                        </tbody>
+                    </table>
+                    </div>
+                </th>
+                <td>
+                    {% for risk in app.install_info.risk_report.risk_details %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                        <span><b>{{risk.risk}}</b>: {{risk.description}}</span>
+                    </div>
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr><th>
+                    <h3>Data Leakage Questionnaire <span class="tag">&#9999;&#65039; Human-entered</span></h3>
+                    <div class="form-responses">
+                        <table>
+                        <thead>
+                            <tr>
+                            <th>Question</th>
+                            <th>Response</th>
+                            </tr>
+                        </thead>
+                            <tbody>
+                                    <tr>
+                                        <th>{{formquestions["apps"]["permission_info"]["access"]}}</th>
+                                        <td>{{select_text[app.permission_info.access]}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th>{{formquestions["apps"]["permission_info"]["describe"]}}</th>
+                                        <td>{{app.permission_info.describe}}</td>
+                                    </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </th>
+                <td>
+                    {% for risk in app.permission_info.risk_report.risk_details %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                        <span><b>{{risk.risk}}</b>: {{risk.description}}</span>
+                    </div>
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr>
+                <th>
+                <h3>Comments <span class="tag">&#9999;&#65039; Human-entered</span></h3>
+                <div class="form-responses">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th><i>Consultant Comments</i></th>
+                                <td>{{app.notes.consultant_notes}}</td>
+                            </tr>
+                            <tr>
+                                <th><i>Client Comments</i></th>
+                                <td>{{app.notes.client_notes}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                </th>
+            </tr>
+            <tr>
+                <th>
+                <h3>Screenshots {% if not scan.manual %}<span class="tag">&#9881; System-captured</span>{%endif%}</h3>
+                {% if app.screenshot_files|length > 0 %}
+                    <div class="screenshot-container">
+                <table>
+                    <tbody>
+                    {% for fname in app.screenshot_files %}
+                            <tr>
+                                <th>
+                                    <div class="form-screenshot">
+                                        <img height='400px' src="{{url_root}}{{fname}}"/>
+                                    </div>
+                                </th>
+                                <td>
+                                    <br/>
+                                    <div class="screenshot-metadata">Screenshot Metadata:
+                                        <table>
+                                            <tbody>
+                                                {% for k, v in app.screenshot_info[loop.index0].metadata.items() %}
+                                                <tr>
+                                                    <th>{{k}}</th>
+                                                    <td>{{v}}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        </table>
+                        </div>
+                        </th>
+                        </tr>
+                        <tr><th><div class="screenshot-container"><table><tbody>
+                    {% endfor %}
+                    </tbody>
+                    </table>
+                    </div>
+                {% else %}
+                <div>None.</div>
+                {% endif %}
+                </th>
+            </tr>
+        </tbody>
+    </table>
+
+    {% endfor %}
+    {% else %}
+    <div style="page-break-after:always">
+        <p>No apps were investigated during this appointment.</p>
+    </div>
+    {% endif %}
+
+
+</div>
+{% endfor %}
+
+<div class="pagebreak"></div>
+<div class="new-page">
+    <h1>Account Compromise Checks</h1>
+    <hr />
+    <div>
+        {% if accounts|length > 0 %}
+        <p>Summary of accounts investigated:</p>
+        <ol>
+            {% for account in accounts %}
+            <li>{{account.platform}}{% if account.platform != account.account_nickname %} (Nickname: {{account.account_nickname}}){% endif %}</li>
+            {% endfor %}
+        </ol>
+        {% else %}
+        <p>No accounts were investigated during this appointment.</p>
+        {% endif %}
+    </div>
+
+    {% for account in accounts %}
+    <div class="account-check">
+    <h2  class="separator">Account Check {{loop.index}}  of {{accounts|length}}: {{account.platform}}{% if account.platform != account.account_nickname %} (Nickname: {{account.account_nickname}}){% endif %}</h2>
+
+    <table class="printout_columns">
+        <tbody>
+            <tr valign="top">       
+                <th><h3>Login Activity Questionnaire <span class="tag">&#9999;&#65039; Human-entered</span></h3>
+                    <div class="form-responses">
+                        <table>
+                        <thead>
+                            <tr>
+                            <th>Question</th>
+                            <th>Response</th>
+                            </tr>
+                        </thead>
+                            <tbody>
+                                {% for q in formquestions["accounts"]["suspicious_logins"] %}
+                                <tr>
+                                    <th>{{formquestions["accounts"]["suspicious_logins"][q]}}</th>
+                                    {% if select_text[account["suspicious_logins"][q]] %}
+                                    <td>{{select_text[account["suspicious_logins"][q]]}}</td>
+                                    {% else %}
+                                    <td>{{account["suspicious_logins"][q]}}</td>
+                                    {% endif %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </th>
+                <td>
+                    {% for risk in account["suspicious_logins"]["risk_report"]["risk_details"] %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                        <span><b>{{risk["risk"]}}</b>: {{risk["description"]}}</span>
+                    </div>
+                    {% endfor %}
+                </td>
+            </tr>
+            {% if account["suspicious_logins"]["screenshot_files"]|length > 0 %}
+            <tr>
+                <th>
+                    <h4>Screenshots <span class="tag">&#9881; System-captured</span></h4>
+                    <div class="screenshot-container">
+                <table>
+                    <tbody>
+                {% for fname in account["suspicious_logins"]["screenshot_files"] %}
+                            <tr>
+                                <th>
+                                    <div class="form-screenshot">
+                                        <img height='400px' src="{{url_root}}{{fname}}"/>
+                                    </div>
+                                </th>
+                                <td>
+                                    <br/>
+                                    <div class="screenshot-metadata">Screenshot Metadata:
+                                        <table>
+                                            <tbody>
+                                                {% for k, v in account["suspicious_logins"]["screenshot_info"][loop.index0]["metadata"].items() %}
+                                                <tr>
+                                                    <th>{{k}}</th>
+                                                    <td>{{v}}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        </table>
+                        </div>
+                        </th>
+                        </tr>
+                        <tr><th><div class="screenshot-container"><table><tbody>
+                {% endfor %}
+                </tbody>
+                </table>
+                </div></th>
+            </tr>
+            {% endif %}
+
+            <tr>
+              <th><h3>Password Questionnaire <span class="tag">&#9999;&#65039; Human-entered</span></h3>
+                <div class="form-responses">
+                    <table>
+                        <thead>
+                            <tr>
+                            <th>Question</th>
+                            <th>Response</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for q in formquestions["accounts"]["password_check"] %}
+                            <tr>
+                                <th>{{formquestions["accounts"]["password_check"][q]}}</th>
+                                    {% if select_text[account["password_check"][q]] %}
+                                    <td>{{select_text[account["password_check"][q]]}}</td>
+                                    {% else %}
+                                    <td>{{account["password_check"][q]}}</td>
+                                    {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                </th>
+                <td>
+                    {% for risk in account["password_check"]["risk_report"]["risk_details"] %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                        <span><b>{{risk["risk"]}}</b>: {{risk["description"]}}</span>
+                    </div>
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr>
+                  <th><h3>Recovery Settings Questionnaire <span class="tag">&#9999;&#65039; Human-entered</span></h3>
+                <div class="form-responses">
+                    <table>
+                        <thead>
+                            <tr>
+                            <th>Question</th>
+                            <th>Response</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for q in formquestions["accounts"]["recovery_settings"] %}
+                            <tr>
+                                <th>{{formquestions["accounts"]["recovery_settings"][q]}}</th>
+                                    {% if select_text[account["recovery_settings"][q]] %}
+                                    <td>{{select_text[account["recovery_settings"][q]]}}</td>
+                                    {% else %}
+                                    <td>{{account["recovery_settings"][q]}}</td>
+                                    {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>    
+                </div>
+                </th>
+                <td>
+                    {% for risk in account["recovery_settings"]["risk_report"]["risk_details"] %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                        <span><b>{{risk["risk"]}}</b>: {{risk["description"]}}</span>
+                    </div>
+                    {% endfor %}
+                </td>
+            </tr>
+            {% if account["recovery_settings"]["screenshot_files"]|length > 0 %}
+            <tr>
+                <th>
+                    <h4>Screenshots <span class="tag">&#9881; System-captured</span></h4>
+                    <div class="screenshot-container">
+                    
+                <table>
+                    <tbody>
+                {% for fname in account["recovery_settings"]["screenshot_files"] %}
+                   <tr>
+                                <th>
+                                    <div class="form-screenshot">
+                                        <img height='400px' src="{{url_root}}{{fname}}"/>
+                                    </div>
+                                </th>
+                                <td>
+                                    <br/>
+                                    <div class="screenshot-metadata">Screenshot Metadata:
+                                        <table>
+                                            <tbody>
+                                                {% for k, v in account["recovery_settings"]["screenshot_info"][loop.index0]["metadata"].items() %}
+                                                <tr>
+                                                    <th>{{k}}</th>
+                                                    <td>{{v}}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        </table>
+                        </div>
+                        </th>
+                        </tr>
+                        <tr><th><div class="screenshot-container"><table><tbody>
+                {% endfor %}
+                </tbody>
+                </table>
+                </div>
+            </th>
+            </tr>
+            {% endif %}
+            <tr>
+              <th><h3>Two-Factor Authentication Questionnaire <span class="tag">&#9999;&#65039; Human-entered</span></h3>
+                    <div class="form-responses">
+                    <table>
+                        <thead>
+                            <tr>
+                            <th>Question</th>
+                            <th>Response</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for q in formquestions["accounts"]["two_factor_settings"] %}
+                            <tr>
+                                <th>{{formquestions["accounts"]["two_factor_settings"][q]}}</th>
+                                    {% if select_text[account["two_factor_settings"][q]] %}
+                                    <td>{{select_text[account["two_factor_settings"][q]]}}</td>
+                                    {% else %}
+                                    <td>{{account["two_factor_settings"][q]}}</td>
+                                    {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                </th>
+                <td>
+                    {% for risk in account["two_factor_settings"]["risk_report"]["risk_details"] %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                        <span><b>{{risk["risk"]}}</b>: {{risk["description"]}}</span>
+                    </div>
+                    {% endfor %}
+                </td>
+            </tr>
+            {% if account["two_factor_settings"]["screenshot_files"]|length > 0 %}
+            <tr>
+                <th>
+                    <h4>Screenshots <span class="tag">&#9881; System-captured</span></h4>
+                    <div class="screenshot-container">
+                <table>
+                    <tbody>
+                {% for fname in account["two_factor_settings"]["screenshot_files"] %}
+                    <tr>
+                                <th>
+                                    <div class="form-screenshot">
+                                        <img height='400px' src="{{url_root}}{{fname}}"/>
+                                    </div>
+                                </th>
+                                <td>
+                                    <br/>
+                                    <div class="screenshot-metadata">Screenshot Metadata:
+                                        <table>
+                                            <tbody>
+                                                {% for k, v in account["two_factor_settings"]["screenshot_info"][loop.index0]["metadata"].items() %}
+                                                <tr>
+                                                    <th>{{k}}</th>
+                                                    <td>{{v}}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        </table>
+                        </div>
+                        </th>
+                        </tr>
+                        <tr><th><div class="screenshot-container"><table><tbody>
+                {% endfor %}
+                </tbody></table>
+                </div></th>
+            </tr>
+            {% endif %}
+            <tr>
+              <th><h3>Security Questions Questionnaire <span class="tag">&#9999;&#65039; Human-entered</span></h3>
+                    <div class="form-responses">
+                    <table>
+                        <thead>
+                            <tr>
+                            <th>Question</th>
+                            <th>Response</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for q in formquestions["accounts"]["security_questions"] %}
+                            <tr>
+                                <th>{{formquestions["accounts"]["security_questions"][q]}}</th>
+                                    {% if select_text[account["security_questions"][q]] %}
+                                    <td>{{select_text[account["security_questions"][q]]}}</td>
+                                    {% else %}
+                                    <td>{{account["security_questions"][q]}}</td>
+                                    {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    </div>
+                </th>
+                <td>
+                    {% for risk in account["security_questions"]["risk_report"]["risk_details"] %}
+                    <div class="appsummary">
+                        <span>&#9888;&#65039;</span> 
+                        <span><b>{{risk["risk"]}}</b>: {{risk["description"]}}</span>
+                    </div>
+                    {% endfor %}
+                </td>
+            </tr>
+            {% if account["security_questions"]["screenshot_files"]|length > 0 %}
+            <tr>
+                <th>
+                    <h4>Screenshots <span class="tag">&#9881; System-captured</span></h4>
+                    <div class="screenshot-container">
+                
+                <table>
+                    <tbody>
+                        {% for fname in account["security_questions"]["screenshot_files"] %}
+                        <tr>
+                                <th>
+                                    <div class="form-screenshot">
+                                        <img height='400px' src="{{url_root}}{{fname}}"/>
+                                    </div>
+                                </th>
+                                <td>
+                                    <br/>
+                                    <div class="screenshot-metadata">Screenshot Metadata:
+                                        <table>
+                                            <tbody>
+                                                {% for k, v in account["security_questions"]["screenshot_info"][loop.index0]["metadata"].items() %}
+                                                <tr>
+                                                    <th>{{k}}</th>
+                                                    <td>{{v}}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                        </table>
+                        </div>
+                        </th>
+                        </tr>
+                        <tr><th><div class="screenshot-container"><table><tbody>
+                    {% endfor %}
+                    </tbody>
+                    </table>
+                    </div>
+                </th>
+            </tr>
+            {% endif %}
+
+            <tr>
+                <th>
+                    <h3>Comments <span class="tag">&#9999;&#65039; Human-entered</span></h3>
+                    <div class="form-responses">
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <th><i>Consultant Comments</i></th>
+                                    <td>{{account["notes"]["consultant_notes"]}}</td>
+                                </tr>
+                                <tr>
+                                    <th><i>Client Comments</i></th>
+                                    <td>{{account["notes"]["client_notes"]}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </th>
+            </tr>
+        </tbody>
+    </table>     
+</div>
+{% endfor %}
+</div>
+
+
+</body>
+</html>
+

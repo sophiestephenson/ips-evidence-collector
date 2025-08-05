@@ -1,0 +1,244 @@
+{% extends 'bootstrap/base.html' %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% from "_formhelpers.html" import render_text_field %}
+
+<script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+<script src="{{ url_for('static', filename='myjscript.js') }}?3"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fetch/3.6.2/fetch.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+
+
+{% block content %}
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <br>
+            {% for message in get_flashed_messages() %}
+            <div class="alert alert-warning">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                {{ message }}
+            </div>
+            {% endfor %}
+            <br>
+            <div>
+                <h2>Consultation Actions</h2>
+                <div>
+                    <a href="{{ url_for('evidence_taq') }}" class="btn btn-secondary">Edit TAQ</a>
+                    <a href="{{ url_for('evidence_scan_start') }}" class="btn btn-secondary">Scan a Device</a>
+                    <a href="{{ url_for('evidence_account_default') }}" class="btn btn-secondary">Add an Account</a>
+                    <a href="{{ url_for('evidence_screenshots') }}" class="btn btn-secondary">Manage Screenshots</a>
+                </div>
+                <br/>
+                
+                <div>
+                    <a onclick="$('#loading').show();" href="{{ url_for('evidence_printout') }}" class="btn btn-success">Generate Evidentiary Document</a>
+                    
+                    <a onclick="return confirm('Are you sure you want to delete all client data? This cannot be undone.')" href="{{ url_for('evidence_delete_data') }}" class="btn btn-danger">Delete Client Data</a>
+                </div>
+                <div id="loading" style="display:none;"><img src="../../../webstatic/images/waiting.gif" alt="" /></div>
+
+
+
+                <br><br>
+                <hr/>
+                <h2>Consultation Summary</h2>
+                <p><b>Client Name:</b> {{consultdata.setup.client}}</p>
+                <p><b>Consultation Date:</b> {{consultdata.setup.date}}</p>
+                <br/>
+                <details open>
+                    <summary>
+                    <span class="icon">▼</span>
+                    TAQ
+                    {% if consultdata.taq.marked_done %}
+                    <span style="margin-left: 5px">✅</span> 
+                    {% endif %}
+                    </summary>
+                    <div class="content">
+                        Risks identified:
+
+                        {% if consultdata.taq.all_risks|length == 0 %}
+                        None.
+                        {% else %}
+                        <div class="risks">
+                            <ul>
+                            {% for risk in consultdata.taq.all_risks %}
+                            <li>
+                                <div class="riskbox">
+                                <b>{{risk.risk}}</b>: {{risk.description}}
+                                </div>
+                            </li>
+                            {% endfor %}
+                                
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </details>
+                <br/>
+                {% if consultdata.scans %}
+                <details open>
+                    <summary>
+                    <span class="icon">▼</span>
+                        Device Scans ({{consultdata.scans|length}})
+                    </summary>
+                    <div class="content">
+                    <table class="summarytable">
+                        <tbody>
+                        <tr><th>Nickname</th>
+                            <th>Type</th>
+                            <th>Manual?</th>
+                            <th>Apps Checked</th>
+                            <th>Risks</th>
+                        </tr>
+
+                        {% for scan in consultdata.scans %}
+                        <tr>
+                            <td>
+                                <p>{{scan.device_nickname}}</p>
+                            </td>
+                            <td>
+                                <p>{{scan.device_type}}</p>
+                            </td>
+                            <td>
+                                <p>{{scan.manual}}</p>
+                            </td>
+                            <td>
+                                <p>{{scan.selected_apps|length}}/{{scan.all_apps|length}}</p>
+                            </td>
+                            <td>
+                            {% if scan.risk_report.risk_present %}
+                            <ul>
+                                {% for risk in scan.risk_report.risk_details %}
+                                <li>{{risk.risk}}</li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <i>None.</i>
+                            {% endif %}
+                            </td>
+                            {% if scan.manual %}
+                            <td>
+                                <a href="{{ url_for('evidence_scan_manualadd', ser=scan.serial) }}" class="btn btn-default">Edit</a>
+                            </td>
+                            {% else %} 
+                            <td>
+                                <a href="{{ url_for('evidence_scan_select', ser=scan.serial) }}" class="btn btn-default">Select</a>
+                            </td>
+                            {% endif %}
+                            <td>
+                                <a href="{{ url_for('evidence_scan_investigate', ser=scan.serial) }}" class="btn btn-default">Investigate</a>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('evidence_delete_scan', ser=scan.serial) }}" class="btn btn-danger" onclick="return confirm('Are you sure you? This cannot be undone.')">Delete</a>
+                            </td>
+                        </tr> 
+                        {% endfor %}
+                        </tbody>
+                    </table></div>
+                </details>
+                {% else %}
+                <details open>
+                    <summary>
+                    <span class="icon">▼</span>
+                        Device Scans (0)
+                    </summary>
+                    <div class="content">
+                        No scans have been performed yet.
+                    </div>
+                </details>
+                {% endif %}
+
+                <br/>
+                {% if consultdata.accounts %}
+                <details open>
+                    <summary>
+                    <span class="icon">▼</span>
+                    Account Checks ({{consultdata.accounts|length}})
+                    </summary>
+
+                    <div class="content">
+                    <table class="summarytable">
+                        <tbody>
+                        <tr><th>Nickname</th>
+                            <th>Platform</th>
+                            <th>Risks</th>
+                        </tr>
+
+                        {% for account in consultdata.accounts %}
+                        <tr>
+                            <td>
+                                <p>{{account.account_nickname}}</p>
+                            </td>
+                            <td>
+                                <p>{{account.platform}}</p>
+                            </td>
+                            <td>
+                            {% if account.risk_report.risk_present %}
+                            <ul>
+                                {% for risk in account.risk_report.risk_details %}
+                                <li>{{risk.risk}}</li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <i>None.</i>
+                            {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('evidence_account', id=loop.index0) }}" class="btn btn-default">Edit</a>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('evidence_delete_account', id=loop.index0) }}" class="btn btn-danger" onclick="return confirm('Are you sure you? This cannot be undone.')">Delete</a>
+                            </td>
+                        </tr> 
+                        {% endfor %}
+                    </tbody>
+                    </table>
+                    </div>
+                </details>
+                    {% else %}
+                    <details open>
+                        <summary>
+                        <span class="icon">▼</span>
+                            Account Checks (0)
+                        </summary>
+                        <div class="content">
+                            No accounts have been checked yet.
+                        </div>
+                    </details>
+                    {% endif %}
+
+                <br/>
+                <details open>
+                    <summary>
+                        <span class="icon">▼</span>
+                        Overall Consultation Notes
+                    </summary>
+                    <div class="content">
+                        <form action method="post" class="form" role="form">
+                            {{ form.hidden_tag() }}
+                            {{ wtf.form_errors(form) }}
+
+                            <table class="content-notes">
+                                <tbody>
+                                    {{render_text_field(form.consultant_notes)}}
+                                    {{render_text_field(form.client_notes)}}
+                                </tbody>
+                            </table>
+
+                        <div><span class="primarybutton">{{form.submit}}</span></div>
+                        </form>
+                        <br/>
+                        <br/>
+                    </div>
+                </details>
+
+            </div>
+            <br/>
+            <br/>
+        </div>
+    </div>
+</div>
+{% endblock %}
