@@ -40,7 +40,6 @@ from evidence_collection import (
     TAQForm,
     create_printout,
     delete_client_data,
-    get_all_screenshot_files,
     get_scan_by_ser,
     get_scan_data,
     get_ser_from_scan_obj,
@@ -698,10 +697,6 @@ def evidence_printout():
     consult_data.prepare_screenshots()
 
     context = consult_data.to_dict()
-
-    # Change to dict to enable iteration with questions
-    context["taq"] = consult_data.taq.to_dict()
-    context["accounts"] = [acct.to_dict() for acct in consult_data.accounts]
 
     # Need url_root to load screenshots
     context["url_root"] = request.url_root

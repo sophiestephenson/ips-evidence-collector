@@ -107,32 +107,6 @@ class AccountSection(DictInitClass):
     screenshot_label = ""
     attrs = ["account_id"]
 
-    def _get_screenshot_files(self):
-        """
-        Returns a list of screenshot filenames for this aspect of an account.
-        Screenshot files will be under webstatic/images/screenshots/<some device>/account<id>_<attrname>/
-        """
-
-        # check if there are any screenshots at all
-        screenshot_dir = os.path.join("webstatic", "images", "screenshots")
-        screenshot_files = []
-
-        if os.path.exists(screenshot_dir):
-            # all subdirectories are device serials
-            subdirs_full = [f for f in os.scandir(screenshot_dir) if os.path.isdir(f)]
-            for dev_dir in subdirs_full:
-
-                # all subdirectories of the device directory are either apps or accounts
-                subdirs = [f for f in os.scandir(dev_dir)
-                           if f.name == "account{}_{}".format(self.account_id, self.screenshot_label)]
-                for subdir in subdirs:
-                    files = os.listdir(subdir.path)
-                    full_fnames = [os.path.join(subdir, f) for f in files]
-                    full_fnames.sort()
-                    screenshot_files.extend(full_fnames)
-        
-        return screenshot_files
-
     def set_screenshot_files(self, screenshot_files):
         self.screenshot_files = screenshot_files
 
@@ -142,7 +116,6 @@ class AccountSection(DictInitClass):
         '''
         if not self.screenshot_files:
             self.screenshot_files = list()
-        self.screenshot_files = self._get_screenshot_files()
         self.screenshot_info = [ScreenshotInfo(
             fname=fname,
             context="account"
@@ -458,20 +431,6 @@ class AppInfo(Dictable):
         self.device_serial_udid = device_serial_udid
         self.screenshot_files = list()
 
-    def _get_screenshot_files(self):
-        """
-        Returns a list of screenshot filenames for this app.
-        They will be under webstatic/images/screenshots/<device_serial_udid>/<appId>/
-        """
-        screenshot_dir = os.path.join("webstatic", "images", "screenshots", self.device_serial_udid, self.appId)
-        if os.path.exists(screenshot_dir):
-            # get full filepaths
-            files = os.listdir(screenshot_dir)
-            full_fnames = [os.path.join(screenshot_dir, f) for f in files]
-            full_fnames.sort()
-            return full_fnames
-        return list()
-
     def set_screenshot_files(self, screenshot_files):
         self.screenshot_files = screenshot_files
     
@@ -479,7 +438,6 @@ class AppInfo(Dictable):
         '''
         Creates screenshot objects for all screenshot files related to this app.
         '''
-        self.screenshot_files = self._get_screenshot_files()
         self.screenshot_info = [ScreenshotInfo(
             fname=fname,
             context="app",
@@ -814,26 +772,31 @@ class ConsultationData(Dictable):
 
         all_screenshots = get_all_screenshot_files()
 
-        device_root_screenshots = all_screenshots["device_root"]
-        app_screenshots = all_screenshots["apps"]
-        account_screenshots = all_screenshots["account_sections"]
-
         for scan in self.scans:
-            scan.set_screenshot_files(device_root_screenshots.get(scan.serial_or_udid, list()))
-            scan.get_screenshot_info()
+            scan_screenshots = all_screenshots["device_root"].get(scan.serial_or_udid, list())
+            if len(scan_screenshots) > 0:
+                scan.set_screenshot_files(scan_screenshots)
+                scan.get_screenshot_info()
+                pprint([f.fname for f in scan.screenshot_info])
 
             for app in scan.selected_apps:
-                app.set_screenshot_files(app_screenshots.get(app.appId, list()))
-                app.get_screenshot_info()
+                app_screenshots = all_screenshots["apps"].get(app.appId, list())
+                if len(app_screenshots) > 0:
+                    app.set_screenshot_files(app_screenshots)
+                    app.get_screenshot_info()
+                    pprint([f.fname for f in app.screenshot_info])
 
         for account in self.accounts:
-            if str(account.account_id) in list(account_screenshots.keys()):
+            if str(account.account_id) in list(all_screenshots["account_sections"].keys()):
                 for section in [account.recovery_settings,
                                 account.security_questions,
                                 account.suspicious_logins,
                                 account.two_factor_settings]:
-                    section.set_screenshot_files(account_screenshots[str(account.account_id)][section.screenshot_label])
-                    section.get_screenshot_info()
+                    section_screenshots = all_screenshots["account_sections"][str(account.account_id)][section.screenshot_label]
+                    if len(section_screenshots) > 0:
+                        section.set_screenshot_files(section_screenshots)
+                        section.get_screenshot_info()
+                        pprint([f.fname for f in section.screenshot_info])
 
 
 class AccountInvestigation(Dictable):
@@ -924,20 +887,6 @@ class ScanData(Dictable):
         self.screenshot_files = list()
 
         self.generate_risk_report()
-
-    def _get_screenshot_files(self):
-        '''
-        Returns a list of screenshot filenames for this scan (just for rooting).
-        They will be under webstatic/images/screenshots/<device_serial_udid>/rooting/
-        '''
-        screenshot_dir = os.path.join("webstatic", "images", "screenshots", self.serial_or_udid, "rooting")
-        if os.path.exists(screenshot_dir):
-            # get full filepaths
-            files = os.listdir(screenshot_dir)
-            full_fnames = [os.path.join(screenshot_dir, f) for f in files]
-            full_fnames.sort()
-            return full_fnames
-        return list()
 
     def set_screenshot_files(self, screenshot_files):
         self.screenshot_files = screenshot_files
@@ -1875,15 +1824,15 @@ def get_all_screenshot_files():
 
     account_pattern = re.compile(r"account\d+_[a-zA-Z_]+")
 
-    if os.path.exists(SCREENSHOT_DIR):
+    overall_screenshot_dir = os.path.join("webstatic", "images", "screenshots")
+    if os.path.exists(overall_screenshot_dir):
 
         # go into all device dirs and subdirs
-        device_dirs = [f for f in os.scandir(SCREENSHOT_DIR) if os.path.isdir(f)]
+        device_dirs = [f for f in os.scandir(overall_screenshot_dir) if os.path.isdir(f)]
         for device_dir in device_dirs:
             screenshot_dirs = [f for f in os.scandir(device_dir.path) if os.path.isdir(f)]
 
             for screenshot_dir in screenshot_dirs:
-                pprint("Looking at {}".format(screenshot_dir.path))
                 # get all screenshot files from this directory
                 files = os.listdir(screenshot_dir.path)
                 full_fnames = [os.path.join(screenshot_dir, f) for f in files]
@@ -1904,14 +1853,11 @@ def get_all_screenshot_files():
                         section_dict[RecoverySettings().screenshot_label] = list()
                         section_dict[TwoFactorSettings().screenshot_label] = list()
                         section_dict[SecurityQuestions().screenshot_label] = list()
-
                         screenshot_files["account_sections"][account_id_str] = section_dict
 
                     screenshot_files["account_sections"][account_id_str][account_section].extend(full_fnames)
 
                 else:
                     screenshot_files["apps"][screenshot_dir.name] = full_fnames
-
-    pprint(screenshot_files)
 
     return screenshot_files
