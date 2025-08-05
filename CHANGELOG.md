@@ -27,12 +27,3 @@ Now use `./sherloc` to create a virtual environment, install requirements if nee
 
 ### Fixed
 ### Security
-
-## [v0.1-alpha] - October 4th, 2018
-
-### Added
-### Changed
-### Deprecated
-### Removed
-### Fixed
-### Security
