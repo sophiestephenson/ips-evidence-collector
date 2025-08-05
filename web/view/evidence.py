@@ -1,4 +1,5 @@
 import os
+import time
 import traceback
 from datetime import datetime
 from pprint import pprint
@@ -39,6 +40,7 @@ from evidence_collection import (
     TAQForm,
     create_printout,
     delete_client_data,
+    get_all_screenshot_files,
     get_scan_by_ser,
     get_scan_data,
     get_ser_from_scan_obj,
@@ -266,7 +268,7 @@ def evidence_scan_start(device_type, device_nickname, force_rescan):
                                         all_apps=all_apps)
 
                 current_scan.id = len(all_scan_data)
-                
+
                 # Add the scan to the list of all scans,
                 # replacing any previous scan with the same serial number
                 # or adding a new scan if it doesn't exist
@@ -391,7 +393,7 @@ def evidence_scan_manualadd(ser):
     else:
         current_scan.manual = True
 
-    manual_add_apps = [{"app_name": app.title, "spyware": "spyware" in app.flags} 
+    manual_add_apps = [{"app_name": app.title, "spyware": "spyware" in app.flags}
                        for app in current_scan.selected_apps]
 
     form = ManualAddPageForm(apps = manual_add_apps,
@@ -563,23 +565,23 @@ def evidence_account(id):
     if len(all_account_data) > id:
         current_account = all_account_data[id]
 
-    form = AccountCompromiseForm()
-
     # This is so that we can take screenshots if needed
-    ios_scan_obj = IosScan()
-    android_scan_obj = AndroidScan()
     ios_ser = None
     android_ser = None
 
     try:
+        ios_scan_obj = IosScan()
         ios_ser = get_ser_from_scan_obj(ios_scan_obj)
     except:  # noqa
         pass
 
     try:
+        android_scan_obj = AndroidScan()
         android_ser = get_ser_from_scan_obj(android_scan_obj)
     except:  # noqa
         pass
+
+    form = AccountCompromiseForm()
 
     if request.method == 'GET':
         form.process(data=current_account.to_dict())
@@ -598,9 +600,6 @@ def evidence_account(id):
 
     # Submit the form if it's a POST
     if request.method == 'POST':
-        pprint("FORM DATA START")
-        pprint(form.data)
-        pprint("FORM DATA END")
         if form.is_submitted() and form.validate():
 
             # save data in class
@@ -623,35 +622,36 @@ def evidence_account(id):
 @app.route("/evidence/screenshots", methods=['GET', 'POST'])
 def evidence_screenshots():
 
-    # compile all screenshot info
-    rooted_screenshot_info = []
-    app_screenshot_info = []
-    scans = load_object_from_json(ConsultDataTypes.SCANS.value)
-    for scan in scans:
-        rooted_screenshot_info.extend(scan.get_screenshot_info())
+    pprint("Gathering consult data...")
+    consult_data = ConsultationData(
+        accounts=load_json_data(ConsultDataTypes.ACCOUNTS.value),
+        scans=load_json_data(ConsultDataTypes.SCANS.value),
+        screenshot_dir = config.SCREENSHOT_LOCATION,
+    )
 
-        for a in scan.all_apps:
-            app_screenshot_info.extend(a.get_screenshot_info())
+    pprint("Gathering screenshots...")
+    consult_data.prepare_screenshots(get_metadata=False)
 
-    account_screenshot_info = []
-    accounts = load_object_from_json(ConsultDataTypes.ACCOUNTS.value)
-    for account in accounts:
+    pprint("Reformatting screenshot info...")
+    root_screenshots = list()
+    app_screenshots = list()
+    acct_screenshots = list()
+
+    for scan in consult_data.scans:
+        root_screenshots.extend(scan.screenshot_info)
+        for a in scan.selected_apps:
+            app_screenshots.extend(a.screenshot_info)
+
+    for account in consult_data.accounts:
         for section in [account.suspicious_logins,
                         account.recovery_settings,
                         account.two_factor_settings,
                         account.security_questions]:
-            account_screenshot_info.extend(section.get_screenshot_info())
+            acct_screenshots.extend(section.screenshot_info)
 
-    pprint("Rooted screenshots:")
-    pprint(rooted_screenshot_info)
-    pprint("App screenshots:")
-    pprint(app_screenshot_info)
-    pprint("Account screenshots:")
-    pprint(account_screenshot_info)
-
-    form = MultScreenshotEditForm(root_screenshots=rooted_screenshot_info,
-                                  app_screenshots=app_screenshot_info,
-                                  acct_screenshots=account_screenshot_info)
+    form = MultScreenshotEditForm(root_screenshots=root_screenshots,
+                                  app_screenshots=app_screenshots,
+                                  acct_screenshots=acct_screenshots)
 
     url_root = request.url_root
 
@@ -660,9 +660,9 @@ def evidence_screenshots():
         context = dict(
             task = "evidence-screenshots",
             title=config.TITLE,
-            rooted_screenshot_info = rooted_screenshot_info,
-            app_screenshot_info = app_screenshot_info,
-            account_screenshot_info = account_screenshot_info,
+            rooted_screenshot_info = root_screenshots,
+            app_screenshot_info = app_screenshots,
+            account_screenshot_info = acct_screenshots,
             form = form,
             url_root = url_root
         )
@@ -681,6 +681,9 @@ def evidence_screenshots():
 @app.route("/evidence/printout", methods=["GET"])
 def evidence_printout():
 
+    start_time = time.perf_counter()
+
+    pprint("Gathering consult data...")
     consult_data = ConsultationData(
         setup=load_json_data(ConsultDataTypes.SETUP.value),
         taq=load_json_data(ConsultDataTypes.TAQ.value),
@@ -690,14 +693,13 @@ def evidence_printout():
         notes=load_json_data(ConsultDataTypes.NOTES.value)
     )
 
+    pprint("Preparing reports...")
     consult_data.prepare_reports()
+
+    pprint("Gathering screenshots...")
     consult_data.prepare_screenshots()
 
     context = consult_data.to_dict()
-
-    # Change to dict to enable iteration with questions
-    context["taq"] = consult_data.taq.to_dict()
-    context["accounts"] = [acct.to_dict() for acct in consult_data.accounts]
 
     # Need url_root to load screenshots
     context["url_root"] = request.url_root
@@ -715,8 +717,15 @@ def evidence_printout():
                 context["select_text"][abbrv] = full_text
 
     # create the printout document
+
+    pprint("Creating the printout...")
     filename = create_printout(context)
     workingdir = os.path.abspath(os.getcwd())
+
+    end_time = time.perf_counter()
+    elapsed_time = end_time - start_time
+    print(f"Function executed in {elapsed_time:.6f} seconds")
+
     return send_from_directory(workingdir, filename)
 
 @app.route("/evidence/delete-data", methods=["GET"])
