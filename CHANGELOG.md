@@ -12,14 +12,15 @@ Removed for now removed features.
 Fixed for any bug fixes.
 Security in case of vulnerabilities.
 
-## [v1.0.2] - August 5, 2025
+## [v1.1.0] - August 5, 2025
 
 ### Added     
 
 ### Changed
-- Moved all Sherloc code into the `sherloc` folder.
+- Major restructuring: Moved all Sherloc code into the `sherloc` folder.
 - `isdi` file now renamed `main.py`.
-- Use `./sherloc` to create a virtual environment, install requirements if needed, and run Sherloc (via `main.py`).
+- Created `./sherloc.sh` run script, which creates and activates a virtual environment, installs requirements if needed, and runs Sherloc in sudo (via `main.py`).
+- Updated `README`.
 - Resumed using this changelog.
 
 ### Deprecated
