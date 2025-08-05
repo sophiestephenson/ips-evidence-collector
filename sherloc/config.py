@@ -11,8 +11,6 @@ from sys import platform
 
 SHERLOC_VERSION = "1.0.2"
 
-SCREENSHOT_LOCATION = "/Users/Soph/research/evidence-project/ips-evidence-collector/screenshots/"
-
 def setup_logger():
     """
     Set up a logger with a rotating file handler.

@@ -4,16 +4,6 @@ import traceback
 from datetime import datetime
 from pprint import pprint
 
-from flask import (
-    flash,
-    redirect,
-    render_template,
-    request,
-    send_from_directory,
-    url_for,
-)
-from flask_bootstrap import Bootstrap
-
 import config
 from evidence_collection import (
     DEVICE_TYPE_CHOICES,
@@ -51,6 +41,15 @@ from evidence_collection import (
     save_data_as_json,
     update_scan_by_ser,
 )
+from flask import (
+    flash,
+    redirect,
+    render_template,
+    request,
+    send_from_directory,
+    url_for,
+)
+from flask_bootstrap import Bootstrap
 from phone_scanner import AndroidScan, IosScan
 from web import app
 
@@ -116,7 +115,7 @@ def evidence_home():
         taq=load_json_data(ConsultDataTypes.TAQ.value),
         accounts=load_json_data(ConsultDataTypes.ACCOUNTS.value),
         scans=load_json_data(ConsultDataTypes.SCANS.value),
-        screenshot_dir = config.SCREENSHOT_LOCATION,
+        screenshot_dir = config.SCREENSHOT_DIR,
         notes = load_json_data(ConsultDataTypes.NOTES.value)
     )
 
@@ -626,7 +625,7 @@ def evidence_screenshots():
     consult_data = ConsultationData(
         accounts=load_json_data(ConsultDataTypes.ACCOUNTS.value),
         scans=load_json_data(ConsultDataTypes.SCANS.value),
-        screenshot_dir = config.SCREENSHOT_LOCATION,
+        screenshot_dir = config.SCREENSHOT_DIR,
     )
 
     pprint("Gathering screenshots...")
@@ -689,7 +688,7 @@ def evidence_printout():
         taq=load_json_data(ConsultDataTypes.TAQ.value),
         accounts=load_json_data(ConsultDataTypes.ACCOUNTS.value),
         scans=load_json_data(ConsultDataTypes.SCANS.value),
-        screenshot_dir = config.SCREENSHOT_LOCATION,
+        screenshot_dir = config.SCREENSHOT_DIR,
         notes=load_json_data(ConsultDataTypes.NOTES.value)
     )
 
