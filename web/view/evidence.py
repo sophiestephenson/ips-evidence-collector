@@ -267,7 +267,7 @@ def evidence_scan_start(device_type, device_nickname, force_rescan):
                                         all_apps=all_apps)
 
                 current_scan.id = len(all_scan_data)
-                
+
                 # Add the scan to the list of all scans,
                 # replacing any previous scan with the same serial number
                 # or adding a new scan if it doesn't exist
@@ -392,7 +392,7 @@ def evidence_scan_manualadd(ser):
     else:
         current_scan.manual = True
 
-    manual_add_apps = [{"app_name": app.title, "spyware": "spyware" in app.flags} 
+    manual_add_apps = [{"app_name": app.title, "spyware": "spyware" in app.flags}
                        for app in current_scan.selected_apps]
 
     form = ManualAddPageForm(apps = manual_add_apps,
@@ -564,23 +564,23 @@ def evidence_account(id):
     if len(all_account_data) > id:
         current_account = all_account_data[id]
 
-    form = AccountCompromiseForm()
-
     # This is so that we can take screenshots if needed
-    ios_scan_obj = IosScan()
-    android_scan_obj = AndroidScan()
     ios_ser = None
     android_ser = None
 
     try:
+        ios_scan_obj = IosScan()
         ios_ser = get_ser_from_scan_obj(ios_scan_obj)
     except:  # noqa
         pass
 
     try:
+        android_scan_obj = AndroidScan()
         android_ser = get_ser_from_scan_obj(android_scan_obj)
     except:  # noqa
         pass
+
+    form = AccountCompromiseForm()
 
     if request.method == 'GET':
         form.process(data=current_account.to_dict())
@@ -599,9 +599,6 @@ def evidence_account(id):
 
     # Submit the form if it's a POST
     if request.method == 'POST':
-        pprint("FORM DATA START")
-        pprint(form.data)
-        pprint("FORM DATA END")
         if form.is_submitted() and form.validate():
 
             # save data in class
@@ -643,13 +640,6 @@ def evidence_screenshots():
                         account.security_questions]:
             account_screenshot_info.extend(section.get_screenshot_info())
 
-    pprint("Rooted screenshots:")
-    pprint(rooted_screenshot_info)
-    pprint("App screenshots:")
-    pprint(app_screenshot_info)
-    pprint("Account screenshots:")
-    pprint(account_screenshot_info)
-
     form = MultScreenshotEditForm(root_screenshots=rooted_screenshot_info,
                                   app_screenshots=app_screenshot_info,
                                   acct_screenshots=account_screenshot_info)
@@ -684,6 +674,7 @@ def evidence_printout():
 
     start_time = time.perf_counter()
 
+    pprint("Gathering consult data...")
     consult_data = ConsultationData(
         setup=load_json_data(ConsultDataTypes.SETUP.value),
         taq=load_json_data(ConsultDataTypes.TAQ.value),
@@ -693,7 +684,10 @@ def evidence_printout():
         notes=load_json_data(ConsultDataTypes.NOTES.value)
     )
 
+    pprint("Preparing reports...")
     consult_data.prepare_reports()
+
+    pprint("Gathering screenshots...")
     consult_data.prepare_screenshots()
 
     context = consult_data.to_dict()
@@ -714,6 +708,8 @@ def evidence_printout():
                 context["select_text"][abbrv] = full_text
 
     # create the printout document
+
+    pprint("Creating the printout...")
     filename = create_printout(context)
     workingdir = os.path.abspath(os.getcwd())
 

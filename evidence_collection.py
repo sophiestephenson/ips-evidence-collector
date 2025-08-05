@@ -15,7 +15,6 @@ import re
 import shutil
 import subprocess
 from enum import Enum
-from pprint import pprint
 
 import jinja2
 import pdfkit
@@ -296,7 +295,7 @@ class SecurityQuestions(AccountSection):
                 new_risk = Risk(
                     risk = "Guessable security questions",
                     description = "The client believes the person of concern knows the answers to security questions, which could allow them an easy way to log into the account."
-                    
+
                 )
                 risks.append(new_risk)
 
@@ -433,7 +432,7 @@ class AppInfo(Dictable):
 
     def set_screenshot_files(self, screenshot_files):
         self.screenshot_files = screenshot_files
-    
+
     def get_screenshot_info(self):
         '''
         Creates screenshot objects for all screenshot files related to this app.
@@ -486,19 +485,6 @@ class AppInfo(Dictable):
         self.risk_report = RiskReport(risk_details=risks)
 
         return self.risk_report
-
-class CheckApps(Dictable):
-    def __init__(self,
-                 spyware=list(),
-                 dualuse=list(),
-                 other=list(),
-                 **kwargs):
-        pprint(spyware)
-        pprint(dualuse)
-        pprint(other)
-        self.spyware = [AppInfo(app) for app in spyware]
-        self.dualuse = [AppInfo(app) for app in dualuse]
-        self.other = [AppInfo(app) for app in other]
 
 class Risk(Dictable):
     def __init__(self,
@@ -628,7 +614,7 @@ class TAQSmarthome(DictInitClass):
                 description="With physical access to smart home devices, someone could (1) learn private information, for example by querying a smart speaker, or (2) reconfigure the devices to share information or allow remote control."
             )
         return None
-    
+
     def _get_online_access_risk(self):
         if self.smart_home_acct_sharing == 'yes' or self.smart_home_acct_linking == 'yes':
             return Risk(
@@ -777,14 +763,12 @@ class ConsultationData(Dictable):
             if len(scan_screenshots) > 0:
                 scan.set_screenshot_files(scan_screenshots)
                 scan.get_screenshot_info()
-                pprint([f.fname for f in scan.screenshot_info])
 
             for app in scan.selected_apps:
                 app_screenshots = all_screenshots["apps"].get(app.appId, list())
                 if len(app_screenshots) > 0:
                     app.set_screenshot_files(app_screenshots)
                     app.get_screenshot_info()
-                    pprint([f.fname for f in app.screenshot_info])
 
         for account in self.accounts:
             if str(account.account_id) in list(all_screenshots["account_sections"].keys()):
@@ -796,7 +780,6 @@ class ConsultationData(Dictable):
                     if len(section_screenshots) > 0:
                         section.set_screenshot_files(section_screenshots)
                         section.get_screenshot_info()
-                        pprint([f.fname for f in section.screenshot_info])
 
 
 class AccountInvestigation(Dictable):
@@ -891,7 +874,7 @@ class ScanData(Dictable):
     def set_screenshot_files(self, screenshot_files):
         self.screenshot_files = screenshot_files
 
-    def get_screenshot_info(self):
+    def get_screenshot_info(self, screenshot_files=list()):
         '''
         Creates screenshot objects for all screenshot files related to this device scan.
         '''
@@ -1361,7 +1344,7 @@ class TAQDeviceCompForm(FlaskForm):
     live_together = RadioField(
         TAQDevices().questions['live_together'], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
     purchase_device = RadioField(
-        TAQDevices().questions['purchase_device'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)           
+        TAQDevices().questions['purchase_device'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
     purchase_device_which = TextAreaField(TAQDevices().questions['purchase_device_which'])
     physical_access = RadioField(
         TAQDevices().questions['physical_access'], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
@@ -1556,7 +1539,6 @@ def get_app_details(device, ser, appid):
 
 def get_scan_obj(device, nickname):
     """Create the scan object."""
-    print(f"DEVICE TYPE IS: {device}")
     sc = get_device(device)
     if not sc:
         raise Exception("Please choose one device to scan.")
@@ -1594,8 +1576,6 @@ def get_scan_data(device, device_owner):
         device_primary_user=config.DEVICE_PRIMARY_USER,   # TODO: Why is this sent
         apps={},
     )
-
-    print(f"DEVICE TYPE IS: {device}")
 
     try:
         sc = get_scan_obj(device, device_owner)
@@ -1663,7 +1643,6 @@ def get_scan_data(device, device_owner):
         #    s = catch_err(run_command(cmd), msg="Delete pii failed", cmd=cmd)
         #    print('iOS PII deleted.')
 
-        print("Creating appinfo...")
         create_mult_appinfo([(scanid, appid, json.dumps(
             info['flags']), '', '<new>') for appid, info in apps.items()])
 
@@ -1683,9 +1662,6 @@ def get_scan_data(device, device_owner):
             # scan.
             error=config.error()
         ))
-
-        # new stuff from Sophie
-        pprint(apps)
 
         suspicious_apps = []
         other_apps = []
@@ -1713,8 +1689,6 @@ def get_scan_data(device, device_owner):
         detailed_suspicious_apps = get_multiple_app_details(device, ser, suspicious_apps)
         detailed_other_apps = get_multiple_app_details(device, ser, other_apps)
 
-        pprint(detailed_suspicious_apps)
-
         return scan_d, detailed_suspicious_apps, detailed_other_apps
 
     except Exception as e:
@@ -1734,8 +1708,6 @@ def save_data_as_json(data, datatype: ConsultDataTypes):
     with lock:
         with open(fname, 'w') as outfile:
             outfile.write(json_object)
-
-    print("DATA SAVED:", type(data))
 
     return
 
