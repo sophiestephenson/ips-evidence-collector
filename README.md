@@ -57,32 +57,32 @@ it won't work straightaway. You have to ensure having the *same* version of adb
 start the adb process first in Windows, then in WSL2 (with for example `adb
 devices`).
 
-## Running Sherloc
+# Running Sherloc
 
 After Sherloc is installed, run the following command in the terminal (in
 the top-level directory of this repository):
 
 ```bash
 cd sherloc
-./sherloc [--nosudo]
+./sherloc.sh
 ```
 
-Sherloc is run in sudo by default, which is required to take screenshots on iPhones using `pymobiledevice3`. If you do not want to run Sherloc with sudo, please use the `--nosudo` flag when running `./sherloc`.
+There is an optional `--install` flag that installs requirements from `requirements.txt`. However, even without this flag, the script will notice if sherloc fails and install requirements anyway.
+
+Sherloc is run in sudo by default, which is required to take screenshots on iPhones using `pymobiledevice3`. If you do not want to run Sherloc with sudo, please use the `--nosudo` flag when running `./sherloc`. 
 
 Sherloc should open `http://localhost:6200` in the browser.
+
+## Requirements for taking screenshots with iOS devices
+
+iOS devices have two requirements if you want to take screenshots. 
+
+1. Developer mode must be on. Please see this article for how to turn on developer mode using XCode: https://developer.apple.com/documentation/xcode/enabling-developer-mode-on-a-device.
+2. Sherloc must be run in `sudo`, which is the default when using `./sherloc.sh`.
 
 ## Debugging tips 
 If you encounter errors, please file a [GitHub issue](../../issues/) with the server error output. 
 Pull requests are welcome. 
-
-#### Android tips 
-In the terminal of the computer, run `adb devices` to see if
-the device is connected properly.
-
-#### iOS tips 
-In the terminal of the computer (in the base directory of this repository), 
-run `./static_data/libimobiledevice-darwin/idevice_id -l` to see if
-the device is connected properly (replace `darwin` with `linux` if your system is Linux.)
 
 #### Cast iOS Screens or Mirror Android Screens 
 It is possible to view your
