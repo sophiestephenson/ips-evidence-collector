@@ -15,10 +15,12 @@ Security in case of vulnerabilities.
 ## [v1.0.2] - August 5, 2025
 
 ### Added     
-Started using this changelog again.
 
 ### Changed
-Now use `./sherloc` to create a virtual environment, install requirements if needed, and run Sherloc.
+- Moved all Sherloc code into the `sherloc` folder.
+- `isdi` file now renamed `main.py`.
+- Use `./sherloc` to create a virtual environment, install requirements if needed, and run Sherloc (via `main.py`).
+- Resumed using this changelog.
 
 ### Deprecated
 ### Removed

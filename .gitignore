@@ -93,6 +93,7 @@ virtualenv/
 .venv
 venv/
 ENV/
+sherloc-venv/
 
 # Spyder project settings
 .spyderproject
@@ -123,11 +124,11 @@ MobileDevice/
 
 
 ## Sensitive folder don't add to Git
-phone_dumps/
-static_data/android_apps_crawl.csv.gz
+sherloc/phone_dumps/
+sherloc/static_data/android_apps_crawl.csv.gz
 # static_data/app-flags.csv
 # static_data/app-info.db
-static_data/com.symantec.mobilesecurity.apk
+sherloc/static_data/com.symantec.mobilesecurity.apk
 # static_data/ios_apps_crawl.csv.gz
 # static_data/offstore_apks.csv
 # static_data/spyware.csv
@@ -138,28 +139,23 @@ error.txt
 ## To be removed
 toremove/
 
-reports/*
-screenshots/*
-reports/*.csv
-apps/
-data/
+sherloc/apps/
+sherloc/data/
 *.db
-static_data/app-info.db.gz
-static_data/all_android_apps_5k_*.csv
-webstatic/images/tmp.png
-scripts/ios_deps/*
+sherloc/static_data/app-info.db.gz
+sherloc/static_data/all_android_apps_5k_*.csv
+sherloc/scripts/ios_deps/*
 tests/serial/*
 tests/*/
-static_data/kevins_approach.csv
-static_data/app-flags.with-sources.csv
+sherloc/static_data/kevins_approach.csv
+sherloc/static_data/app-flags.with-sources.csv
 notes_rahul/
 __MACOSX
-webstatic/images/screenshots/*
+sherloc/webstatic/images/screenshots/*
 
 *~test
 *.apk
-dumps/android_scan.logs
-phone_dumps/dumps/android_scan.logs
+sherloc/dumps/android_scan.logs
+sherloc/phone_dumps/dumps/android_scan.logs
 
-tmp-consult-data/*
-context.pkl
+sherloc/tmp-consult-data/*

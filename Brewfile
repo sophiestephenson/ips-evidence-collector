@@ -1,6 +1,0 @@
-# Miscellaneous System Dependencies
-cask "android-platform-tools"
-
-brew "expect"
-
-brew "ideviceinstaller"
