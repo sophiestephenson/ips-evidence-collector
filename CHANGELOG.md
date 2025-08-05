@@ -12,20 +12,20 @@ Removed for now removed features.
 Fixed for any bug fixes.
 Security in case of vulnerabilities.
 
-## [Unreleased]
+## [v1.0.2] - August 5, 2025
 
-### Added
+### Added     
+
 ### Changed
+- Moved all Sherloc code into the `sherloc` folder.
+- `isdi` file now renamed `main.py`.
+- Use `./sherloc` to create a virtual environment, install requirements if needed, and run Sherloc (via `main.py`).
+- Resumed using this changelog.
+
 ### Deprecated
 ### Removed
-### Fixed
-### Security
+- Unused files and folders, mostly .pngs in `webstatic/images`.
+- Removed `libimobiledevice` from `Brewfile`. 
 
-## [v0.1-alpha] - October 4th, 2018
-
-### Added
-### Changed
-### Deprecated
-### Removed
 ### Fixed
 ### Security
