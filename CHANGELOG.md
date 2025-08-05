@@ -12,12 +12,19 @@ Removed for now removed features.
 Fixed for any bug fixes.
 Security in case of vulnerabilities.
 
-## [Unreleased]
+## [v1.0.2] - August 5, 2025
 
-### Added
+### Added     
+Started using this changelog again.
+
 ### Changed
+Now use `./sherloc` to create a virtual environment, install requirements if needed, and run Sherloc.
+
 ### Deprecated
 ### Removed
+- Unused files and folders, mostly .pngs in `webstatic/images`.
+- Removed `libimobiledevice` from `Brewfile`. 
+
 ### Fixed
 ### Security
 
