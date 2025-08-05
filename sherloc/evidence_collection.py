@@ -15,11 +15,18 @@ import re
 import shutil
 import subprocess
 from enum import Enum
+from pathlib import Path
 
+import config
 import jinja2
 import pdfkit
+from config import DUMP_DIR, SCREENSHOT_DIR, SHERLOC_VERSION
 from filelock import FileLock
 from flask_wtf import FlaskForm
+from phone_scanner.db import create_mult_appinfo, create_scan
+from phone_scanner.privacy_scan_android import take_screenshot
+from web.view.index import get_device
+from web.view.scan import first_element_or_none
 from wtforms import (
     BooleanField,
     FieldList,
@@ -32,13 +39,6 @@ from wtforms import (
     TextAreaField,
 )
 from wtforms.validators import InputRequired
-
-import config
-from config import DUMP_DIR, SCREENSHOT_DIR, SHERLOC_VERSION
-from phone_scanner.db import create_mult_appinfo, create_scan
-from phone_scanner.privacy_scan_android import take_screenshot
-from web.view.index import get_device
-from web.view.scan import first_element_or_none
 
 TMP_CONSULT_DATA_DIR = "tmp-consult-data"
 
@@ -84,6 +84,8 @@ class Pages(Enum):
 # Helps create JSON encoding from nested classes
 class EvidenceDataEncoder(json.JSONEncoder):
     def default(self, o):
+        if isinstance(o, Path):
+            return str(o)
         return o.__dict__
 
 class Dictable:
