@@ -41,7 +41,7 @@ On macOS you can quickly install project dependencies with Homebrew by running `
 You can also fulfill the requirements by doing:
 ```bash
 brew install --cask android-platform-tools
-brew install expect libimobiledevice ideviceinstaller
+brew install expect ideviceinstaller exiftool
 ```
 
 #### Debian family
