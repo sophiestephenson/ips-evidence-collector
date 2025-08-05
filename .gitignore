@@ -1,4 +1,4 @@
-logs/app.log.1
+app.log
 notes/
 sherloc/static_data/pii.key
 sherloc/static_data/flask.secret
@@ -140,7 +140,7 @@ error.txt
 toremove/
 
 sherloc/apps/
-sherloc/data/
+sherloc/data/*
 *.db
 sherloc/static_data/app-info.db.gz
 sherloc/static_data/all_android_apps_5k_*.csv
