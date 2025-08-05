@@ -34,7 +34,7 @@ from wtforms import (
 from wtforms.validators import InputRequired
 
 import config
-from config import DUMP_DIR, SCREENSHOT_DIR
+from config import DUMP_DIR, SCREENSHOT_DIR, SHERLOC_VERSION
 from phone_scanner.db import create_mult_appinfo, create_scan
 from phone_scanner.privacy_scan_android import take_screenshot
 from web.view.index import get_device
@@ -1442,7 +1442,7 @@ def create_printout(context):
         'margin-left': '10mm',
         'margin-right': '10mm',
         'footer-spacing': '5',
-        'footer-center': '© Madison Tech Clinic • https://techclinic.cs.wisc.edu • Page [page] of [toPage]',
+        'footer-center': 'Created by Madison Tech Clinic using Sherloc {} • Page [page] of [toPage]'.format(SHERLOC_VERSION),
         'footer-font-name': 'Georgia',
         'footer-font-size': '8',
     }

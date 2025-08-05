@@ -704,6 +704,9 @@ def evidence_printout():
     # Need url_root to load screenshots
     context["url_root"] = request.url_root
 
+    # Need Sherloc version to print on the cover
+    context["sherloc_version"] = config.SHERLOC_VERSION
+
     # Enable quick access of the text that maps to the saved Select responses
     context["select_text"] = dict()
     for question_tups in [YES_NO_UNSURE_CHOICES,
