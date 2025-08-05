@@ -106,18 +106,22 @@ class AccountSection(DictInitClass):
     screenshot_label = ""
     attrs = ["account_id"]
 
+    def __init__(self, datadict=dict()):
+        super(AccountSection, self).__init__(datadict=datadict)
+        self.screenshot_files = list()
+        self.screenshot_info = list()
+
     def set_screenshot_files(self, screenshot_files):
         self.screenshot_files = screenshot_files
 
-    def get_screenshot_info(self):
+    def create_screenshot_info(self, get_metadata=True):
         '''
         Creates screenshot objects for all screenshot files related to this account section.
         '''
-        if not self.screenshot_files:
-            self.screenshot_files = list()
         self.screenshot_info = [ScreenshotInfo(
             fname=fname,
-            context="account"
+            context="account",
+            get_metadata=get_metadata
         ) for fname in self.screenshot_files]
 
         return self.screenshot_info
@@ -429,11 +433,12 @@ class AppInfo(Dictable):
 
         self.device_serial_udid = device_serial_udid
         self.screenshot_files = list()
+        self.screenshot_info = list()
 
     def set_screenshot_files(self, screenshot_files):
         self.screenshot_files = screenshot_files
 
-    def get_screenshot_info(self):
+    def create_screenshot_info(self, get_metadata=True):
         '''
         Creates screenshot objects for all screenshot files related to this app.
         '''
@@ -442,7 +447,8 @@ class AppInfo(Dictable):
             context="app",
             app_id=self.appId,
             app_name=self.app_name,
-            device_serial=self.device_serial_udid
+            device_serial=self.device_serial_udid,
+            get_metadata=get_metadata
         ) for fname in self.screenshot_files]
 
         return self.screenshot_info
@@ -750,7 +756,7 @@ class ConsultationData(Dictable):
         for account in self.accounts:
             account.generate_risk_report()
 
-    def prepare_screenshots(self):
+    def prepare_screenshots(self, get_metadata=True):
         """
         Get all screenshot information about consultation data.
         Need to do this for scans, account sections, and apps.
@@ -760,15 +766,13 @@ class ConsultationData(Dictable):
 
         for scan in self.scans:
             scan_screenshots = all_screenshots["device_root"].get(scan.serial_or_udid, list())
-            if len(scan_screenshots) > 0:
-                scan.set_screenshot_files(scan_screenshots)
-                scan.get_screenshot_info()
+            scan.set_screenshot_files(scan_screenshots)
+            scan.create_screenshot_info(get_metadata=get_metadata)
 
             for app in scan.selected_apps:
                 app_screenshots = all_screenshots["apps"].get(app.appId, list())
-                if len(app_screenshots) > 0:
-                    app.set_screenshot_files(app_screenshots)
-                    app.get_screenshot_info()
+                app.set_screenshot_files(app_screenshots)
+                app.create_screenshot_info(get_metadata=get_metadata)
 
         for account in self.accounts:
             if str(account.account_id) in list(all_screenshots["account_sections"].keys()):
@@ -777,9 +781,8 @@ class ConsultationData(Dictable):
                                 account.suspicious_logins,
                                 account.two_factor_settings]:
                     section_screenshots = all_screenshots["account_sections"][str(account.account_id)][section.screenshot_label]
-                    if len(section_screenshots) > 0:
-                        section.set_screenshot_files(section_screenshots)
-                        section.get_screenshot_info()
+                    section.set_screenshot_files(section_screenshots)
+                    section.create_screenshot_info(get_metadata=get_metadata)
 
 
 class AccountInvestigation(Dictable):
@@ -867,14 +870,16 @@ class ScanData(Dictable):
         self.all_apps.sort(key=lambda x: x.investigate, reverse=True)
 
         self.selected_apps = [AppInfo(**app) for app in selected_apps]
+
         self.screenshot_files = list()
+        self.screenshot_info = list()
 
         self.generate_risk_report()
 
     def set_screenshot_files(self, screenshot_files):
         self.screenshot_files = screenshot_files
 
-    def get_screenshot_info(self, screenshot_files=list()):
+    def create_screenshot_info(self, get_metadata=True):
         '''
         Creates screenshot objects for all screenshot files related to this device scan.
         '''
@@ -882,7 +887,8 @@ class ScanData(Dictable):
             fname=fname,
             context="root",
             device_nickname=self.device_nickname,
-            device_serial=self.serial
+            device_serial=self.serial,
+            get_metadata=get_metadata
         ) for fname in self.screenshot_files]
 
         return self.screenshot_info
@@ -985,7 +991,8 @@ class ScreenshotInfo(Dictable):
                  app_id=None,
                  app_name=None,
                  account_nickname=None,
-                 account_section=None):
+                 account_section=None,
+                 get_metadata=True):
         self.fname = fname
         self.context = context
 
@@ -1001,7 +1008,9 @@ class ScreenshotInfo(Dictable):
         self.account_nickname = account_nickname
         self.account_section = account_section
 
-        self.get_metadata()
+        self.metadata = dict()
+        if get_metadata:
+            self.get_metadata()
 
     def get_metadata(self):
         """

@@ -43,13 +43,14 @@
                                     <li><i>Device nickname:</i> {{screenshot.device_nickname}}</li>
                                     <li><i>Device serial:</i> {{screenshot.device_serial}}</li>
                                     <li><i>Filename:</i> {{screenshot.fname}}</li>
+                                    {#
                                     <li><i>Metadata:</i>
                                         <ul>
                                         {% for k, v in screenshot.metadata.items() %}
                                         <li>{{k}} = {{v}}</li>
                                         {% endfor %}
                                         </ul>
-                                    </li>
+                                    </li>#}
                                 </ul>
                             </td>
                         </tr>

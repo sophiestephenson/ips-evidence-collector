@@ -40,6 +40,7 @@ from evidence_collection import (
     TAQForm,
     create_printout,
     delete_client_data,
+    get_all_screenshot_files,
     get_scan_by_ser,
     get_scan_data,
     get_ser_from_scan_obj,
@@ -621,28 +622,36 @@ def evidence_account(id):
 @app.route("/evidence/screenshots", methods=['GET', 'POST'])
 def evidence_screenshots():
 
-    # compile all screenshot info
-    rooted_screenshot_info = []
-    app_screenshot_info = []
-    scans = load_object_from_json(ConsultDataTypes.SCANS.value)
-    for scan in scans:
-        rooted_screenshot_info.extend(scan.get_screenshot_info())
+    pprint("Gathering consult data...")
+    consult_data = ConsultationData(
+        accounts=load_json_data(ConsultDataTypes.ACCOUNTS.value),
+        scans=load_json_data(ConsultDataTypes.SCANS.value),
+        screenshot_dir = config.SCREENSHOT_LOCATION,
+    )
 
-        for a in scan.all_apps:
-            app_screenshot_info.extend(a.get_screenshot_info())
+    pprint("Gathering screenshots...")
+    consult_data.prepare_screenshots(get_metadata=False)
 
-    account_screenshot_info = []
-    accounts = load_object_from_json(ConsultDataTypes.ACCOUNTS.value)
-    for account in accounts:
+    pprint("Reformatting screenshot info...")
+    root_screenshots = list()
+    app_screenshots = list()
+    acct_screenshots = list()
+
+    for scan in consult_data.scans:
+        root_screenshots.extend(scan.screenshot_info)
+        for a in scan.selected_apps:
+            app_screenshots.extend(a.screenshot_info)
+
+    for account in consult_data.accounts:
         for section in [account.suspicious_logins,
                         account.recovery_settings,
                         account.two_factor_settings,
                         account.security_questions]:
-            account_screenshot_info.extend(section.get_screenshot_info())
+            acct_screenshots.extend(section.screenshot_info)
 
-    form = MultScreenshotEditForm(root_screenshots=rooted_screenshot_info,
-                                  app_screenshots=app_screenshot_info,
-                                  acct_screenshots=account_screenshot_info)
+    form = MultScreenshotEditForm(root_screenshots=root_screenshots,
+                                  app_screenshots=app_screenshots,
+                                  acct_screenshots=acct_screenshots)
 
     url_root = request.url_root
 
@@ -651,9 +660,9 @@ def evidence_screenshots():
         context = dict(
             task = "evidence-screenshots",
             title=config.TITLE,
-            rooted_screenshot_info = rooted_screenshot_info,
-            app_screenshot_info = app_screenshot_info,
-            account_screenshot_info = account_screenshot_info,
+            rooted_screenshot_info = root_screenshots,
+            app_screenshot_info = app_screenshots,
+            account_screenshot_info = acct_screenshots,
             form = form,
             url_root = url_root
         )
