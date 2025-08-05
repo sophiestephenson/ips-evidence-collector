@@ -1,0 +1,53 @@
+#!/bin/bash
+#
+# setup.sh
+#
+# Sets up the environment for Sherloc to run. 
+# Creates a new virtual environment, activates, and installs requirements.
+# Then, runs Sherloc.
+# Deactivates afterward.
+
+# Check for --install argument
+INSTALL_REQS=false
+for arg in "$@"; do
+    if [[ "$arg" == "--install" ]]; then
+        INSTALL_REQS=true
+        break
+    fi
+done
+
+# Create virtual environment if not exists
+if [ ! -d "sherloc-venv" ]; then
+    echo "🐍 Creating virtual environment (sherloc-venv)..."
+    virtualenv sherloc-venv
+fi
+
+# Activate the virtual environment
+source sherloc-venv/bin/activate
+echo "✅ Activated sherloc-venv"
+
+# Install requirements if requested
+if $INSTALL_REQS; then
+    echo "📦 Installing requirements..."
+    pip install -r requirements.txt
+fi
+
+echo "🚀 Launching Sherloc..."
+echo "=================================================="
+python3 main.py
+
+EXIT_CODE=$?
+
+# If it failed due to missing packages, try installing requirements
+if [ $EXIT_CODE -ne 0 ]; then
+    echo "=================================================="
+    echo "⚠️ Sherloc failed to launch. Attempting to install missing requirements..."
+    pip install -r requirements.txt
+    echo "🔁 Retrying launch..."
+    python3 main.py
+fi
+
+echo "=================================================="
+
+deactivate
+echo "👋 Deactivated sherloc-venv"
