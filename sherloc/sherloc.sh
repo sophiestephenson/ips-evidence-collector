@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Run: ./sherloc [--install] [--nosudo]
+# Run: ./sherloc.sh [--install] [--nosudo]
 #
 # Sets up the environment for Sherloc to run. 
 # Creates a new virtual environment, activates, and installs requirements.
@@ -26,6 +26,12 @@ done
 if [ ! -d $VENV ]; then
     echo "🐍 Creating virtual environment ($VENV)..."
     virtualenv $VENV
+    EXIT_CODE=$?
+    if [ $EXIT_CODE -ne 0 ]; then
+        echo "Oops, need to install virtualenv first. Installing..."
+        pip install virtualenv
+        virtualenv $VENV
+    fi
 fi
 
 # Activate the virtual environment
@@ -36,6 +42,12 @@ echo "✅ Activated $VENV"
 if $INSTALL_REQS; then
     echo "📦 Installing requirements..."
     pip install -r requirements.txt
+fi
+
+# Create log folder if needed
+if [ ! -d "../logs" ]; then
+    echo "📁 Creating log folder..."
+    mkdir ../logs
 fi
 
 if $USE_SUDO; then
