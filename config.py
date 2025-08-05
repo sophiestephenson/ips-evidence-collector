@@ -9,7 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from sys import platform
 
-SHERLOC_VERSION = "1.0.1"
+SHERLOC_VERSION = "1.0.2"
 
 SCREENSHOT_LOCATION = "/Users/Soph/research/evidence-project/ips-evidence-collector/screenshots/"
 
