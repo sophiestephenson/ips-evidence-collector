@@ -29,7 +29,8 @@ if [ ! -d $VENV ]; then
     EXIT_CODE=$?
     if [ $EXIT_CODE -ne 0 ]; then
         echo "Oops, need to install virtualenv first. Installing..."
-        python3 -m pip install virtualenv
+        pip install virtualenv
+        virtualenv $VENV
     fi
 fi
 
