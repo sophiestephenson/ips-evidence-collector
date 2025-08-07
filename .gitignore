@@ -154,3 +154,5 @@ sherloc/dumps/android_scan.logs
 sherloc/phone_dumps/dumps/android_scan.logs
 
 sherloc/tmp-consult-data/*.json
+
+sherloc/reports
