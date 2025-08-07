@@ -1821,26 +1821,28 @@ def get_all_screenshot_files():
                 full_fnames = [os.path.join(screenshot_dir, f) for f in files]
                 full_fnames.sort()
 
-                # save the fnames in the right place
-                if screenshot_dir.name == "rooting":
-                    screenshot_files["device_root"][device_dir.name] = full_fnames
+                if len(full_fnames) > 0:
 
-                elif account_pattern.match(screenshot_dir.name):
-                    fname_parts = screenshot_dir.name.split("_", 1)
-                    account_id_str = fname_parts[0][-1]
-                    account_section = fname_parts[1]
+                    # save the fnames in the right place
+                    if screenshot_dir.name == "rooting":
+                        screenshot_files["device_root"][device_dir.name] = full_fnames
 
-                    if account_id_str not in list(screenshot_files["account_sections"].keys()):
-                        section_dict = dict()
-                        section_dict[SuspiciousLogins().screenshot_label] = list()
-                        section_dict[RecoverySettings().screenshot_label] = list()
-                        section_dict[TwoFactorSettings().screenshot_label] = list()
-                        section_dict[SecurityQuestions().screenshot_label] = list()
-                        screenshot_files["account_sections"][account_id_str] = section_dict
+                    elif account_pattern.match(screenshot_dir.name):
+                        fname_parts = screenshot_dir.name.split("_", 1)
+                        account_id_str = fname_parts[0][-1]
+                        account_section = fname_parts[1]
 
-                    screenshot_files["account_sections"][account_id_str][account_section].extend(full_fnames)
+                        if account_id_str not in list(screenshot_files["account_sections"].keys()):
+                            section_dict = dict()
+                            section_dict[SuspiciousLogins().screenshot_label] = list()
+                            section_dict[RecoverySettings().screenshot_label] = list()
+                            section_dict[TwoFactorSettings().screenshot_label] = list()
+                            section_dict[SecurityQuestions().screenshot_label] = list()
+                            screenshot_files["account_sections"][account_id_str] = section_dict
 
-                else:
-                    screenshot_files["apps"][screenshot_dir.name] = full_fnames
+                        screenshot_files["account_sections"][account_id_str][account_section].extend(full_fnames)
+
+                    else:
+                        screenshot_files["apps"][screenshot_dir.name] = full_fnames
 
     return screenshot_files
