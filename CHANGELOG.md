@@ -12,6 +12,25 @@ Removed for now removed features.
 Fixed for any bug fixes.
 Security in case of vulnerabilities.
 
+## [v1.1.1] - August 8, 2025
+
+### Added     
+- Added instructions for installing `wkhtmltopdf` in `README`
+- Added `exiftool` to `Brewfile` and `README` instructions
+- Added back images that were deleted but we need for the UI
+
+### Changed
+- Updated .gitignore
+- Updated printout to not show jailbreak part for iOS
+
+### Deprecated
+### Removed
+### Fixed
+- Fixed issue with EvidenceDataEncoder trying to encode Path objects
+- Fixed issue with overwriting screenshots
+### Security
+
+
 ## [v1.1.0] - August 5, 2025
 
 ### Added     
