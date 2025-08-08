@@ -428,6 +428,7 @@
                 </table>
                 </th>
             </tr>
+            {% if scan.device_type != "ios" %}
             <tr valign="top">
                 <th>
                     <h3>Jailbreak Assessment {% if not scan.manual %}<span class="tag">&#9881; System-captured</span>{%else%}<span class="tag">&#9999;&#65039; Human-entered</span>{%endif%}</h3>
@@ -456,6 +457,7 @@
                     {% endfor %}
                 </td>
             </tr>
+            {% endif %}
             <tr> 
                 <th>
                     <h3>Screenshots <span class="tag">&#9881; System-captured</span></h3>
