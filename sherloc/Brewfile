@@ -4,3 +4,4 @@ cask "android-platform-tools"
 brew "expect"
 
 brew "ideviceinstaller"
+brew "exiftool"

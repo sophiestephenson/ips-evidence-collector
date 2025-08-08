@@ -141,7 +141,6 @@ toremove/
 
 sherloc/apps/
 sherloc/data/*
-*.db
 sherloc/static_data/app-info.db.gz
 sherloc/static_data/all_android_apps_5k_*.csv
 tests/serial/*
@@ -155,3 +154,5 @@ sherloc/dumps/android_scan.logs
 sherloc/phone_dumps/dumps/android_scan.logs
 
 sherloc/tmp-consult-data/*.json
+
+sherloc/reports

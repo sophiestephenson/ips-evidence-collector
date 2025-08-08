@@ -28,6 +28,9 @@ xcode-select --install
 brew install python
 ```
 
+### wkhtmltopdf requirement
+This project uses `wkhtmltopdf` to generate the evidentiary document. The brew cask for `wkhtmltopdf` is deprecated, so you will need to download the appropriate `wkhtmltopdf` binary from the project website: https://wkhtmltopdf.org/downloads.html.
+
 ### Operating system dependencies
 
 #### Generic
@@ -41,7 +44,7 @@ On macOS you can quickly install project dependencies with Homebrew by running `
 You can also fulfill the requirements by doing:
 ```bash
 brew install --cask android-platform-tools
-brew install expect libimobiledevice ideviceinstaller
+brew install expect ideviceinstaller exiftool
 ```
 
 #### Debian family

@@ -15,11 +15,18 @@ import re
 import shutil
 import subprocess
 from enum import Enum
+from pathlib import Path
 
+import config
 import jinja2
 import pdfkit
+from config import DUMP_DIR, SCREENSHOT_DIR, SHERLOC_VERSION
 from filelock import FileLock
 from flask_wtf import FlaskForm
+from phone_scanner.db import create_mult_appinfo, create_scan
+from phone_scanner.privacy_scan_android import take_screenshot
+from web.view.index import get_device
+from web.view.scan import first_element_or_none
 from wtforms import (
     BooleanField,
     FieldList,
@@ -32,13 +39,6 @@ from wtforms import (
     TextAreaField,
 )
 from wtforms.validators import InputRequired
-
-import config
-from config import DUMP_DIR, SCREENSHOT_DIR, SHERLOC_VERSION
-from phone_scanner.db import create_mult_appinfo, create_scan
-from phone_scanner.privacy_scan_android import take_screenshot
-from web.view.index import get_device
-from web.view.scan import first_element_or_none
 
 TMP_CONSULT_DATA_DIR = "tmp-consult-data"
 
@@ -84,6 +84,8 @@ class Pages(Enum):
 # Helps create JSON encoding from nested classes
 class EvidenceDataEncoder(json.JSONEncoder):
     def default(self, o):
+        if isinstance(o, Path):
+            return str(o)
         return o.__dict__
 
 class Dictable:
@@ -1819,26 +1821,28 @@ def get_all_screenshot_files():
                 full_fnames = [os.path.join(screenshot_dir, f) for f in files]
                 full_fnames.sort()
 
-                # save the fnames in the right place
-                if screenshot_dir.name == "rooting":
-                    screenshot_files["device_root"][device_dir.name] = full_fnames
+                if len(full_fnames) > 0:
 
-                elif account_pattern.match(screenshot_dir.name):
-                    fname_parts = screenshot_dir.name.split("_", 1)
-                    account_id_str = fname_parts[0][-1]
-                    account_section = fname_parts[1]
+                    # save the fnames in the right place
+                    if screenshot_dir.name == "rooting":
+                        screenshot_files["device_root"][device_dir.name] = full_fnames
 
-                    if account_id_str not in list(screenshot_files["account_sections"].keys()):
-                        section_dict = dict()
-                        section_dict[SuspiciousLogins().screenshot_label] = list()
-                        section_dict[RecoverySettings().screenshot_label] = list()
-                        section_dict[TwoFactorSettings().screenshot_label] = list()
-                        section_dict[SecurityQuestions().screenshot_label] = list()
-                        screenshot_files["account_sections"][account_id_str] = section_dict
+                    elif account_pattern.match(screenshot_dir.name):
+                        fname_parts = screenshot_dir.name.split("_", 1)
+                        account_id_str = fname_parts[0][-1]
+                        account_section = fname_parts[1]
 
-                    screenshot_files["account_sections"][account_id_str][account_section].extend(full_fnames)
+                        if account_id_str not in list(screenshot_files["account_sections"].keys()):
+                            section_dict = dict()
+                            section_dict[SuspiciousLogins().screenshot_label] = list()
+                            section_dict[RecoverySettings().screenshot_label] = list()
+                            section_dict[TwoFactorSettings().screenshot_label] = list()
+                            section_dict[SecurityQuestions().screenshot_label] = list()
+                            screenshot_files["account_sections"][account_id_str] = section_dict
 
-                else:
-                    screenshot_files["apps"][screenshot_dir.name] = full_fnames
+                        screenshot_files["account_sections"][account_id_str][account_section].extend(full_fnames)
+
+                    else:
+                        screenshot_files["apps"][screenshot_dir.name] = full_fnames
 
     return screenshot_files
