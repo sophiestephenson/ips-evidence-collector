@@ -914,6 +914,7 @@ div.screenshot-metadata {
   padding: 0px 10px;
   color: black;
   vertical-align: top;
+  font-weight: normal;
 }
 
 .serial-or-udid {
