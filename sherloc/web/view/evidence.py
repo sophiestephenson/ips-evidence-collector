@@ -30,7 +30,6 @@ from evidence_collection import (
     TAQForm,
     create_printout,
     delete_client_data,
-    get_all_screenshot_files,
     get_scan_by_ser,
     get_scan_data,
     get_ser_from_scan_obj,
@@ -138,10 +137,19 @@ def evidence_home():
 
         if form.is_submitted() and form.validate():
 
-            new_notes = ConsultNotesData(**form.data)
-            save_data_as_json(new_notes, ConsultDataTypes.NOTES.value)
+            if form.generate_printout.data:
+                client = form.data["client_name"]
+                if not client:
+                    flash("No client name entered.")
+                    return redirect(url_for('evidence_home'))
 
-            return redirect(url_for('evidence_home'))
+                return redirect(url_for('evidence_printout', client=client))
+
+            if form.submit:
+                new_notes = ConsultNotesData(**form.data)
+                save_data_as_json(new_notes, ConsultDataTypes.NOTES.value)
+
+                return redirect(url_for('evidence_home'))
 
         elif not form.validate():
             flash("Form validation error. Raw error: {}".format(form.errors), 'error')
@@ -677,14 +685,17 @@ def evidence_screenshots():
         # Reload the screenshot page
         return redirect(url_for('evidence_screenshots'))
 
-@app.route("/evidence/printout", methods=["GET"])
-def evidence_printout():
+@app.route("/evidence/printout/<client>", methods=["GET"])
+def evidence_printout(client):
 
     start_time = time.perf_counter()
 
     pprint("Gathering consult data...")
     consult_data = ConsultationData(
-        setup=load_json_data(ConsultDataTypes.SETUP.value),
+        setup=dict(
+            client=client,
+            date=datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+        ),
         taq=load_json_data(ConsultDataTypes.TAQ.value),
         accounts=load_json_data(ConsultDataTypes.ACCOUNTS.value),
         scans=load_json_data(ConsultDataTypes.SCANS.value),

@@ -34,7 +34,7 @@
                 <br/>
                 
                 <div>
-                    <a onclick="$('#loading').show();" href="{{ url_for('evidence_printout') }}" class="btn btn-success">Generate Evidentiary Document</a>
+                    <a onclick="$('#loading').show();" href="{{ url_for('evidence_printout', client='LOOK') }}" class="btn btn-success">Generate Evidentiary Document</a>
                     
                     <a onclick="return confirm('Are you sure you want to delete all client data? This cannot be undone.')" href="{{ url_for('evidence_delete_data') }}" class="btn btn-danger">Delete Client Data</a>
                 </div>
@@ -227,8 +227,14 @@
                                     {{render_text_field(form.client_notes)}}
                                 </tbody>
                             </table>
-
                         <div><span class="primarybutton">{{form.submit}}</span></div>
+
+                            <div>
+
+                            {{render_text_field(form.client_name)}}
+                            <span class="primarybutton">{{form.generate_printout}}</span>
+                            </div>
+
                         </form>
                         <br/>
                         <br/>

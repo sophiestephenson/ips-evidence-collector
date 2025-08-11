@@ -1407,7 +1407,9 @@ class HomepageNoteForm(FlaskForm):
     title = "Overall Consultation Notes"
     consultant_notes = TextAreaField("Consultant Notes")
     client_notes = TextAreaField("Client Notes")
+    client_name = StringField("Client Name")
     submit = SubmitField("Save Notes")
+    generate_printout = SubmitField("Generate Evidentiary Document")
 
 def create_printout(context):
     out_file = os.path.join('reports', 'test_report.pdf')
