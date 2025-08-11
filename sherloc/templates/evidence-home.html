@@ -38,21 +38,19 @@
                 <br/>
                 
                 <div>
-                    <a onclick="$('#loading').show();" href="{{ url_for('evidence_printout', client='LOOK') }}" class="btn btn-success">Generate Evidentiary Document</a>
-                    
                     <a onclick="return confirm('Are you sure you want to delete all client data? This cannot be undone.')" href="{{ url_for('evidence_delete_data') }}" class="btn btn-danger">Delete Client Data</a>
                 </div>
+                <br/>
 
-
-                <div>
-                    {{render_text_field(form.client_name)}}
-                    <span class="primarybutton">{{form.generate_printout}}</span>
+               <div class="generate-printout">
+                    Enter client name: <span>{{ form.client_name }} </span><span class="primarybutton" onclick="$('#loading').show();">{{form.generate_printout}}</span>
                 </div>
+                <br/>
+
+
                 <div id="loading" style="display:none;"><img src="../../../webstatic/images/waiting.gif" alt="" /></div>
 
-
-
-                <br><br>
+                <br/>
                 <hr/>
                 <h2>Consultation Summary</h2>
                 <p><b>Client Name:</b> {{consultdata.setup.client}}</p>
