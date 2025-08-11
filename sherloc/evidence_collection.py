@@ -1042,26 +1042,10 @@ class ScreenshotInfo(Dictable):
             - Megapixels
         """
 
-        data_to_get = ["ExifToolVersion",
-                       "FileSize",
-                       "ImageSize",
-                       "Megapixels",
+        data_to_get = ["FileSize",
                        "FileModifyDate",
                        "FileAccessDate",
-                       "FileInodeChangeDate",
-                       "FilePermissions",
-                       "FileType",
-                       "FileTypeExtension",
-                       "MIMEType",
-                       "ImageWidth",
-                       "ImageHeight",
-                       "BitDepth",
-                       "ColorType",
-                       "Compression",
-                       "Filter",
-                       "Interlace",
-                       "SRGBRendering",
-                       "SignificantBits"]
+                       "FileType",]
 
         self.metadata = dict()
 
