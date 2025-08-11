@@ -449,6 +449,8 @@ table.appinfo th {
 .form-screenshot img {
     margin-left: 15px;
     margin-top: 1em;
+    margin-bottom: 30px;
+    margin-right: 25px;
     max-width: 200px;
     height: auto;
     border: 1px solid black;
@@ -894,7 +896,7 @@ td.buttons-in-details {
 div.screenshot-metadata {
     font-size: 9pt;
     padding: 10px;
-    margin-top: 5px;
+    margin-top: 20px;
     width: 100%;
     border-collapse: collapse;
 }
@@ -912,6 +914,7 @@ div.screenshot-metadata {
   padding: 0px 10px;
   color: black;
   vertical-align: top;
+  font-weight: normal;
 }
 
 .serial-or-udid {

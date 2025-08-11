@@ -1,6 +1,6 @@
 {% extends 'bootstrap/base.html' %}
 {% import "bootstrap/wtf.html" as wtf %}
-{% from "_formhelpers.html" import render_select, render_text_field %}
+{% from "_formhelpers.html" import render_select, render_multiselect, render_text_field %}
 
 <script src="{{ url_for('static', filename='jquery-3.3.1.min.js') }}"></script>
 <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
@@ -170,7 +170,7 @@
                                     {% endif %}
                                     >
                                     <tbody>
-                                    {{ render_select(form.two_factor_settings.second_factor_type) }}
+                                    {{ render_multiselect(form.two_factor_settings.second_factor_type) }}
                                     {{ render_select(form.two_factor_settings.second_factor_access, 
                                                      form.two_factor_settings.describe.id) }}
                                     {{ render_text_field(form.two_factor_settings.describe, ishidden=True) }}

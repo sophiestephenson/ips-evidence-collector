@@ -50,7 +50,7 @@ PERSON_DEFAULT = ""
 LEGAL_DEFAULT = ""
 TWO_FACTOR_DEFAULT = ""
 
-SECOND_FACTORS = ["Phone", "Email", "App"]
+SECOND_FACTORS = ["Phone", "Email", "Authenticator App", "Trusted Device", "Other"]
 ACCOUNTS = ["Google", "iCloud", "Microsoft", "Lyft", "Uber", "Doordash", "Grubhub", "Facebook", "Twitter", "Snapchat", "Instagram"]
 
 EMPTY_CHOICE = [('', 'Nothing selected')]
@@ -62,7 +62,7 @@ PWD_CHOICES = [('online', 'Online notes'), ('paper', 'Paper notes'), ('pwd_manag
 LEGAL_CHOICES = [('ro', 'Restraining order'), ('div', 'Divorce or other family court'), ('cl', 'Criminal case'), ('other_legal', 'Other')]
 DEVICE_TYPE_CHOICES = EMPTY_CHOICE + [('android', 'Android'), ('ios', 'iOS')]
 #two_factor_choices = [empty_choice] + [(x.lower(), x) for x in second_factors]
-TWO_FACTOR_CHOICES = EMPTY_CHOICE + [(x.lower(), x) for x in SECOND_FACTORS] + [('none', 'None')]
+TWO_FACTOR_CHOICES = [(x.lower().replace(" ", "_"), x) for x in SECOND_FACTORS]
 ACCOUNT_CHOICES = [(x, x) for x in ACCOUNTS]
 
 class Pages(Enum):
@@ -244,7 +244,7 @@ class RecoverySettings(AccountSection):
 class TwoFactorSettings(AccountSection):
     questions = {
         'enabled': "Is two-factor authentication enabled for this account?",
-        'second_factor_type': "What type of two-factor authentication is it?",
+        'second_factor_type': "What type of two-factor authentication is used?",
         'describe': "Which phone/email/app is set as the second factor?",
         'second_factor_access': "Do you believe the person of concern has access to this second factor?",
     }
@@ -351,7 +351,7 @@ class InstallInfo(DictInitClass):
 
 class PermissionInfo(DictInitClass):
     questions = {
-        "access": "Review the permissions used. Can any of this information be accessed by the person of concern using this app?",
+        "access": "Is any information being leaked to the person of concern through this app?",
         "describe": "If yes, please describe."
     }
     attrs = ['permissions',
@@ -656,7 +656,7 @@ class TAQSmarthome(DictInitClass):
 
 class TAQKids(DictInitClass):
     questions = {
-        'custody': "Do you share custody of children with the person of concern?",
+        'custody': "If you have children, do they have electronic devices?",
         'child_phys_access': "Has the person of concern had physical access to any of the child(ren)'s devices?",
         'child_phone_plan': "Does the person of concern pay for the child(ren)'s phone plan?"}
     attrs = list(questions.keys())
@@ -1042,26 +1042,10 @@ class ScreenshotInfo(Dictable):
             - Megapixels
         """
 
-        data_to_get = ["ExifToolVersion",
-                       "FileSize",
-                       "ImageSize",
-                       "Megapixels",
+        data_to_get = ["FileSize",
                        "FileModifyDate",
                        "FileAccessDate",
-                       "FileInodeChangeDate",
-                       "FilePermissions",
-                       "FileType",
-                       "FileTypeExtension",
-                       "MIMEType",
-                       "ImageWidth",
-                       "ImageHeight",
-                       "BitDepth",
-                       "ColorType",
-                       "Compression",
-                       "Filter",
-                       "Interlace",
-                       "SRGBRendering",
-                       "SignificantBits"]
+                       "FileType",]
 
         self.metadata = dict()
 
@@ -1206,7 +1190,7 @@ class RecoveryForm(FlaskForm):
 
 class TwoFactorForm(FlaskForm):
     enabled = RadioField(TwoFactorSettings().questions["enabled"], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
-    second_factor_type = RadioField(TwoFactorSettings().questions["second_factor_type"], choices=TWO_FACTOR_CHOICES, default=TWO_FACTOR_DEFAULT)
+    second_factor_type = SelectMultipleField(TwoFactorSettings().questions["second_factor_type"], choices=TWO_FACTOR_CHOICES, default=TWO_FACTOR_DEFAULT)
     describe = TextAreaField(TwoFactorSettings().questions["describe"])
     second_factor_access = RadioField(TwoFactorSettings().questions["second_factor_access"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
 
