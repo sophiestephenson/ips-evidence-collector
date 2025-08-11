@@ -1006,7 +1006,13 @@
                             {% for q in formquestions["accounts"]["two_factor_settings"] %}
                             <tr>
                                 <th>{{formquestions["accounts"]["two_factor_settings"][q]}}</th>
-                                    {% if select_text[account["two_factor_settings"][q]] %}
+                                    {% if account["two_factor_settings"][q] is not string %}
+                                    <td>
+                                        {% for item in account["two_factor_settings"][q] %}
+                                        {{select_text[item]}}{% if not loop.last %}, {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    {% elif select_text[account["two_factor_settings"][q]] %}
                                     <td>{{select_text[account["two_factor_settings"][q]]}}</td>
                                     {% else %}
                                     <td>{{account["two_factor_settings"][q]}}</td>

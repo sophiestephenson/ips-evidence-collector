@@ -244,7 +244,7 @@ class RecoverySettings(AccountSection):
 class TwoFactorSettings(AccountSection):
     questions = {
         'enabled': "Is two-factor authentication enabled for this account?",
-        'second_factor_type': "What type of two-factor authentication is it?",
+        'second_factor_type': "What type of two-factor authentication is used?",
         'describe': "Which phone/email/app is set as the second factor?",
         'second_factor_access': "Do you believe the person of concern has access to this second factor?",
     }
