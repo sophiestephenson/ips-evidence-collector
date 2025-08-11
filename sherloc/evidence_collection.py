@@ -62,7 +62,7 @@ PWD_CHOICES = [('online', 'Online notes'), ('paper', 'Paper notes'), ('pwd_manag
 LEGAL_CHOICES = [('ro', 'Restraining order'), ('div', 'Divorce or other family court'), ('cl', 'Criminal case'), ('other_legal', 'Other')]
 DEVICE_TYPE_CHOICES = EMPTY_CHOICE + [('android', 'Android'), ('ios', 'iOS')]
 #two_factor_choices = [empty_choice] + [(x.lower(), x) for x in second_factors]
-TWO_FACTOR_CHOICES = EMPTY_CHOICE + [(x.lower(), x) for x in SECOND_FACTORS] + [('none', 'None')]
+TWO_FACTOR_CHOICES = [(x.lower(), x) for x in SECOND_FACTORS] + [('none', 'None')]
 ACCOUNT_CHOICES = [(x, x) for x in ACCOUNTS]
 
 class Pages(Enum):
