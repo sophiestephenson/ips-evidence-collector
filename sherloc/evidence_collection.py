@@ -718,7 +718,9 @@ class ConsultationData(Dictable):
                  screenshot_dir = "",
                  notes = dict(),
                  **kwargs):
+        # Note: Not used except in printout.
         self.setup = ConsultSetupData(**setup)
+
         self.taq = TAQData(**taq)
         self.accounts = [AccountInvestigation(**account) for account in accounts]
         self.scans = [ScanData(**scan) for scan in scans]
@@ -1094,14 +1096,11 @@ class ConsultDataTypes(Enum):
     TAQ = 1
     SCANS = 2
     ACCOUNTS = 3
-    SETUP = 4
-    NOTES = 5
+    NOTES = 4
 
 def get_data_filename(datatype: ConsultDataTypes):
 
-    if datatype == ConsultDataTypes.SETUP.value:
-        return "setup.json"
-    elif datatype == ConsultDataTypes.TAQ.value:
+    if datatype == ConsultDataTypes.TAQ.value:
         return "taq.json"
     elif datatype == ConsultDataTypes.SCANS.value:
         return "scans.json"
@@ -1278,12 +1277,6 @@ class AccountCompromiseForm(FlaskForm):
     security_questions = FormField(SecurityQForm)
     notes = FormField(NotesForm)
     submit = SubmitField("Save")
-
-class SetupForm(FlaskForm):
-    title = "Consultation Information"
-    client = StringField('Client Name', validators=[InputRequired()])
-    date = StringField('Consultation Date and Time', validators=[InputRequired()], render_kw={'readonly': True})
-    submit = SubmitField("Start Consultation")
 
 class AppSelectPageForm(FlaskForm):
     title = "Select Apps to Investigate"
@@ -1715,7 +1708,7 @@ def load_json_data(datatype: ConsultDataTypes):
     lock = FileLock(fname + ".lock")
     with lock:
         if not os.path.exists(fname):
-            if datatype in [ConsultDataTypes.SETUP.value, ConsultDataTypes.NOTES.value, ConsultDataTypes.TAQ.value]:
+            if datatype in [ConsultDataTypes.NOTES.value, ConsultDataTypes.TAQ.value]:
                 return dict()
             else:
                 return list()
@@ -1726,9 +1719,6 @@ def load_json_data(datatype: ConsultDataTypes):
 
 def load_object_from_json(datatype: ConsultDataTypes):
     json_data = load_json_data(datatype)
-    if datatype == ConsultDataTypes.SETUP.value:
-        return ConsultSetupData(**json_data)
-
     if datatype == ConsultDataTypes.TAQ.value:
         return TAQData(**json_data)
 
