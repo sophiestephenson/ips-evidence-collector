@@ -730,42 +730,37 @@
                 <th>
                 <h3>Screenshots {% if not scan.manual %}<span class="tag">&#9881; System-captured</span>{%endif%}</h3>
                 {% if app.screenshot_files|length > 0 %}
-                    <div class="screenshot-container">
-                <table>
-                    <tbody>
-                    {% for fname in app.screenshot_files %}
+                <div class="screenshot-container">
+                    <table>
+                        <tbody>
                             <tr>
-                                <th>
-                                    <div class="form-screenshot">
-                                        <img height='400px' src="{{url_root}}{{fname}}"/>
-                                    </div>
-                                </th>
-                                <td>
-                                    <br/>
-                                    <div class="screenshot-metadata">Screenshot Metadata:
-                                        <table>
-                                            <tbody>
-                                                {% for k, v in app.screenshot_info[loop.index0].metadata.items() %}
-                                                <tr>
-                                                    <th>{{k}}</th>
-                                                    <td>{{v}}</td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </td>
+                        {% for fname in app.screenshot_files %}
+                                    <th>
+                                        <div class="form-screenshot">
+                                            <img height='400px' src="{{url_root}}{{fname}}"/>
+                                            <div class="screenshot-metadata">Screenshot Metadata:
+                                                <table>
+                                                    <tbody>
+                                                        {% for k, v in app.screenshot_info[loop.index0].metadata.items() %}
+                                                        <tr>
+                                                            <th>{{k}}</th>
+                                                            <td>{{v}}</td>
+                                                        </tr>
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </th>
+                                    {# Break for long rows #}
+                                    {% if loop.index % 3 == 0 %}
+                                    </tr><tr> 
+                                    {% endif %}
+                        {% endfor %}
                             </tr>
                         </tbody>
-                        </table>
-                        </div>
-                        </th>
-                        </tr>
-                        <tr><th><div class="screenshot-container"><table><tbody>
-                    {% endfor %}
-                    </tbody>
                     </table>
-                    </div>
+                </div>
                 {% else %}
                 <div>None.</div>
                 {% endif %}
