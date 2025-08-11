@@ -351,7 +351,7 @@ class InstallInfo(DictInitClass):
 
 class PermissionInfo(DictInitClass):
     questions = {
-        "access": "Review the permissions used. Can any of this information be accessed by the person of concern using this app?",
+        "access": "Is any information being leaked to the person of concern through this app?",
         "describe": "If yes, please describe."
     }
     attrs = ['permissions',
