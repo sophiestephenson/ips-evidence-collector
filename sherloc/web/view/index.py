@@ -1,6 +1,5 @@
-from flask import redirect, render_template, request, session, url_for
-
 import config
+from flask import redirect, render_template, request, session, url_for
 from phone_scanner import AndroidScan, IosScan, TestScan
 from phone_scanner.db import get_client_devices_from_db, new_client_id
 from web import app
@@ -32,7 +31,7 @@ def index():
     if "clientid" not in session or (newid is not None):
         session["clientid"] = new_client_id()
     
-    return redirect(url_for('evidence_setup'))
+    return redirect(url_for('evidence_home'))
 
     return render_template(
         "main.html",

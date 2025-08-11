@@ -931,3 +931,16 @@ span.signature {
     display: inline-block;
     height: 1em;
 }
+
+div.generate-printout {
+    background-color: rgb(193, 172, 208);
+    border-radius: 3px;
+    padding: 10px;
+}
+
+div.generate-printout input[type="text"] {
+    width: 200px;
+}
+div.generate-printout input[type="submit"] {
+    margin-top: 5px;
+}

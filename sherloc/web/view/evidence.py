@@ -19,18 +19,15 @@ from evidence_collection import (
     ConsultationData,
     ConsultDataTypes,
     ConsultNotesData,
-    ConsultSetupData,
     HomepageNoteForm,
     ManualAddPageForm,
     MultScreenshotEditForm,
     ScanData,
-    SetupForm,
     StartForm,
     TAQData,
     TAQForm,
     create_printout,
     delete_client_data,
-    get_all_screenshot_files,
     get_scan_by_ser,
     get_scan_data,
     get_ser_from_scan_obj,
@@ -47,6 +44,7 @@ from flask import (
     render_template,
     request,
     send_from_directory,
+    session,
     url_for,
 )
 from flask_bootstrap import Bootstrap
@@ -58,51 +56,6 @@ bootstrap = Bootstrap(app)
 USE_PICKLE_FOR_SUMMARY = False
 USE_FAKE_DATA = True
 
-@app.route("/evidence/setup", methods={'GET', 'POST'})
-def evidence_setup():
-
-    form = SetupForm()
-
-    if request.method == 'GET':
-
-        # Load any data we already have
-        setup_data = load_object_from_json(ConsultDataTypes.SETUP.value)
-        pprint(setup_data)
-
-        if setup_data.date.strip() == "":
-            setup_data.date = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
-
-        form.process(data=setup_data.to_dict())
-
-        context = dict(
-            task = "evidence-setup",
-            title=config.TITLE,
-            form = form
-        )
-
-        return render_template('main.html', **context)
-
-    if request.method == 'POST':
-        pprint(form.data)
-        if form.is_submitted() and form.validate():
-            # clean up and save data
-            clean_data = remove_unwanted_data(form.data)
-            setup_data = ConsultSetupData(**clean_data)
-
-            # save clean data
-            save_data_as_json(setup_data, ConsultDataTypes.SETUP.value)
-
-
-            return redirect(url_for('evidence_home'))
-
-        elif not form.validate():
-            flash("Missing required fields")
-            return redirect(url_for('evidence_setup'))
-
-
-    return redirect(url_for('evidence_setup'))
-
-
 
 @app.route("/evidence/home", methods={'GET', 'POST'})
 def evidence_home():
@@ -111,7 +64,6 @@ def evidence_home():
     pprint(notes)
 
     consult_data = ConsultationData(
-        setup=load_json_data(ConsultDataTypes.SETUP.value),
         taq=load_json_data(ConsultDataTypes.TAQ.value),
         accounts=load_json_data(ConsultDataTypes.ACCOUNTS.value),
         scans=load_json_data(ConsultDataTypes.SCANS.value),
@@ -138,10 +90,20 @@ def evidence_home():
 
         if form.is_submitted() and form.validate():
 
-            new_notes = ConsultNotesData(**form.data)
-            save_data_as_json(new_notes, ConsultDataTypes.NOTES.value)
+            if form.generate_printout.data:
+                client = form.data["client_name"]
+                if not client:
+                    flash("Client name not entered. Please provide a name to put in the report.")
+                    return redirect(url_for('evidence_home'))
 
-            return redirect(url_for('evidence_home'))
+                session["client"] = client
+                return redirect(url_for('evidence_printout'))
+
+            if form.submit:
+                new_notes = ConsultNotesData(**form.data)
+                save_data_as_json(new_notes, ConsultDataTypes.NOTES.value)
+
+                return redirect(url_for('evidence_home'))
 
         elif not form.validate():
             flash("Form validation error. Raw error: {}".format(form.errors), 'error')
@@ -677,14 +639,24 @@ def evidence_screenshots():
         # Reload the screenshot page
         return redirect(url_for('evidence_screenshots'))
 
-@app.route("/evidence/printout", methods=["GET"])
+@app.route("/evidence/printout/", methods=["GET"])
 def evidence_printout():
+
+    client = ""
+    try:
+        client = session["client"]
+    except KeyError:
+        flash("Client name not entered. Please provide a name to put in the report.")
+        return redirect(url_for("evidence_home"))
 
     start_time = time.perf_counter()
 
     pprint("Gathering consult data...")
     consult_data = ConsultationData(
-        setup=load_json_data(ConsultDataTypes.SETUP.value),
+        setup=dict(
+            client=client,
+            date=datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+        ),
         taq=load_json_data(ConsultDataTypes.TAQ.value),
         accounts=load_json_data(ConsultDataTypes.ACCOUNTS.value),
         scans=load_json_data(ConsultDataTypes.SCANS.value),

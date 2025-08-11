@@ -23,6 +23,10 @@
             </div>
             {% endfor %}
             <br>
+
+            <form action method="post" class="form" role="form">
+            {{ form.hidden_tag() }}
+            {{ wtf.form_errors(form) }}
             <div>
                 <h2>Consultation Actions</h2>
                 <div>
@@ -34,19 +38,21 @@
                 <br/>
                 
                 <div>
-                    <a onclick="$('#loading').show();" href="{{ url_for('evidence_printout') }}" class="btn btn-success">Generate Evidentiary Document</a>
-                    
                     <a onclick="return confirm('Are you sure you want to delete all client data? This cannot be undone.')" href="{{ url_for('evidence_delete_data') }}" class="btn btn-danger">Delete Client Data</a>
                 </div>
+                <br/>
+
+               <div class="generate-printout">
+                    Enter client name: <span>{{ form.client_name }} </span><span class="primarybutton" onclick="$('#loading').show();">{{form.generate_printout}}</span>
+                </div>
+                <br/>
+
+
                 <div id="loading" style="display:none;"><img src="../../../webstatic/images/waiting.gif" alt="" /></div>
 
-
-
-                <br><br>
+                <br/>
                 <hr/>
                 <h2>Consultation Summary</h2>
-                <p><b>Client Name:</b> {{consultdata.setup.client}}</p>
-                <p><b>Consultation Date:</b> {{consultdata.setup.date}}</p>
                 <br/>
                 <details open>
                     <summary>
@@ -211,15 +217,13 @@
                     {% endif %}
 
                 <br/>
+                        
                 <details open>
                     <summary>
                         <span class="icon">▼</span>
                         Overall Consultation Notes
                     </summary>
                     <div class="content">
-                        <form action method="post" class="form" role="form">
-                            {{ form.hidden_tag() }}
-                            {{ wtf.form_errors(form) }}
 
                             <table class="content-notes">
                                 <tbody>
@@ -227,13 +231,13 @@
                                     {{render_text_field(form.client_notes)}}
                                 </tbody>
                             </table>
-
                         <div><span class="primarybutton">{{form.submit}}</span></div>
-                        </form>
                         <br/>
                         <br/>
                     </div>
                 </details>
+
+                </form>
 
             </div>
             <br/>
