@@ -656,7 +656,7 @@ class TAQSmarthome(DictInitClass):
 
 class TAQKids(DictInitClass):
     questions = {
-        'custody': "Do you share custody of children with the person of concern?",
+        'custody': "If you have children, do they have electronic devices?",
         'child_phys_access': "Has the person of concern had physical access to any of the child(ren)'s devices?",
         'child_phone_plan': "Does the person of concern pay for the child(ren)'s phone plan?"}
     attrs = list(questions.keys())
