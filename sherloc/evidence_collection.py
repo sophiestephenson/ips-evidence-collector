@@ -1190,7 +1190,7 @@ class RecoveryForm(FlaskForm):
 
 class TwoFactorForm(FlaskForm):
     enabled = RadioField(TwoFactorSettings().questions["enabled"], choices=YES_NO_CHOICES, default=YES_NO_DEFAULT)
-    second_factor_type = RadioField(TwoFactorSettings().questions["second_factor_type"], choices=TWO_FACTOR_CHOICES, default=TWO_FACTOR_DEFAULT)
+    second_factor_type = SelectMultipleField(TwoFactorSettings().questions["second_factor_type"], choices=TWO_FACTOR_CHOICES, default=TWO_FACTOR_DEFAULT)
     describe = TextAreaField(TwoFactorSettings().questions["describe"])
     second_factor_access = RadioField(TwoFactorSettings().questions["second_factor_access"], choices=YES_NO_UNSURE_CHOICES, default=YES_NO_DEFAULT)
 
