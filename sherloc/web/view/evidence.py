@@ -46,6 +46,7 @@ from flask import (
     render_template,
     request,
     send_from_directory,
+    session,
     url_for,
 )
 from flask_bootstrap import Bootstrap
@@ -140,10 +141,11 @@ def evidence_home():
             if form.generate_printout.data:
                 client = form.data["client_name"]
                 if not client:
-                    flash("No client name entered.")
+                    flash("Client name not entered. Please provide a name to put in the report.")
                     return redirect(url_for('evidence_home'))
 
-                return redirect(url_for('evidence_printout', client=client))
+                session["client"] = client
+                return redirect(url_for('evidence_printout'))
 
             if form.submit:
                 new_notes = ConsultNotesData(**form.data)
@@ -685,8 +687,15 @@ def evidence_screenshots():
         # Reload the screenshot page
         return redirect(url_for('evidence_screenshots'))
 
-@app.route("/evidence/printout/<client>", methods=["GET"])
-def evidence_printout(client):
+@app.route("/evidence/printout/", methods=["GET"])
+def evidence_printout():
+
+    client = ""
+    try:
+        client = session["client"]
+    except KeyError:
+        flash("Client name not entered. Please provide a name to put in the report.")
+        return redirect(url_for("evidence_home"))
 
     start_time = time.perf_counter()
 
