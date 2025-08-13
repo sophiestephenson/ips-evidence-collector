@@ -12,6 +12,16 @@ Removed for now removed features.
 Fixed for any bug fixes.
 Security in case of vulnerabilities.
 
+## [v1.1.TBD] - TBD
+
+### Added     
+### Changed
+- Changed how root check is described by specifying what was checked.
+### Deprecated
+### Removed
+### Fixed
+### Security
+
 ## [v1.1.2] - August 11, 2025
 
 ### Added     
