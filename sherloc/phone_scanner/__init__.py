@@ -11,9 +11,8 @@ from datetime import datetime
 from pprint import pprint
 from time import sleep
 
-import pandas as pd
-
 import config
+import pandas as pd
 
 from . import blocklist, parse_dump
 from .android_permissions import all_permissions
@@ -522,7 +521,7 @@ class AndroidScan(AppScan):
             s = catch_err(run_command(cmd, serial=shlex.quote(serial), v=v))
             if s.strip() == v[1]:
                 return (True, f"The device is rooted: Found:  {k!r}.")
-        return (False, "The device is probably not rooted.")
+        return (False, "Automated checks were run to check: su binaries, OEM unlock, Frida, and the presence of various root packages. There there were no indicators that the device is rooted.")
 
 
 class IosScan(AppScan):
