@@ -46,13 +46,15 @@
 
             {% elif step == 2 %}
             {% if device == "android" %}
-            <p><b>Evidence of jailbreaking?</b> {{"Yes" if is_rooted else "No"}}. <b>Explanation:</b> {{rooted_reasons}}
+            <p><b>Evidence of jailbreaking?</b> {{"Yes" if is_rooted else "No"}}.</p> 
+            <p><b>Explanation:</b> {{rooted_reasons}}
                 {% if is_rooted %} 
                 <button id="rooting" type="button" onclick="getScreenshot(this.id, '{{device}}', '{{serial_or_udid}}')" value="screenshot" class="btn btn-secondary">Take screenshot</button>
                 {% endif %}
             </p>
-                
+            <hr/>
             {% endif %}
+
             <p><b>Apps found:</b> {{ form.apps|length - num_sys_apps }} installed apps and {{ num_sys_apps }} system apps</p>
             <div class="scrollapps">
                 <table class="appselect">
