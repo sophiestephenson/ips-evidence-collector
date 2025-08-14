@@ -15,6 +15,7 @@ Security in case of vulnerabilities.
 ## [v1.1.TBD] - TBD
 
 ### Added     
+- Added LiveScreen (wifi.manage) to list of known spyware
 ### Changed
 - Changed how root check is described by specifying what was checked.
 ### Deprecated
