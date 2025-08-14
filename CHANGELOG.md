@@ -12,26 +12,17 @@ Removed for now removed features.
 Fixed for any bug fixes.
 Security in case of vulnerabilities.
 
-## [v1.1.TBD] - TBD
+## [v1.1.2] - August 14, 2025
 
 ### Added     
 - Added LiveScreen (wifi.manage) to list of known spyware
-### Changed
-- Changed how root check is described by specifying what was checked.
-### Deprecated
-### Removed
-### Fixed
-### Security
-
-## [v1.1.2] - August 11, 2025
-
-### Added     
 ### Changed
 - Changed question about 2-factor (Issue 63)
 - Changed wording of custody question (Issue 64)
 - Moved client name input to homepage (Issue 66)
 - Trimmed screenshot metadata in printout (Issue 65)
 - Removed permissions from printout (Issue 69)
+- Changed how root check is described by specifying what was checked.
 ### Deprecated
 ### Removed
 ### Fixed
