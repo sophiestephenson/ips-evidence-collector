@@ -16,6 +16,7 @@ import shutil
 import subprocess
 from enum import Enum
 from pathlib import Path
+from pprint import pprint
 
 import config
 import jinja2
@@ -769,14 +770,17 @@ class ConsultationData(Dictable):
         all_screenshots = get_all_screenshot_files()
 
         for scan in self.scans:
-            scan_screenshots = all_screenshots["device_root"].get(scan.serial_or_udid, list())
-            scan.set_screenshot_files(scan_screenshots)
-            scan.create_screenshot_info(get_metadata=get_metadata)
+            if scan.serial_or_udid in list(all_screenshots["devices"].keys()):
+                scan_screenshots = all_screenshots["devices"][scan.serial_or_udid]
 
-            for app in scan.selected_apps:
-                app_screenshots = all_screenshots["apps"].get(app.appId, list())
-                app.set_screenshot_files(app_screenshots)
-                app.create_screenshot_info(get_metadata=get_metadata)
+                scan_root_screenshots = scan_screenshots.get("root", list())
+                scan.set_screenshot_files(scan_root_screenshots)
+                scan.create_screenshot_info(get_metadata=get_metadata)
+
+                for app in scan.selected_apps:
+                    app_screenshots = scan_screenshots.get(app.appId, list())
+                    app.set_screenshot_files(app_screenshots)
+                    app.create_screenshot_info(get_metadata=get_metadata)
 
         for account in self.accounts:
             if str(account.account_id) in list(all_screenshots["account_sections"].keys()):
@@ -787,6 +791,8 @@ class ConsultationData(Dictable):
                     section_screenshots = all_screenshots["account_sections"][str(account.account_id)][section.screenshot_label]
                     section.set_screenshot_files(section_screenshots)
                     section.create_screenshot_info(get_metadata=get_metadata)
+
+        pprint(all_screenshots)
 
 
 class AccountInvestigation(Dictable):
@@ -1764,9 +1770,11 @@ def get_all_screenshot_files():
     compiling screenshot filenames.
 
     Returns screenshot_files, a dict() with keys:
-        - device_root (accessed by serial)
-        - apps (accessed by app id)
-        - account_sections (accessed by account id (str), then section label)
+        - devices: [serial] -> dict():
+            - "root" -> list of screenshots
+            - [app id] -> list of screenshots
+        - account_sections: account id (str) -> dict() with keys:
+            - [section label] -> list of screenshots
     '''
 
     # Everything is in SCREENSHOT_DIR under a device serial number
@@ -1776,8 +1784,7 @@ def get_all_screenshot_files():
     #   - Account sections (<any ser>/account<id>_<section>/)
 
     screenshot_files = dict(
-        device_root = dict(),  # accessed by ser
-        apps = dict(),  # accessed by ser
+        devices = dict(),  # accessed by ser
         account_sections = dict()  # accessed by account id as a string
     )
 
@@ -1801,7 +1808,12 @@ def get_all_screenshot_files():
 
                     # save the fnames in the right place
                     if screenshot_dir.name == "rooting":
-                        screenshot_files["device_root"][device_dir.name] = full_fnames
+                        if device_dir.name not in list(screenshot_files["devices"].keys()):
+                            screenshot_files["devices"][device_dir.name] = dict(
+                                root = list()
+                            )
+
+                        screenshot_files["devices"][device_dir.name]["root"] = full_fnames
 
                     elif account_pattern.match(screenshot_dir.name):
                         fname_parts = screenshot_dir.name.split("_", 1)
@@ -1819,6 +1831,14 @@ def get_all_screenshot_files():
                         screenshot_files["account_sections"][account_id_str][account_section].extend(full_fnames)
 
                     else:
-                        screenshot_files["apps"][screenshot_dir.name] = full_fnames
+                        # add if needed
+                        if device_dir.name not in list(screenshot_files["devices"].keys()):
+                            screenshot_files["devices"][device_dir.name] = dict(
+                                root = list()
+                            )
+
+                        screenshot_files["devices"][device_dir.name][screenshot_dir.name] = full_fnames
+
+    pprint(screenshot_files)
 
     return screenshot_files
