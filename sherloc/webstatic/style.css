@@ -458,7 +458,9 @@ table.appinfo th {
 }
 
 .screenshot-container {
-    margin-bottom: 0px;
+    margin: 0px;
+    padding-bottom: 10px;
+
 }
 
 table.appselect > tbody > tr > td > p {

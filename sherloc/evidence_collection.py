@@ -1046,10 +1046,8 @@ class ScreenshotInfo(Dictable):
             - Megapixels
         """
 
-        data_to_get = ["FileSize",
-                       "FileModifyDate",
-                       "FileAccessDate",
-                       "FileType",]
+        data_to_get = ["FileModifyDate",
+                       "FileAccessDate",]
 
         self.metadata = dict()
 
