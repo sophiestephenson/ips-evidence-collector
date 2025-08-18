@@ -834,46 +834,41 @@
                     {% endfor %}
                 </td>
             </tr>
-            {% if account["suspicious_logins"]["screenshot_files"]|length > 0 %}
-            <tr>
-                <th>
-                    <h4>Screenshots <span class="tag">&#9881; System-captured</span></h4>
-                    <div class="screenshot-container">
-                <table>
-                    <tbody>
-                {% for fname in account["suspicious_logins"]["screenshot_files"] %}
+                {% if account["suspicious_logins"]["screenshot_files"]|length > 0 %}
+            <tr> 
+                <th><h3>Screenshots <span class="tag">&#9881; System-captured</span></h3>
+                <div class="screenshot-container">
+                    <table>
+                        <tbody>
                             <tr>
-                                <th>
-                                    <div class="form-screenshot">
-                                        <img height='400px' src="{{url_root}}{{fname}}"/>
-                                    </div>
-                                </th>
-                                <td>
-                                    <br/>
-                                    <div class="screenshot-metadata">Screenshot Metadata:
-                                        <table>
-                                            <tbody>
-                                                {% for k, v in account["suspicious_logins"]["screenshot_info"][loop.index0]["metadata"].items() %}
-                                                <tr>
-                                                    <th>{{k}}</th>
-                                                    <td>{{v}}</td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </td>
+                            {% for fname in account["suspicious_logins"]["screenshot_files"] %}
+                                        <th>
+                                            <div class="form-screenshot">
+                                                <img height='400px' src="{{url_root}}{{fname}}"/>
+                                            </div>
+                                                <div class="screenshot-metadata">Screenshot Metadata:
+                                                    <table>
+                                                        <tbody>
+                                                            {% for k, v in account["suspicious_logins"]["screenshot_info"][loop.index0]["metadata"].items() %}
+                                                            <tr>
+                                                                <th>{{k}}</th>
+                                                                <td>{{v}}</td>
+                                                            </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                        </th>
+                                        {# Break for long rows #}
+                                        {% if loop.index % 3 == 0 %}
+                                        </tr><tr> 
+                                        {% endif %}
+                            {% endfor %}
                             </tr>
                         </tbody>
-                        </table>
-                        </div>
-                        </th>
-                        </tr>
-                        <tr><th><div class="screenshot-container"><table><tbody>
-                {% endfor %}
-                </tbody>
-                </table>
-                </div></th>
+                    </table>
+                </div>
+                </th>
             </tr>
             {% endif %}
 
@@ -945,50 +940,43 @@
                     {% endfor %}
                 </td>
             </tr>
-            {% if account["recovery_settings"]["screenshot_files"]|length > 0 %}
-            <tr>
-                <th>
-                    <h4>Screenshots <span class="tag">&#9881; System-captured</span></h4>
-                    <div class="screenshot-container">
-                    
-                <table>
-                    <tbody>
-                {% for fname in account["recovery_settings"]["screenshot_files"] %}
-                   <tr>
-                                <th>
-                                    <div class="form-screenshot">
-                                        <img height='400px' src="{{url_root}}{{fname}}"/>
-                                    </div>
-                                </th>
-                                <td>
-                                    <br/>
-                                    <div class="screenshot-metadata">Screenshot Metadata:
-                                        <table>
-                                            <tbody>
-                                                {% for k, v in account["recovery_settings"]["screenshot_info"][loop.index0]["metadata"].items() %}
-                                                <tr>
-                                                    <th>{{k}}</th>
-                                                    <td>{{v}}</td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </td>
+                {% if account["recovery_settings"]["screenshot_files"]|length > 0 %}
+            <tr> 
+                <th><h3>Screenshots <span class="tag">&#9881; System-captured</span></h3>
+                <div class="screenshot-container">
+                    <table>
+                        <tbody>
+                            <tr>
+                            {% for fname in account["recovery_settings"]["screenshot_files"] %}
+                                        <th>
+                                            <div class="form-screenshot">
+                                                <img height='400px' src="{{url_root}}{{fname}}"/>
+                                            </div>
+                                                <div class="screenshot-metadata">Screenshot Metadata:
+                                                    <table>
+                                                        <tbody>
+                                                            {% for k, v in account["recovery_settings"]["screenshot_info"][loop.index0]["metadata"].items() %}
+                                                            <tr>
+                                                                <th>{{k}}</th>
+                                                                <td>{{v}}</td>
+                                                            </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                        </th>
+                                        {# Break for long rows #}
+                                        {% if loop.index % 3 == 0 %}
+                                        </tr><tr> 
+                                        {% endif %}
+                            {% endfor %}
                             </tr>
                         </tbody>
-                        </table>
-                        </div>
-                        </th>
-                        </tr>
-                        <tr><th><div class="screenshot-container"><table><tbody>
-                {% endfor %}
-                </tbody>
-                </table>
+                    </table>
                 </div>
-            </th>
+                </th>
             </tr>
-            {% endif %}
+                {% endif %}
             <tr>
               <th><h3>Two-Factor Authentication Questionnaire <span class="tag">&#9999;&#65039; Human-entered</span></h3>
                     <div class="form-responses">
@@ -1029,47 +1017,43 @@
                     {% endfor %}
                 </td>
             </tr>
-            {% if account["two_factor_settings"]["screenshot_files"]|length > 0 %}
-            <tr>
-                <th>
-                    <h4>Screenshots <span class="tag">&#9881; System-captured</span></h4>
-                    <div class="screenshot-container">
-                <table>
-                    <tbody>
-                {% for fname in account["two_factor_settings"]["screenshot_files"] %}
-                    <tr>
-                                <th>
-                                    <div class="form-screenshot">
-                                        <img height='400px' src="{{url_root}}{{fname}}"/>
-                                    </div>
-                                </th>
-                                <td>
-                                    <br/>
-                                    <div class="screenshot-metadata">Screenshot Metadata:
-                                        <table>
-                                            <tbody>
-                                                {% for k, v in account["two_factor_settings"]["screenshot_info"][loop.index0]["metadata"].items() %}
-                                                <tr>
-                                                    <th>{{k}}</th>
-                                                    <td>{{v}}</td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </td>
+                {% if account["two_factor_settings"]["screenshot_files"]|length > 0 %}
+            <tr> 
+                <th><h3>Screenshots <span class="tag">&#9881; System-captured</span></h3>
+                <div class="screenshot-container">
+                    <table>
+                        <tbody>
+                            <tr>
+                            {% for fname in account["two_factor_settings"]["screenshot_files"] %}
+                                        <th>
+                                            <div class="form-screenshot">
+                                                <img height='400px' src="{{url_root}}{{fname}}"/>
+                                            </div>
+                                                <div class="screenshot-metadata">Screenshot Metadata:
+                                                    <table>
+                                                        <tbody>
+                                                            {% for k, v in account["two_factor_settings"]["screenshot_info"][loop.index0]["metadata"].items() %}
+                                                            <tr>
+                                                                <th>{{k}}</th>
+                                                                <td>{{v}}</td>
+                                                            </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                        </th>
+                                        {# Break for long rows #}
+                                        {% if loop.index % 3 == 0 %}
+                                        </tr><tr> 
+                                        {% endif %}
+                            {% endfor %}
                             </tr>
                         </tbody>
-                        </table>
-                        </div>
-                        </th>
-                        </tr>
-                        <tr><th><div class="screenshot-container"><table><tbody>
-                {% endfor %}
-                </tbody></table>
-                </div></th>
+                    </table>
+                </div>
+                </th>
             </tr>
-            {% endif %}
+                {% endif %}
             <tr>
               <th><h3>Security Questions Questionnaire <span class="tag">&#9999;&#65039; Human-entered</span></h3>
                     <div class="form-responses">
@@ -1104,50 +1088,44 @@
                     {% endfor %}
                 </td>
             </tr>
-            {% if account["security_questions"]["screenshot_files"]|length > 0 %}
-            <tr>
-                <th>
-                    <h4>Screenshots <span class="tag">&#9881; System-captured</span></h4>
-                    <div class="screenshot-container">
-                
-                <table>
-                    <tbody>
-                        {% for fname in account["security_questions"]["screenshot_files"] %}
-                        <tr>
-                                <th>
-                                    <div class="form-screenshot">
-                                        <img height='400px' src="{{url_root}}{{fname}}"/>
-                                    </div>
-                                </th>
-                                <td>
-                                    <br/>
-                                    <div class="screenshot-metadata">Screenshot Metadata:
-                                        <table>
-                                            <tbody>
-                                                {% for k, v in account["security_questions"]["screenshot_info"][loop.index0]["metadata"].items() %}
-                                                <tr>
-                                                    <th>{{k}}</th>
-                                                    <td>{{v}}</td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </td>
+            
+                {% if account["security_questions"]["screenshot_files"]|length > 0 %}
+            <tr> 
+                <th><h3>Screenshots <span class="tag">&#9881; System-captured</span></h3>
+                <div class="screenshot-container">
+                    <table>
+                        <tbody>
+                            <tr>
+                            {% for fname in account["security_questions"]["screenshot_files"] %}
+                                        <th>
+                                            <div class="form-screenshot">
+                                                <img height='400px' src="{{url_root}}{{fname}}"/>
+                                            </div>
+                                                <div class="screenshot-metadata">Screenshot Metadata:
+                                                    <table>
+                                                        <tbody>
+                                                            {% for k, v in account["security_questions"]["screenshot_info"][loop.index0]["metadata"].items() %}
+                                                            <tr>
+                                                                <th>{{k}}</th>
+                                                                <td>{{v}}</td>
+                                                            </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                        </th>
+                                        {# Break for long rows #}
+                                        {% if loop.index % 3 == 0 %}
+                                        </tr><tr> 
+                                        {% endif %}
+                            {% endfor %}
                             </tr>
                         </tbody>
-                        </table>
-                        </div>
-                        </th>
-                        </tr>
-                        <tr><th><div class="screenshot-container"><table><tbody>
-                    {% endfor %}
-                    </tbody>
                     </table>
-                    </div>
+                </div>
                 </th>
             </tr>
-            {% endif %}
+                {% endif %}
 
             <tr>
                 <th>
