@@ -522,7 +522,7 @@ class AndroidScan(AppScan):
             s = catch_err(run_command(cmd, serial=shlex.quote(serial), v=v))
             if s.strip() == v[1]:
                 return (True, f"The device is rooted: Found:  {k!r}.")
-        return (False, "Automated checks were run to check: su binaries, OEM unlock, Frida, and the presence of various root packages. There there were no indicators that the device is rooted.")
+        return (False, "Automated checks were run to check: su binaries, OEM unlock, Frida, and the presence of various root packages. There were no indicators that the device is rooted.")
 
 
 class IosScan(AppScan):
