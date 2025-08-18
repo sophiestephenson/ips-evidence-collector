@@ -763,8 +763,7 @@ class ConsultationData(Dictable):
 
     def prepare_screenshots(self, get_metadata=True):
         """
-        Get all screenshot information about consultation data.
-        Need to do this for scans, account sections, and apps.
+        Get all screenshot information for the consultation.
         """
 
         all_screenshots = get_all_screenshot_files()
@@ -791,9 +790,6 @@ class ConsultationData(Dictable):
                     section_screenshots = all_screenshots["account_sections"][str(account.account_id)][section.screenshot_label]
                     section.set_screenshot_files(section_screenshots)
                     section.create_screenshot_info(get_metadata=get_metadata)
-
-        pprint(all_screenshots)
-
 
 class AccountInvestigation(Dictable):
     def __init__(self,
@@ -1838,7 +1834,5 @@ def get_all_screenshot_files():
                             )
 
                         screenshot_files["devices"][device_dir.name][screenshot_dir.name] = full_fnames
-
-    pprint(screenshot_files)
 
     return screenshot_files
