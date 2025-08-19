@@ -12,10 +12,23 @@ Removed for now removed features.
 Fixed for any bug fixes.
 Security in case of vulnerabilities.
 
+## [v1.1.3] - TBD (in progress)
+
+### Added     
+### Changed
+- Updated how screenshots show up on the printout for accounts and root
+### Deprecated
+### Removed
+### Fixed
+- Patched issue where some iPhones trigger duplicate column error during scan
+- Patched issue where screenshots for apps are not separated by device
+- Fix typo in the explanation of a successful root check
+### Security
+
 ## [v1.1.2] - August 14, 2025
 
 ### Added     
-- Added LiveScreen (wifi.manage) to list of known spyware
+- Added LiveScreen (wifi.manager) to list of known spyware
 ### Changed
 - Changed question about 2-factor (Issue 63)
 - Changed wording of custody question (Issue 64)
