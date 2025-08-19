@@ -457,10 +457,10 @@ table.appinfo th {
     float: left;
 }
 
-.screenshot-container::after {
-  content: "";
-  clear: both;
-  display: table;
+.screenshot-container {
+    margin: 0px;
+    padding-bottom: 10px;
+
 }
 
 table.appselect > tbody > tr > td > p {

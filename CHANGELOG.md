@@ -16,10 +16,13 @@ Security in case of vulnerabilities.
 
 ### Added     
 ### Changed
+- Updated how screenshots show up on the printout for accounts and root
 ### Deprecated
 ### Removed
 ### Fixed
 - Patched issue where some iPhones trigger duplicate column error during scan
+- Patched issue where screenshots for apps are not separated by device
+- Fix typo in the explanation of a successful root check
 ### Security
 
 ## [v1.1.2] - August 14, 2025
