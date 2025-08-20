@@ -39,6 +39,7 @@ export adb=$adb
 
 
 serial="-s ${2}"
+hmac_serial="-s ${3}"
 ofname="./phone_dumps/${3}_android.txt"
 echo "Serial: $serial"
 echo "Output file: $ofname"
@@ -127,7 +128,7 @@ if [[ "$1" == "scan" ]]; then
     # Clear the settings to remove developer options
     $adb $serial shell pm clear com.android.settings
 elif [[ "$1" == "info" ]]; then
-    (>&2 echo "------ Running app info ------- $2")
+    (>&2 echo "------ Running app info ------- $2 $3")
     retrieve $3
 else
     echo "$ bash $0 <scan|info> <serial_no> [appId]"
