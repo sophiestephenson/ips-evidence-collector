@@ -7,10 +7,9 @@ import re
 from pprint import pprint
 from time import sleep
 
+import config
 import pandas as pd
 from rsonlite import simpleparse
-
-import config
 
 from .runcmd import catch_err, run_command
 
@@ -130,6 +129,7 @@ def package_info(dumpf, appid):
     package_dump = open(DUMPPKG, 'r').read()
     #print(package_dump)
     """
+    sp = None
     try:
         # Parse the package dump (TODO: Look into)
         sp = simpleparse(package_dump)
@@ -137,7 +137,7 @@ def package_info(dumpf, appid):
     except AttributeError as e:
         print(package_dump)
         return []
-    
+
     try:
         # I have no idea what this does.
         #
@@ -151,36 +151,40 @@ def package_info(dumpf, appid):
         if isinstance(pkg, list):
             pkg = pkg[0]
 
+        pprint("Permissions: {}".format(pkg.get("install permissions", None)))
+        pprint("Permissions type: {}".format(type(pkg.get("install permissions", None))))
+
+        install_perms = [
+            k.split(":")[0] for k, v in pkg.get("install permissions:", {}).items()
+        ]
+        requested_perms = pkg.get("requested permissions:", [])
+
+        # usage_stats = filter(None, usage_stats.split('\n')[1].split(' '))
+        # usage_stats = dict(item.split('=') for item in usage_stats)
+        # print(usage_stats)
+        pkg_info = {}
+        pkg_info["firstInstallTime"] = pkg.get("firstInstallTime", "")
+        pkg_info["lastUpdateTime"] = pkg.get("lastUpdateTime", "")
+        pkg_info["versionCode"] = pkg.get("versionCode", "")
+        pkg_info["versionName"] = pkg.get("versionName", "")
+        # pkg_info['used'] = now - _parse_time(usage_stats['used'])
+        # pkg_info['usedScr'] = now - _parse_time(usage_stats['usedScr'])
+
+        # ('User 0:  installed', 'true hidden=false stopped=false notLaunched=false enabled=0\nlastDisabledCaller: com.android.vending\ngids=[3003]\nruntime permissions:')
+        # inst_det_key = [v for k,v in pkg.items() if 'User 0:' in k][0]
+        # install_details = dict(item.split('=') for item in inst_det_key.strip().split(' ')[1:])
+        # install_details = {k:bool(strtobool(install_details[k])) for k in install_details}
+        # print(install_details)
+
+        all_perms = list(set(requested_perms) | set(install_perms))
+        all_perms.sort()
+
+        return all_perms, pkg_info
+
     except (IndexError, AttributeError) as e:
         print(e)
         print(f"Didn't parse correctly. Not sure why.\nsp={sp}")
         return [], {}
-
-    install_perms = [
-        k.split(":")[0] for k, v in pkg.get("install permissions:", {}).items()
-    ]
-    requested_perms = pkg.get("requested permissions:", [])
-
-    # usage_stats = filter(None, usage_stats.split('\n')[1].split(' '))
-    # usage_stats = dict(item.split('=') for item in usage_stats)
-    # print(usage_stats)
-    pkg_info = {}
-    pkg_info["firstInstallTime"] = pkg.get("firstInstallTime", "")
-    pkg_info["lastUpdateTime"] = pkg.get("lastUpdateTime", "")
-    pkg_info["versionCode"] = pkg.get("versionCode", "")
-    pkg_info["versionName"] = pkg.get("versionName", "")
-    # pkg_info['used'] = now - _parse_time(usage_stats['used'])
-    # pkg_info['usedScr'] = now - _parse_time(usage_stats['usedScr'])
-
-    # ('User 0:  installed', 'true hidden=false stopped=false notLaunched=false enabled=0\nlastDisabledCaller: com.android.vending\ngids=[3003]\nruntime permissions:')
-    # inst_det_key = [v for k,v in pkg.items() if 'User 0:' in k][0]
-    # install_details = dict(item.split('=') for item in inst_det_key.strip().split(' ')[1:])
-    # install_details = {k:bool(strtobool(install_details[k])) for k in install_details}
-    # print(install_details)
-
-    all_perms = list(set(requested_perms) | set(install_perms))
-
-    return all_perms, pkg_info
 
 
 def gather_permissions_labels():
