@@ -4,8 +4,6 @@ Must work completely from the dumps, no interaction with the device is required.
 
 import datetime
 import re
-from pprint import pprint
-from time import sleep
 
 import config
 import pandas as pd
@@ -134,7 +132,7 @@ def package_info(dumpf, appid):
         # Parse the package dump (TODO: Look into)
         sp = simpleparse(package_dump)
 
-    except AttributeError as e:
+    except AttributeError:
         print(package_dump)
         return []
 
@@ -150,9 +148,6 @@ def package_info(dumpf, appid):
         _, pkg = sp.popitem()
         if isinstance(pkg, list):
             pkg = pkg[0]
-
-        pprint("Permissions: {}".format(pkg.get("install permissions", None)))
-        pprint("Permissions type: {}".format(type(pkg.get("install permissions", None))))
 
         install_perms = [
             k.split(":")[0] for k, v in pkg.get("install permissions:", {}).items()
