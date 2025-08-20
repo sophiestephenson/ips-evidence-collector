@@ -123,10 +123,10 @@ function full_scan {
 if [[ "$1" == "scan" ]]; then 
     (>&2 echo "------ Running full scan ------- $2")
     $adb devices
-    full_scan >> ./dumps/android_scan.logs & 
-    sleep 120;  # sleep for 2 minutes
+    full_scan >> ./phone_dumps/android_scan.logs & 
+    # sleep 120;  # sleep for 2 minutes
     # Clear the settings to remove developer options
-    $adb $serial shell pm clear com.android.settings
+    # $adb $serial shell pm clear com.android.settings
 elif [[ "$1" == "info" ]]; then
     (>&2 echo "------ Running app info ------- $2 $3")
     retrieve $3
