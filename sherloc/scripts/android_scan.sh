@@ -42,7 +42,6 @@ serial="-s ${2}"
 hmac_serial="-s ${3}"
 ofname="./phone_dumps/${3}_android.txt"
 echo "Serial: $serial"
-echo "HMAC Serial: $hmac_serial"
 echo "Output file: $ofname"
 
 email="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$"
