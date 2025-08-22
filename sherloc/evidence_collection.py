@@ -21,7 +21,7 @@ from pprint import pprint
 import config
 import jinja2
 import pdfkit
-from config import DUMP_DIR, SCREENSHOT_DIR, SHERLOC_VERSION
+from config import DUMP_DIR, REPORT_DIR, SCREENSHOT_DIR, SHERLOC_VERSION
 from filelock import FileLock
 from flask_wtf import FlaskForm
 from phone_scanner.db import create_mult_appinfo, create_scan
@@ -1755,6 +1755,12 @@ def delete_client_data():
     print(SCREENSHOT_DIR)
     shutil.rmtree(SCREENSHOT_DIR)
     os.makedirs(SCREENSHOT_DIR, exist_ok=True)
+
+    # Delete report
+    print("Deleting report...")
+    print(REPORT_DIR)
+    shutil.rmtree(REPORT_DIR)
+    os.makedirs(REPORT_DIR, exist_ok=True)
 
     print("Client data deleted.")
 
