@@ -17,6 +17,7 @@ Security in case of vulnerabilities.
 ### Added     
 ### Changed
 - Updated how screenshots show up on the printout for accounts and root
+- Delete reports, too, when deleting client data
 ### Deprecated
 ### Removed
 ### Fixed
