@@ -12,7 +12,7 @@ Removed for now removed features.
 Fixed for any bug fixes.
 Security in case of vulnerabilities.
 
-## [v1.1.3] - TBD (in progress)
+## [v1.1.3] - August 22, 2025
 
 ### Added     
 ### Changed
@@ -23,6 +23,7 @@ Security in case of vulnerabilities.
 - Patched issue where some iPhones trigger duplicate column error during scan
 - Patched issue where screenshots for apps are not separated by device
 - Fix typo in the explanation of a successful root check
+- Patched issue where Android scans try to access a folder that doesn't exist
 ### Security
 
 ## [v1.1.2] - August 14, 2025
